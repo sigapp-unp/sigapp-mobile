@@ -32,8 +32,9 @@ class StudentRepositoryImpl implements StudentRepository {
   @override
   Future<RawAcademicReport> getAcademicReport() async {
     // {"results":{"Facultad":"INGENIERIA INDUSTRIAL","NomAlumno":"0512017039 - CALLE BRICEÑO, JOSE DANIEL","Promocion":"2017","SemestreIngreso":"20171 ","SemestrePlan":"20181 ","UltSemestre":"20212 ","PPA":14.47,"PPAAprob":14.47,"UPPS":15.48,"TotalCredAprob":243,"CredObligPlan":220,"CredElectPlan":15,"CredObligAprob":220,"CredElectAprob":16}}
-    final response =
-        await _sigaClient.http.post('/Academico/ListarParametrosInforme');
+    final response = await _sigaClient.http.post(
+      '/Academico/ListarParametrosInforme',
+    );
     final model = GetAcademicReportModel.fromJson(response.data['results']);
     return RawAcademicReport(
       faculty: model.Facultad,

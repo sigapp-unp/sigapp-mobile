@@ -257,8 +257,9 @@ class AcademicProgramIdentifier {
 
   static bool _matchIndustrial(String input) {
     return RegExp(r'industrial(?!\s+alimentaria)').hasMatch(input) ||
-        RegExp(r'ing(e|é)nier(i|í)a industrial(?!\s+alimentaria)')
-            .hasMatch(input) ||
+        RegExp(
+          r'ing(e|é)nier(i|í)a industrial(?!\s+alimentaria)',
+        ).hasMatch(input) ||
         RegExp(r'producci(o|ó)n industrial').hasMatch(input);
   }
 

@@ -10,15 +10,20 @@ class GradeTrackingUseCases {
 
   GradeTrackingUseCases(this._repository, this._studentSessionService);
 
-  Future<CourseTracking?> getCourseByCourseCode(
-      {required String courseCode}) async {
+  Future<CourseTracking?> getCourseByCourseCode({
+    required String courseCode,
+  }) async {
     return _repository.getCourseTracking(
-        studentCode: await _getStudentCode(), courseCode: courseCode);
+      studentCode: await _getStudentCode(),
+      courseCode: courseCode,
+    );
   }
 
   /// Crea un curso con categorías y notas predeterminadas
-  Future<CourseTracking> createCourseTrackingWithDefaults(
-      {required String courseCode, required String courseName}) async {
+  Future<CourseTracking> createCourseTrackingWithDefaults({
+    required String courseCode,
+    required String courseName,
+  }) async {
     // Utiliza el método implementado en el repositorio que a su vez usa
     // la lógica en la entidad CourseTracking
     return _repository.createWithDefaults(
@@ -29,10 +34,11 @@ class GradeTrackingUseCases {
   }
 
   // Métodos para categorías
-  Future<CourseTracking> addCategory(
-      {required String courseCode,
-      required String categoryName,
-      required double weight}) async {
+  Future<CourseTracking> addCategory({
+    required String courseCode,
+    required String categoryName,
+    required double weight,
+  }) async {
     return _repository.addCategory(
       studentCode: await _getStudentCode(),
       courseCode: courseCode,
@@ -41,11 +47,12 @@ class GradeTrackingUseCases {
     );
   }
 
-  Future<CourseTracking> updateCategory(
-      {required String courseCode,
-      required String categoryId,
-      required String newName,
-      required double newWeight}) async {
+  Future<CourseTracking> updateCategory({
+    required String courseCode,
+    required String categoryId,
+    required String newName,
+    required double newWeight,
+  }) async {
     return _repository.updateCategory(
       studentCode: await _getStudentCode(),
       courseCode: courseCode,
@@ -55,8 +62,10 @@ class GradeTrackingUseCases {
     );
   }
 
-  Future<CourseTracking> removeCategory(
-      {required String courseCode, required String categoryId}) async {
+  Future<CourseTracking> removeCategory({
+    required String courseCode,
+    required String categoryId,
+  }) async {
     return _repository.deleteCategory(
       studentCode: await _getStudentCode(),
       courseCode: courseCode,
@@ -65,11 +74,12 @@ class GradeTrackingUseCases {
   }
 
   // Métodos para notas
-  Future<CourseTracking> addGrade(
-      {required String courseCode,
-      required String categoryId,
-      required String gradeName,
-      required double score}) async {
+  Future<CourseTracking> addGrade({
+    required String courseCode,
+    required String categoryId,
+    required String gradeName,
+    required double score,
+  }) async {
     return _repository.addGrade(
       studentCode: await _getStudentCode(),
       courseCode: courseCode,
@@ -79,12 +89,13 @@ class GradeTrackingUseCases {
     );
   }
 
-  Future<CourseTracking> updateGrade(
-      {required String courseCode,
-      required String categoryId,
-      required String gradeId,
-      required String newName,
-      required double newScore}) async {
+  Future<CourseTracking> updateGrade({
+    required String courseCode,
+    required String categoryId,
+    required String gradeId,
+    required String newName,
+    required double newScore,
+  }) async {
     return _repository.updateGrade(
       studentCode: await _getStudentCode(),
       courseCode: courseCode,
@@ -95,10 +106,11 @@ class GradeTrackingUseCases {
     );
   }
 
-  Future<CourseTracking> removeGrade(
-      {required String courseCode,
-      required String categoryId,
-      required String gradeId}) async {
+  Future<CourseTracking> removeGrade({
+    required String courseCode,
+    required String categoryId,
+    required String gradeId,
+  }) async {
     return _repository.deleteGrade(
       studentCode: await _getStudentCode(),
       courseCode: courseCode,
@@ -107,11 +119,12 @@ class GradeTrackingUseCases {
     );
   }
 
-  Future<CourseTracking> toggleGradeEnabled(
-      {required String courseCode,
-      required String categoryId,
-      required String gradeId,
-      required bool enabled}) async {
+  Future<CourseTracking> toggleGradeEnabled({
+    required String courseCode,
+    required String categoryId,
+    required String gradeId,
+    required bool enabled,
+  }) async {
     return _repository.toggleGradeEnabled(
       studentCode: await _getStudentCode(),
       courseCode: courseCode,

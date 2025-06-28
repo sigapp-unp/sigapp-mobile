@@ -21,14 +21,13 @@ class AppLifecycleManager with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused) {
       _lastBackgroundTime = DateTime.now();
       onAppPaused();
-      _logger.i(
-        '[INFRASTRUCTURE] App entró en segundo plano',
-      );
+      _logger.i('[INFRASTRUCTURE] App entró en segundo plano');
     } else if (state == AppLifecycleState.resumed) {
       final now = DateTime.now();
-      final timeSinceBackground = _lastBackgroundTime != null
-          ? now.difference(_lastBackgroundTime!)
-          : const Duration(seconds: 0);
+      final timeSinceBackground =
+          _lastBackgroundTime != null
+              ? now.difference(_lastBackgroundTime!)
+              : const Duration(seconds: 0);
 
       _logger.i(
         '[INFRASTRUCTURE] App volvió a primer plano después de ${timeSinceBackground.inSeconds} segundos',

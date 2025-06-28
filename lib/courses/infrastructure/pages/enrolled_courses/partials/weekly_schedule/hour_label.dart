@@ -35,10 +35,7 @@ class HourLabelWidget extends StatelessWidget {
               color: Colors.grey.withValues(alpha: 0.5),
             ),
           ),
-          Container(
-            alignment: Alignment.topCenter,
-            child: Text(formattedHour),
-          ),
+          Container(alignment: Alignment.topCenter, child: Text(formattedHour)),
         ],
       ),
     );

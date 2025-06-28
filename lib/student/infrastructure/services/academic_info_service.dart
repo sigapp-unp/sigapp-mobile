@@ -16,8 +16,11 @@ class AcademicInfoServiceImpl extends AcademicInfoService {
   final StudentSessionService _studentSessionService;
   final GetEnrolledCoursesUsecase _getEnrolledCoursesUsecase;
 
-  AcademicInfoServiceImpl(this._getAcademicReportUsecase,
-      this._getEnrolledCoursesUsecase, this._studentSessionService);
+  AcademicInfoServiceImpl(
+    this._getAcademicReportUsecase,
+    this._getEnrolledCoursesUsecase,
+    this._studentSessionService,
+  );
 
   @override
   Future<AcademicInfoData> getSessionInfo() async {
@@ -31,8 +34,9 @@ class AcademicInfoServiceImpl extends AcademicInfoService {
     _data = AcademicInfoData(
       academicReport: academicReport,
       semesterContext: semesterContext,
-      academicProgram:
-          AcademicProgramIdentifier.identifyProgram(academicReport.school),
+      academicProgram: AcademicProgramIdentifier.identifyProgram(
+        academicReport.school,
+      ),
     );
 
     return _data!;
@@ -44,7 +48,8 @@ class AcademicInfoServiceImpl extends AcademicInfoService {
   }
 
   Future<SemesterContext> _calculateSemesterContext(
-      AcademicReport academicReport) async {
+    AcademicReport academicReport,
+  ) async {
     final firstSemester = academicReport.enrollmentSemester;
     final studentSessionInfo = await _studentSessionService.getInfo();
 
@@ -54,7 +59,9 @@ class AcademicInfoServiceImpl extends AcademicInfoService {
     if (currentSemesterEnrolledCourses.isNotEmpty) {
       return SemesterContext(
         availableSemesters: _buildSemesterRange(
-            firstSemester, studentSessionInfo.currentSemester),
+          firstSemester,
+          studentSessionInfo.currentSemester,
+        ),
         defaultSemester: studentSessionInfo.currentSemester,
         contextType: SemesterContextType.currentlyEnrolled,
       );
@@ -64,8 +71,10 @@ class AcademicInfoServiceImpl extends AcademicInfoService {
     final lastKnownSemester = academicReport.lastSemester;
     if (lastKnownSemester != null) {
       return SemesterContext(
-        availableSemesters:
-            _buildSemesterRange(firstSemester, lastKnownSemester),
+        availableSemesters: _buildSemesterRange(
+          firstSemester,
+          lastKnownSemester,
+        ),
         defaultSemester: lastKnownSemester,
         contextType: SemesterContextType.completedLastEnrolled,
       );
@@ -74,22 +83,27 @@ class AcademicInfoServiceImpl extends AcademicInfoService {
     // Case 3: Último semestre desconocido (notas pendientes)
     return SemesterContext(
       availableSemesters: _buildSemesterRange(
-          firstSemester, studentSessionInfo.currentSemester),
+        firstSemester,
+        studentSessionInfo.currentSemester,
+      ),
       defaultSemester: firstSemester,
       contextType: SemesterContextType.unknownLastEnrolled,
     );
   }
 
   List<ScheduledTermIdentifier> _buildSemesterRange(
-      ScheduledTermIdentifier firstSemester,
-      ScheduledTermIdentifier lastSemester) {
+    ScheduledTermIdentifier firstSemester,
+    ScheduledTermIdentifier lastSemester,
+  ) {
     List<ScheduledTermIdentifier> semesters = [];
     for (var year = firstSemester.year; year <= lastSemester.year; year++) {
       var startPeriod = (year == firstSemester.year) ? firstSemester.period : 0;
       var endPeriod = (year == lastSemester.year) ? lastSemester.period : 2;
-      for (var yearPeriod = startPeriod;
-          yearPeriod <= endPeriod;
-          yearPeriod++) {
+      for (
+        var yearPeriod = startPeriod;
+        yearPeriod <= endPeriod;
+        yearPeriod++
+      ) {
         semesters.add(ScheduledTermIdentifier.buildFromId('$year$yearPeriod'));
       }
     }

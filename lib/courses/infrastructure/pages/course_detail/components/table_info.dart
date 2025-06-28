@@ -8,17 +8,15 @@ class TableInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: info
-          .map(
-            (e) => Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(e[0]),
-                Text(e[1]),
-              ],
-            ),
-          )
-          .toList(),
+      children:
+          info
+              .map(
+                (e) => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [Text(e[0]), Text(e[1])],
+                ),
+              )
+              .toList(),
     );
   }
 }

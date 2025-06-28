@@ -22,11 +22,7 @@ class IconAvatarButtonWidget extends StatelessWidget {
         color: backgroundColor,
         shape: CircleBorder(),
       ),
-      child: IconButton(
-        icon: icon,
-        color: textColor,
-        onPressed: onPressed,
-      ),
+      child: IconButton(icon: icon, color: textColor, onPressed: onPressed),
     );
   }
 }

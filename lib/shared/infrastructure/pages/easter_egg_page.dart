@@ -7,10 +7,12 @@ class EasterEggPageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Easter Egg 🥚')),
-      body: ListView(children: [
-        // assets\custom_epii_logo.png
-        Image.asset('assets/custom_epii_logo.png'),
-      ]),
+      body: ListView(
+        children: [
+          // assets\custom_epii_logo.png
+          Image.asset('assets/custom_epii_logo.png'),
+        ],
+      ),
     );
   }
 }

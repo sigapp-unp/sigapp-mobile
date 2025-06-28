@@ -11,9 +11,6 @@ class GetStoredCredentialsUseCase {
   StoredCredentials execute() {
     final username = _sharedPreferencesAuthRepository.getUsername();
     final password = _sharedPreferencesAuthRepository.getPassword();
-    return StoredCredentials(
-      username: username,
-      password: password,
-    );
+    return StoredCredentials(username: username, password: password);
   }
 }

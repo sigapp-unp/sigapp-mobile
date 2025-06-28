@@ -22,7 +22,7 @@ sealed class CareerPageState with _$CareerPageState {
 @injectable
 class CareerPageCubit extends Cubit<CareerPageState> {
   final GetProgramCurriculumProgressUsecase
-      _getProgramCurriculumProgressUsecase;
+  _getProgramCurriculumProgressUsecase;
   final AcademicInfoService _sessionInfoService;
   final Logger _logger;
 
@@ -35,15 +35,17 @@ class CareerPageCubit extends Cubit<CareerPageState> {
   Future<void> fetch() async {
     emit(CareerPageState.loading());
     try {
-      final academicReport = await _sessionInfoService
-          .getSessionInfo()
-          .then((v) => v.academicReport);
+      final academicReport = await _sessionInfoService.getSessionInfo().then(
+        (v) => v.academicReport,
+      );
       final programCurriculumProgress =
           await _getProgramCurriculumProgressUsecase.execute();
-      emit(CareerPageState.success(
-        academicReport: academicReport,
-        programCurriculumProgress: programCurriculumProgress,
-      ));
+      emit(
+        CareerPageState.success(
+          academicReport: academicReport,
+          programCurriculumProgress: programCurriculumProgress,
+        ),
+      );
     } catch (e, s) {
       _logger.e(
         '[UI] Error fetching career page data: $e',

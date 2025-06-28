@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:sigapp/courses/domain/entities/academic_history_term.dart';
 
 class WeightedAverageEvolutionChartWidget extends StatelessWidget {
-  const WeightedAverageEvolutionChartWidget(
-      {super.key, required this.academicHistory});
+  const WeightedAverageEvolutionChartWidget({
+    super.key,
+    required this.academicHistory,
+  });
 
   final List<AcademicHistoryTerm> academicHistory;
 
@@ -116,10 +118,7 @@ class WeightedAverageEvolutionChartWidget extends StatelessWidget {
                 maxX: finalMaxX,
                 minY: finalMinY,
                 maxY: finalMaxY,
-                lineBarsData: [
-                  lineSemestral,
-                  lineAcumulado,
-                ],
+                lineBarsData: [lineSemestral, lineAcumulado],
                 gridData: FlGridData(show: true),
                 borderData: FlBorderData(
                   show: true,
@@ -143,8 +142,10 @@ class WeightedAverageEvolutionChartWidget extends StatelessWidget {
                             semesterNumber > termsWithStats.length) {
                           return const SizedBox.shrink();
                         }
-                        return Text('S$semesterNumber',
-                            style: const TextStyle(fontSize: 12));
+                        return Text(
+                          'S$semesterNumber',
+                          style: const TextStyle(fontSize: 12),
+                        );
                       },
                     ),
                   ),
@@ -155,15 +156,19 @@ class WeightedAverageEvolutionChartWidget extends StatelessWidget {
                       reservedSize: 40,
                       getTitlesWidget: (value, _) {
                         // Round or format as needed
-                        return Text(value.toStringAsFixed(1),
-                            style: const TextStyle(fontSize: 12));
+                        return Text(
+                          value.toStringAsFixed(1),
+                          style: const TextStyle(fontSize: 12),
+                        );
                       },
                     ),
                   ),
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
               ),
             ),

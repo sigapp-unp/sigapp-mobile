@@ -48,17 +48,18 @@ class WeeklyScheduleWidget extends StatefulWidget {
     this.rowHeight = 75.0,
     this.onEventTap,
   }) {
-    events = courses.indexed
-        .map(
-          (indexed) => indexed.$2.scheduleEvents.map(
-            (event) => WeeklyScheduleWidgetItem(
-              data: event,
-              color: ColorsUtils.getColorByIndex(indexed.$1),
-            ),
-          ),
-        )
-        .expand((e) => e)
-        .toList();
+    events =
+        courses.indexed
+            .map(
+              (indexed) => indexed.$2.scheduleEvents.map(
+                (event) => WeeklyScheduleWidgetItem(
+                  data: event,
+                  color: ColorsUtils.getColorByIndex(indexed.$1),
+                ),
+              ),
+            )
+            .expand((e) => e)
+            .toList();
   }
 
   @override
@@ -93,7 +94,8 @@ class _WeeklyScheduleWidgetState extends State<WeeklyScheduleWidget> {
       startHour = widget.events
           .map((event) => event.data.startHour)
           .reduce((a, b) => a < b ? a : b);
-      endHour = widget.events
+      endHour =
+          widget.events
               .map((event) => event.data.endHour)
               .reduce((a, b) => a > b ? a : b) +
           1;
@@ -103,52 +105,50 @@ class _WeeklyScheduleWidgetState extends State<WeeklyScheduleWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (widget.events.isEmpty) {
-      return const Center(
-        child: Text('No events to display'),
-      );
+      return const Center(child: Text('No events to display'));
     }
 
     _calculateHourRange();
 
-    List<int> daysWithEvents = List.generate(7, (index) => index + 1)
-        .where((day) => widget.events.any((event) => event.data.weekday == day))
-        .toList();
+    List<int> daysWithEvents =
+        List.generate(7, (index) => index + 1)
+            .where(
+              (day) => widget.events.any((event) => event.data.weekday == day),
+            )
+            .toList();
 
     return DefaultTextStyle(
       style: GoogleFonts.lato(
-        color: Theme.of(context)
-            .textTheme
-            .bodyMedium
-            ?.color
-            ?.withValues(alpha: 0.5),
+        color: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
       ),
-      child: LayoutBuilder(builder: (context, constraints) {
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.topRight != null || widget.topLeft != null)
-                TextInfoWidget(
-                  leftText: widget.topLeft,
-                  rightText: widget.topRight,
-                ),
-              Row(
-                children: [
-                  Container(
-                    width: widget.hourWidth,
-                    padding: const EdgeInsets.all(8),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.topRight != null || widget.topLeft != null)
+                  TextInfoWidget(
+                    leftText: widget.topLeft,
+                    rightText: widget.topRight,
                   ),
-                  for (var day in daysWithEvents) DayHeaderWidget(day: day),
-                ],
-              ),
-              widget.disableScroll
-                  ? BodyWidget(
+                Row(
+                  children: [
+                    Container(
+                      width: widget.hourWidth,
+                      padding: const EdgeInsets.all(8),
+                    ),
+                    for (var day in daysWithEvents) DayHeaderWidget(day: day),
+                  ],
+                ),
+                widget.disableScroll
+                    ? BodyWidget(
                       events: widget.events,
                       daysWithEvents: daysWithEvents,
                       startHour: startHour,
@@ -159,7 +159,7 @@ class _WeeklyScheduleWidgetState extends State<WeeklyScheduleWidget> {
                       rowHeight: widget.rowHeight,
                       onEventTap: widget.onEventTap,
                     )
-                  : Expanded(
+                    : Expanded(
                       child: SingleChildScrollView(
                         child: BodyWidget(
                           events: widget.events,
@@ -174,15 +174,16 @@ class _WeeklyScheduleWidgetState extends State<WeeklyScheduleWidget> {
                         ),
                       ),
                     ),
-              if (widget.bottomRight != null || widget.bottomLeft != null)
-                TextInfoWidget(
-                  leftText: widget.bottomRight,
-                  rightText: widget.bottomLeft,
-                ),
-            ],
-          ),
-        );
-      }),
+                if (widget.bottomRight != null || widget.bottomLeft != null)
+                  TextInfoWidget(
+                    leftText: widget.bottomRight,
+                    rightText: widget.bottomLeft,
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

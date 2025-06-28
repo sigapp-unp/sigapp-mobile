@@ -24,9 +24,7 @@ class AuthRepositoryImpl implements AuthRepository {
         'g-recaptcha-response': '',
       },
       options: Options(
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded',
-        },
+        headers: {'content-type': 'application/x-www-form-urlencoded'},
         followRedirects: false,
         validateStatus: (status) {
           return true;
@@ -49,9 +47,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<ApiResponse> keepSession() async {
     final response = await _sigaClient.http.post(
       SigaClient.keepSessionPath,
-      options: Options(
-        validateStatus: (status) => true,
-      ),
+      options: Options(validateStatus: (status) => true),
     );
     final statusCode = response.statusCode;
     if (statusCode == null) throw Exception('Status code is null');
@@ -83,9 +79,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<ApiResponse> _checkSurvey(String path) async {
     final response = await _sigaClient.http.get(
       path,
-      options: Options(
-        validateStatus: (status) => true,
-      ),
+      options: Options(validateStatus: (status) => true),
     );
     final statusCode = response.statusCode;
     if (statusCode == null) throw Exception('Status code is null');

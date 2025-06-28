@@ -64,26 +64,28 @@ class ProgramCurriculumRepositoryImpl implements ProgramCurriculumRepository {
       '/Academico/ListarPlanDeEstudios',
       data: null,
     );
-    final models = (response.data['results'] as List)
-        .map(
-          (json) => GetProgramCurriculumCourseModel.fromJson(json),
-        )
-        .toList();
-    final entities = models
-        .map(
-          (model) => ProgramCurriculumCourseInfo(
-              courseCode: model.CodCurso,
-              credits: model.Creditos,
-              courseName: model.DescripCurso,
-              courseType: CourseType.fromValue(model.FlagTipoCurso),
-              practiceHours: model.HorasPractica,
-              theoryHours: model.HorasTeoria,
-              termNumber: model.NroCiclo,
-              requirementCourseCodes: model.ResumenRequisitos == '---'
-                  ? []
-                  : model.ResumenRequisitos.split(' - ').toList()),
-        )
-        .toList();
+    final models =
+        (response.data['results'] as List)
+            .map((json) => GetProgramCurriculumCourseModel.fromJson(json))
+            .toList();
+    final entities =
+        models
+            .map(
+              (model) => ProgramCurriculumCourseInfo(
+                courseCode: model.CodCurso,
+                credits: model.Creditos,
+                courseName: model.DescripCurso,
+                courseType: CourseType.fromValue(model.FlagTipoCurso),
+                practiceHours: model.HorasPractica,
+                theoryHours: model.HorasTeoria,
+                termNumber: model.NroCiclo,
+                requirementCourseCodes:
+                    model.ResumenRequisitos == '---'
+                        ? []
+                        : model.ResumenRequisitos.split(' - ').toList(),
+              ),
+            )
+            .toList();
 
     return entities;
   }
@@ -91,118 +93,148 @@ class ProgramCurriculumRepositoryImpl implements ProgramCurriculumRepository {
   @override
   Future<List<AcademicHistoryTerm>> getAcademicHistory() async {
     // Fetch
-    final response =
-        await _sigaClient.http.get('/Academico/HistorialAcademico');
+    final response = await _sigaClient.http.get(
+      '/Academico/HistorialAcademico',
+    );
     final pageSource = response.data as String;
     final html = htmlParser.parse(pageSource);
 
     // Build
-    final termLabels = html
-        .querySelectorAll('h4')
-        .map((e) => e.text.trim().split(' ').last)
-        .toList();
+    final termLabels =
+        html
+            .querySelectorAll('h4')
+            .map((e) => e.text.trim().split(' ').last)
+            .toList();
     final rawTerms = html.querySelectorAll('.k-grid.k-widget');
     if (termLabels.length != rawTerms.length) {
       throw Exception('Term labels and terms mismatch');
     }
-    final terms = rawTerms.asMap().entries.map((entry) {
-      final index = entry.key;
-      final element = entry.value;
-      final tables = element.querySelectorAll('table');
-      List<List<String>>? creditsAndGPAData = tables.first
-          .querySelectorAll('tr')
-          .map((e) =>
-              e.querySelectorAll('td').map((e) => e.text.trim()).toList())
-          .toList();
-      if (creditsAndGPAData.isEmpty || creditsAndGPAData[0].isEmpty) {
-        creditsAndGPAData = null;
-      }
-      final coursesData = tables.last
-          .querySelectorAll('tbody tr')
-          .map((tr) =>
-              tr.querySelectorAll('td').map((e) => e.text.trim()).toList())
-          .toList();
-      return {
-        'termLabel': termLabels[index],
-        'statistics': creditsAndGPAData != null
-            ? {
-                'PPS': double.parse(creditsAndGPAData[0][1]),
-                'PPSAprob': double.parse(creditsAndGPAData[0][3]),
-                'PPA': double.parse(creditsAndGPAData[0][5]),
-                'PPAApr': double.parse(creditsAndGPAData[0][7]),
-                'CreOblLlev': double.parse(creditsAndGPAData[0][9]),
-                'CreElLlev': double.parse(creditsAndGPAData[1][1]),
-                'CreOblApr': double.parse(creditsAndGPAData[1][3]),
-                'CreEleApr': double.parse(creditsAndGPAData[1][5]),
-                'CreOblConv': double.parse(creditsAndGPAData[1][7]),
-                'CredEleConv': double.parse(creditsAndGPAData[1][9]),
-                'TotalCredOblLlev': double.parse(creditsAndGPAData[2][1]),
-                'TotalCredElLlev': double.parse(creditsAndGPAData[2][3]),
-                'TotalCredOblAprob': double.parse(creditsAndGPAData[2][5]),
-                'TotalCredElAprob': double.parse(creditsAndGPAData[2][7]),
-                'TotalCredOblConv': double.parse(creditsAndGPAData[2][9]),
-              }
-            : null,
-        'courses': coursesData
-            .map((tds) => {
-                  'courseCode': tds[0],
-                  'courseName': tds[1],
-                  'courseType': tds[2],
-                  'credits': int.parse(tds[3]),
-                  'grade': double.parse(tds[4]),
-                })
-            .toList(),
-      };
-    }).toList();
-    final models = terms
-        .map((term) => GetAcademicHistoryTermModel.fromJson(term))
-        .toList();
+    final terms =
+        rawTerms.asMap().entries.map((entry) {
+          final index = entry.key;
+          final element = entry.value;
+          final tables = element.querySelectorAll('table');
+          List<List<String>>? creditsAndGPAData =
+              tables.first
+                  .querySelectorAll('tr')
+                  .map(
+                    (e) =>
+                        e
+                            .querySelectorAll('td')
+                            .map((e) => e.text.trim())
+                            .toList(),
+                  )
+                  .toList();
+          if (creditsAndGPAData.isEmpty || creditsAndGPAData[0].isEmpty) {
+            creditsAndGPAData = null;
+          }
+          final coursesData =
+              tables.last
+                  .querySelectorAll('tbody tr')
+                  .map(
+                    (tr) =>
+                        tr
+                            .querySelectorAll('td')
+                            .map((e) => e.text.trim())
+                            .toList(),
+                  )
+                  .toList();
+          return {
+            'termLabel': termLabels[index],
+            'statistics':
+                creditsAndGPAData != null
+                    ? {
+                      'PPS': double.parse(creditsAndGPAData[0][1]),
+                      'PPSAprob': double.parse(creditsAndGPAData[0][3]),
+                      'PPA': double.parse(creditsAndGPAData[0][5]),
+                      'PPAApr': double.parse(creditsAndGPAData[0][7]),
+                      'CreOblLlev': double.parse(creditsAndGPAData[0][9]),
+                      'CreElLlev': double.parse(creditsAndGPAData[1][1]),
+                      'CreOblApr': double.parse(creditsAndGPAData[1][3]),
+                      'CreEleApr': double.parse(creditsAndGPAData[1][5]),
+                      'CreOblConv': double.parse(creditsAndGPAData[1][7]),
+                      'CredEleConv': double.parse(creditsAndGPAData[1][9]),
+                      'TotalCredOblLlev': double.parse(creditsAndGPAData[2][1]),
+                      'TotalCredElLlev': double.parse(creditsAndGPAData[2][3]),
+                      'TotalCredOblAprob': double.parse(
+                        creditsAndGPAData[2][5],
+                      ),
+                      'TotalCredElAprob': double.parse(creditsAndGPAData[2][7]),
+                      'TotalCredOblConv': double.parse(creditsAndGPAData[2][9]),
+                    }
+                    : null,
+            'courses':
+                coursesData
+                    .map(
+                      (tds) => {
+                        'courseCode': tds[0],
+                        'courseName': tds[1],
+                        'courseType': tds[2],
+                        'credits': int.parse(tds[3]),
+                        'grade': double.parse(tds[4]),
+                      },
+                    )
+                    .toList(),
+          };
+        }).toList();
+    final models =
+        terms
+            .map((term) => GetAcademicHistoryTermModel.fromJson(term))
+            .toList();
 
     // Parse
-    final entities = models
-        .map(
-          (model) => AcademicHistoryTerm(
-            term: ScheduledTermIdentifier.buildFromName(model.termLabel),
-            statistics: model.statistics != null
-                ? AcademicHistoryTermStatistics(
-                    termWeightedAverage: model.statistics!.PPS,
-                    termWeightedAveragePassed: model.statistics!.PPSAprob,
-                    cumulativeWeightedAverage: model.statistics!.PPA,
-                    cumulativeWeightedAveragePassed: model.statistics!.PPAApr,
-                    mandatoryCreditsTaken: model.statistics!.CreOblLlev.toInt(),
-                    electiveCreditsTaken: model.statistics!.CreElLlev.toInt(),
-                    mandatoryCreditsPassed: model.statistics!.CreOblApr.toInt(),
-                    electiveCreditsPassed: model.statistics!.CreEleApr.toInt(),
-                    mandatoryCreditsValidated:
-                        model.statistics!.CreOblConv.toInt(),
-                    electiveCreditsValidated:
-                        model.statistics!.CredEleConv.toInt(),
-                    totalMandatoryCreditsTaken:
-                        model.statistics!.TotalCredOblLlev.toInt(),
-                    totalElectiveCreditsTaken:
-                        model.statistics!.TotalCredElLlev.toInt(),
-                    totalMandatoryCreditsPassed:
-                        model.statistics!.TotalCredOblAprob.toInt(),
-                    totalElectiveCreditsPassed:
-                        model.statistics!.TotalCredElAprob.toInt(),
-                    totalMandatoryCreditsValidated:
-                        model.statistics!.TotalCredOblConv.toInt(),
-                  )
-                : null,
-            courses: model.courses
-                .map(
-                  (course) => AcademicHistoryCourse(
-                    courseCode: course.courseCode,
-                    courseName: course.courseName,
-                    courseType: CourseType.fromValue(course.courseType),
-                    credits: course.credits,
-                    grade: course.grade,
-                  ),
-                )
-                .toList(),
-          ),
-        )
-        .toList();
+    final entities =
+        models
+            .map(
+              (model) => AcademicHistoryTerm(
+                term: ScheduledTermIdentifier.buildFromName(model.termLabel),
+                statistics:
+                    model.statistics != null
+                        ? AcademicHistoryTermStatistics(
+                          termWeightedAverage: model.statistics!.PPS,
+                          termWeightedAveragePassed: model.statistics!.PPSAprob,
+                          cumulativeWeightedAverage: model.statistics!.PPA,
+                          cumulativeWeightedAveragePassed:
+                              model.statistics!.PPAApr,
+                          mandatoryCreditsTaken:
+                              model.statistics!.CreOblLlev.toInt(),
+                          electiveCreditsTaken:
+                              model.statistics!.CreElLlev.toInt(),
+                          mandatoryCreditsPassed:
+                              model.statistics!.CreOblApr.toInt(),
+                          electiveCreditsPassed:
+                              model.statistics!.CreEleApr.toInt(),
+                          mandatoryCreditsValidated:
+                              model.statistics!.CreOblConv.toInt(),
+                          electiveCreditsValidated:
+                              model.statistics!.CredEleConv.toInt(),
+                          totalMandatoryCreditsTaken:
+                              model.statistics!.TotalCredOblLlev.toInt(),
+                          totalElectiveCreditsTaken:
+                              model.statistics!.TotalCredElLlev.toInt(),
+                          totalMandatoryCreditsPassed:
+                              model.statistics!.TotalCredOblAprob.toInt(),
+                          totalElectiveCreditsPassed:
+                              model.statistics!.TotalCredElAprob.toInt(),
+                          totalMandatoryCreditsValidated:
+                              model.statistics!.TotalCredOblConv.toInt(),
+                        )
+                        : null,
+                courses:
+                    model.courses
+                        .map(
+                          (course) => AcademicHistoryCourse(
+                            courseCode: course.courseCode,
+                            courseName: course.courseName,
+                            courseType: CourseType.fromValue(course.courseType),
+                            credits: course.credits,
+                            grade: course.grade,
+                          ),
+                        )
+                        .toList(),
+              ),
+            )
+            .toList();
 
     return entities;
   }

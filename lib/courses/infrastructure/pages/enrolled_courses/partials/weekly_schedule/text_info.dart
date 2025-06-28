@@ -9,9 +9,10 @@ class TextInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: leftText != null
-          ? MainAxisAlignment.spaceBetween
-          : MainAxisAlignment.end,
+      mainAxisAlignment:
+          leftText != null
+              ? MainAxisAlignment.spaceBetween
+              : MainAxisAlignment.end,
       children: [
         if (leftText != null)
           Container(

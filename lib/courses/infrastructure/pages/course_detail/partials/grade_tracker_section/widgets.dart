@@ -4,10 +4,7 @@ import 'package:sigapp/courses/infrastructure/pages/course_detail/partials/grade
 import 'package:sigapp/courses/infrastructure/pages/course_detail/partials/grade_tracker_section_cubit.dart';
 
 class FinalGradeCardWidget extends StatelessWidget {
-  const FinalGradeCardWidget({
-    super.key,
-    required this.tracking,
-  });
+  const FinalGradeCardWidget({super.key, required this.tracking});
 
   final CourseTracking tracking;
 
@@ -27,10 +24,7 @@ class FinalGradeCardWidget extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Promedio ponderado',
-                  style: textTheme.titleMedium,
-                ),
+                Text('Promedio ponderado', style: textTheme.titleMedium),
                 Text(
                   tracking.finalGrade.toStringAsFixed(2),
                   style: textTheme.titleLarge?.copyWith(
@@ -79,20 +73,14 @@ class CategoryCardWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    category.name,
-                    style: textTheme.titleMedium,
-                  ),
+                  child: Text(category.name, style: textTheme.titleMedium),
                 ),
                 Text(
                   'Peso: ${category.weight.toStringAsFixed(0)}%',
                   style: textTheme.bodyMedium,
                 ),
                 const SizedBox(width: 8),
-                _CategoryPopupMenuWidget(
-                  category: category,
-                  cubit: cubit,
-                ),
+                _CategoryPopupMenuWidget(category: category, cubit: cubit),
               ],
             ),
             const Divider(),
@@ -161,22 +149,28 @@ class _GradeItemWidget extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(grade.name, style: textTheme.bodyLarge),
-      subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(
-          grade.score.toStringAsFixed(2),
-          style: textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-            color: grade.enabled ? _getColorForGrade(grade.score) : Colors.grey,
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            grade.score.toStringAsFixed(2),
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color:
+                  grade.enabled ? _getColorForGrade(grade.score) : Colors.grey,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        if (!grade.enabled)
-          Text('No considerar',
+          const SizedBox(height: 8),
+          if (!grade.enabled)
+            Text(
+              'No considerar',
               style: textTheme.bodyMedium?.copyWith(
                 fontStyle: FontStyle.italic,
                 color: Colors.grey[600],
-              ))
-      ]),
+              ),
+            ),
+        ],
+      ),
       leading: Switch(
         value: grade.enabled,
         onChanged: (value) {
@@ -209,10 +203,7 @@ class _GradeItemWidget extends StatelessWidget {
 }
 
 class _CategoryPopupMenuWidget extends StatelessWidget {
-  const _CategoryPopupMenuWidget({
-    required this.category,
-    required this.cubit,
-  });
+  const _CategoryPopupMenuWidget({required this.category, required this.cubit});
 
   final GradeCategory category;
   final GradeTrackerSectionCubit cubit;
@@ -228,33 +219,31 @@ class _CategoryPopupMenuWidget extends StatelessWidget {
           showDeleteCategoryDialog(context, category, cubit);
         }
       },
-      itemBuilder: (context) => [
-        const PopupMenuItem<String>(
-          value: 'edit',
-          child: ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Editar'),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'delete',
-          child: ListTile(
-            leading: Icon(Icons.delete),
-            title: Text('Eliminar'),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-      ],
+      itemBuilder:
+          (context) => [
+            const PopupMenuItem<String>(
+              value: 'edit',
+              child: ListTile(
+                leading: Icon(Icons.edit),
+                title: Text('Editar'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            const PopupMenuItem<String>(
+              value: 'delete',
+              child: ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('Eliminar'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
     );
   }
 }
 
 class AddCategoryButtonWidget extends StatelessWidget {
-  const AddCategoryButtonWidget({
-    super.key,
-    required this.cubit,
-  });
+  const AddCategoryButtonWidget({super.key, required this.cubit});
 
   final GradeTrackerSectionCubit cubit;
 

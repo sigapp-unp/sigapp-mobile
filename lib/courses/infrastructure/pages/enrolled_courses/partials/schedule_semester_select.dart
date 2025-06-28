@@ -44,12 +44,14 @@ class _ScheduleSemesterSelectState extends State<ScheduleSemesterSelect> {
   }
 
   void _scrollToSelected() {
-    final index =
-        _sortedSemesters.indexWhere((s) => s.id == widget.selectedSemester.id);
+    final index = _sortedSemesters.indexWhere(
+      (s) => s.id == widget.selectedSemester.id,
+    );
     if (index != -1 && _scrollController.hasClients) {
       // Calculamos el offset aproximado
       final itemHeight = listTileHeight; // Aproximamos altura de cada item
-      final targetOffset = itemHeight * index -
+      final targetOffset =
+          itemHeight * index -
           (_scrollController.position.viewportDimension / 2) +
           (itemHeight / 2);
 
@@ -67,9 +69,7 @@ class _ScheduleSemesterSelectState extends State<ScheduleSemesterSelect> {
   @override
   Widget build(BuildContext context) {
     if (_sortedSemesters.isEmpty) {
-      return const Center(
-        child: Text('No hay semestres disponibles'),
-      );
+      return const Center(child: Text('No hay semestres disponibles'));
     }
 
     return ListView.builder(
@@ -84,18 +84,20 @@ class _ScheduleSemesterSelectState extends State<ScheduleSemesterSelect> {
           title: Text(
             semester.name,
             textAlign: TextAlign.center,
-            style: isSelected
-                ? TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  )
-                : null,
+            style:
+                isSelected
+                    ? TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    )
+                    : null,
           ),
-          onTap: isSelected
-              ? null
-              : () {
-                  widget.onSemesterSelected(semester);
-                },
+          onTap:
+              isSelected
+                  ? null
+                  : () {
+                    widget.onSemesterSelected(semester);
+                  },
         );
       },
     );

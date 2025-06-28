@@ -18,18 +18,16 @@ class ScheduleSectionWidget extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Horario',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w500),
           ),
         ),
         ListTile(
-          subtitle: TableInfoWidget(
-            [
-              ['Grupo', enrolledCourse.data.group],
-              ['Sección', enrolledCourse.data.section],
-            ],
-          ),
+          subtitle: TableInfoWidget([
+            ['Grupo', enrolledCourse.data.group],
+            ['Sección', enrolledCourse.data.section],
+          ]),
         ),
         ListTile(
           title: Text('Semana'),
@@ -41,12 +39,14 @@ class ScheduleSectionWidget extends StatelessWidget {
                 final weekdayName = TimeUtils.weekdayToString(e.weekday);
                 return [
                   '${weekdayName[0].toUpperCase()}${weekdayName.substring(1)}',
-                  TimeUtils.formatEventDuration(EventDuration(
-                    startHour: e.startHour,
-                    startMinute: e.startMinutes,
-                    endHour: e.endHour,
-                    endMinute: e.endMinutes,
-                  )),
+                  TimeUtils.formatEventDuration(
+                    EventDuration(
+                      startHour: e.startHour,
+                      startMinute: e.startMinutes,
+                      endHour: e.endHour,
+                      endMinute: e.endMinutes,
+                    ),
+                  ),
                 ];
               }).toList();
             })(),
@@ -56,16 +56,16 @@ class ScheduleSectionWidget extends StatelessWidget {
           title: Text('Tiempo total'),
           subtitle: Text(
             (() {
-              final total = enrolledCourse.scheduleEvents.fold(
-                Duration(),
-                (acc, e) {
-                  final duration = Duration(
-                    hours: e.endHour - e.startHour,
-                    minutes: e.endMinutes - e.startMinutes,
-                  );
-                  return acc + duration;
-                },
-              );
+              final total = enrolledCourse.scheduleEvents.fold(Duration(), (
+                acc,
+                e,
+              ) {
+                final duration = Duration(
+                  hours: e.endHour - e.startHour,
+                  minutes: e.endMinutes - e.startMinutes,
+                );
+                return acc + duration;
+              });
               final h = total.inHours;
               final m = total.inMinutes.remainder(60);
               var result = '$h hora';

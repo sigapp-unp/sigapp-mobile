@@ -27,7 +27,8 @@ class ColorsUtils {
 
   static Color getColorByIndex(int index) {
     return _colorList.elementAtOrNull(
-            index < _colorList.length ? index : index % _colorList.length) ??
+          index < _colorList.length ? index : index % _colorList.length,
+        ) ??
         Colors.grey;
   }
 }

@@ -12,8 +12,10 @@ class GenericPieChart extends StatefulWidget {
     required this.values,
     required this.labels,
     required this.colors,
-  }) : assert(values.length == labels.length && labels.length == colors.length,
-            'Length of values, labels and colors must match.');
+  }) : assert(
+         values.length == labels.length && labels.length == colors.length,
+         'Length of values, labels and colors must match.',
+       );
 
   @override
   State<GenericPieChart> createState() => _GenericPieChartState();

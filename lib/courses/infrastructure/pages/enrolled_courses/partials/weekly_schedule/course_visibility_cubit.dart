@@ -35,14 +35,13 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState> {
       event.isHidden = isHidden; // Actualizar el estado del evento
     }
 
-    emit(state.copyWith(
-      hiddenEvents: hiddenStatusMap,
-      isLoading: false,
-    ));
+    emit(state.copyWith(hiddenEvents: hiddenStatusMap, isLoading: false));
   }
 
   Future<void> toggleEventVisibility(
-      WeeklyScheduleWidgetItem event, bool isHidden) async {
+    WeeklyScheduleWidgetItem event,
+    bool isHidden,
+  ) async {
     // Actualizar en SharedPreferences
     await CourseVisibilityPreferences.setEventHidden(event.eventId, isHidden);
 

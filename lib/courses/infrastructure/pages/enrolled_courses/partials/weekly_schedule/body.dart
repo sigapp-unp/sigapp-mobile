@@ -40,19 +40,23 @@ class BodyWidget extends StatelessWidget {
           rowHeight: rowHeight,
         ),
         ...events
-            .where((event) =>
-                event.data.startHour >= startHour &&
-                event.data.endHour <= endHour)
-            .map((event) => EventWidget(
-                  event: event,
-                  constraints: constraints,
-                  daysWithEvents: daysWithEvents,
-                  startHour: startHour,
-                  fontSize: fontSize,
-                  rowHeight: rowHeight,
-                  hourWidth: hourWidth,
-                  onTap: onEventTap,
-                )),
+            .where(
+              (event) =>
+                  event.data.startHour >= startHour &&
+                  event.data.endHour <= endHour,
+            )
+            .map(
+              (event) => EventWidget(
+                event: event,
+                constraints: constraints,
+                daysWithEvents: daysWithEvents,
+                startHour: startHour,
+                fontSize: fontSize,
+                rowHeight: rowHeight,
+                hourWidth: hourWidth,
+                onTap: onEventTap,
+              ),
+            ),
       ],
     );
   }

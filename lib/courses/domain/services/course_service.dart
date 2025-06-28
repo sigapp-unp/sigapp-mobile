@@ -33,7 +33,7 @@ class CourseService {
       'UN',
       'UNA',
       'UNOS',
-      'UNAS'
+      'UNAS',
     };
 
     // Possible Roman numerals you want to support

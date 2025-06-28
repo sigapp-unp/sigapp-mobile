@@ -5,11 +5,7 @@ class CourseSubtitleWidgetItem {
   final IconData? icon;
   final bool? loading;
 
-  CourseSubtitleWidgetItem({
-    required this.text,
-    this.icon,
-    this.loading,
-  });
+  CourseSubtitleWidgetItem({required this.text, this.icon, this.loading});
 }
 
 class CourseSubtitleWidget extends StatelessWidget {
@@ -22,8 +18,10 @@ class CourseSubtitleWidget extends StatelessWidget {
     return Wrap(
       spacing: 6,
       runSpacing: 4,
-      children:
-          _join(children.map((item) => _buildInfo(item)).toList(), Text('•')),
+      children: _join(
+        children.map((item) => _buildInfo(item)).toList(),
+        Text('•'),
+      ),
     );
   }
 
@@ -39,15 +37,9 @@ class CourseSubtitleWidget extends StatelessWidget {
         SizedBox(width: 4),
       ]);
     } else if (item.icon != null) {
-      children.insertAll(0, [
-        Icon(item.icon, size: 14),
-        SizedBox(width: 4),
-      ]);
+      children.insertAll(0, [Icon(item.icon, size: 14), SizedBox(width: 4)]);
     }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: children,
-    );
+    return Row(mainAxisSize: MainAxisSize.min, children: children);
   }
 
   List<Widget> _join(List<Widget> list, Widget separator) {

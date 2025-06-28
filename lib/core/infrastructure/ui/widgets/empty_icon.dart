@@ -5,10 +5,6 @@ class EmptyIconWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Icon(Icons.abc, color: Colors.transparent),
-      ],
-    );
+    return Stack(children: [Icon(Icons.abc, color: Colors.transparent)]);
   }
 }

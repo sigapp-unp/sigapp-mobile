@@ -19,7 +19,8 @@ void showHelpDialog(BuildContext context) {
             SizedBox(height: 8),
             Text('• La suma de los pesos ponderados debe ser 100%'),
             Text(
-                '• Puedes activar/desactivar notas específicas para simular su impacto en tu promedio'),
+              '• Puedes activar/desactivar notas específicas para simular su impacto en tu promedio',
+            ),
             SizedBox(height: 16),
             Text(
               'Este cálculo no tiene validez oficial y es solo una herramienta de referencia.',
@@ -38,7 +39,9 @@ void showHelpDialog(BuildContext context) {
 }
 
 void showAddCategoryDialog(
-    BuildContext context, GradeTrackerSectionCubit cubit) {
+  BuildContext context,
+  GradeTrackerSectionCubit cubit,
+) {
   final formKey = GlobalKey<FormState>();
   String name = '';
   double weight = 0;
@@ -93,10 +96,7 @@ void showAddCategoryDialog(
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 formKey.currentState!.save();
-                cubit.addCategory(
-                  name: name,
-                  weight: weight,
-                );
+                cubit.addCategory(name: name, weight: weight);
                 Navigator.pop(context);
               }
             },
@@ -108,8 +108,11 @@ void showAddCategoryDialog(
   );
 }
 
-void showEditCategoryDialog(BuildContext context, GradeCategory category,
-    GradeTrackerSectionCubit cubit) {
+void showEditCategoryDialog(
+  BuildContext context,
+  GradeCategory category,
+  GradeTrackerSectionCubit cubit,
+) {
   final formKey = GlobalKey<FormState>();
   String name = category.name;
   double weight = category.weight;
@@ -182,15 +185,19 @@ void showEditCategoryDialog(BuildContext context, GradeCategory category,
   );
 }
 
-void showDeleteCategoryDialog(BuildContext context, GradeCategory category,
-    GradeTrackerSectionCubit cubit) {
+void showDeleteCategoryDialog(
+  BuildContext context,
+  GradeCategory category,
+  GradeTrackerSectionCubit cubit,
+) {
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
         title: const Text('Eliminar categoría'),
         content: Text(
-            '¿Estás seguro que deseas eliminar la categoría "${category.name}" y todas sus notas?'),
+          '¿Estás seguro que deseas eliminar la categoría "${category.name}" y todas sus notas?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -198,9 +205,7 @@ void showDeleteCategoryDialog(BuildContext context, GradeCategory category,
           ),
           FilledButton(
             onPressed: () {
-              cubit.deleteCategory(
-                categoryId: category.id!,
-              );
+              cubit.deleteCategory(categoryId: category.id!);
               Navigator.pop(context);
             },
             child: const Text('Eliminar'),
@@ -212,7 +217,10 @@ void showDeleteCategoryDialog(BuildContext context, GradeCategory category,
 }
 
 void showAddGradeDialog(
-    BuildContext context, String categoryId, GradeTrackerSectionCubit cubit) {
+  BuildContext context,
+  String categoryId,
+  GradeTrackerSectionCubit cubit,
+) {
   final formKey = GlobalKey<FormState>();
   String name = '';
   double score = 0;
@@ -284,8 +292,12 @@ void showAddGradeDialog(
   );
 }
 
-void showEditGradeDialog(BuildContext context, String categoryId, Grade grade,
-    GradeTrackerSectionCubit cubit) {
+void showEditGradeDialog(
+  BuildContext context,
+  String categoryId,
+  Grade grade,
+  GradeTrackerSectionCubit cubit,
+) {
   final formKey = GlobalKey<FormState>();
   String name = grade.name;
   double score = grade.score;
@@ -359,15 +371,20 @@ void showEditGradeDialog(BuildContext context, String categoryId, Grade grade,
   );
 }
 
-void showDeleteGradeDialog(BuildContext context, String categoryId, Grade grade,
-    GradeTrackerSectionCubit cubit) {
+void showDeleteGradeDialog(
+  BuildContext context,
+  String categoryId,
+  Grade grade,
+  GradeTrackerSectionCubit cubit,
+) {
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
         title: const Text('Eliminar nota'),
-        content:
-            Text('¿Estás seguro que deseas eliminar la nota "${grade.name}"?'),
+        content: Text(
+          '¿Estás seguro que deseas eliminar la nota "${grade.name}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -375,10 +392,7 @@ void showDeleteGradeDialog(BuildContext context, String categoryId, Grade grade,
           ),
           FilledButton(
             onPressed: () {
-              cubit.deleteGrade(
-                categoryId: categoryId,
-                gradeId: grade.id!,
-              );
+              cubit.deleteGrade(categoryId: categoryId, gradeId: grade.id!);
               Navigator.pop(context);
             },
             child: const Text('Eliminar'),

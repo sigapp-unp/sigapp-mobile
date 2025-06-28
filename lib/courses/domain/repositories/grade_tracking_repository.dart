@@ -1,13 +1,16 @@
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 
 abstract class GradeTrackingRepository {
-  Future<CourseTracking?> getCourseTracking(
-      {required String studentCode, required String courseCode});
+  Future<CourseTracking?> getCourseTracking({
+    required String studentCode,
+    required String courseCode,
+  });
   Future<CourseTracking> create(CourseTracking data);
-  Future<CourseTracking> createWithDefaults(
-      {required String studentCode,
-      required String courseCode,
-      required String courseName});
+  Future<CourseTracking> createWithDefaults({
+    required String studentCode,
+    required String courseCode,
+    required String courseName,
+  });
   Future<CourseTracking> addCategory({
     required String studentCode,
     required String courseCode,

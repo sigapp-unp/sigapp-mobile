@@ -107,11 +107,7 @@ class CourseDetailCubit extends Cubit<CourseDetailState> {
         );
       }
     } catch (e, s) {
-      _logger.e(
-        '[UI] Error fetching syllabus: $e',
-        error: e,
-        stackTrace: s,
-      );
+      _logger.e('[UI] Error fetching syllabus: $e', error: e, stackTrace: s);
       emit(
         (state as CourseDetailReadyState).copyWith(
           syllabus: CourseDetailSyllabusState.error(
@@ -144,11 +140,7 @@ class CourseDetailCubit extends Cubit<CourseDetailState> {
         ),
       );
     } catch (e, s) {
-      _logger.e(
-        '[UI] Error fetching grades: $e',
-        error: e,
-        stackTrace: s,
-      );
+      _logger.e('[UI] Error fetching grades: $e', error: e, stackTrace: s);
       emit(
         (state as CourseDetailReadyState).copyWith(
           grades: CourseDetailGradesState.error('Error al descargar notas'),

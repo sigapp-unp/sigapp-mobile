@@ -6,7 +6,7 @@ final _loggingHeaders = [
   'Content-Type',
   'Prefer',
   'apikey',
-  'X-Client-Info'
+  'X-Client-Info',
 ];
 
 /// Handles API request/response logging
@@ -26,10 +26,12 @@ class ApiLogger {
     if (sanitizedHeaders.containsKey('Authorization') && !isAuth) {
       sanitizedHeaders['Authorization'] = 'Bearer [REDACTED]';
     }
-    _logger.d('[INFRASTRUCTURE] 📤 $method Request:\n'
-        'URL: ${Uri.decodeFull(uri.toString())}\n'
-        '${sanitizedHeaders.isNotEmpty ? 'Headers: ${_prettyPrint(sanitizedHeaders)}\n' : ''}'
-        '${body != null ? 'Body: ${_prettyPrint(body)}' : 'No body'}');
+    _logger.d(
+      '[INFRASTRUCTURE] 📤 $method Request:\n'
+      'URL: ${Uri.decodeFull(uri.toString())}\n'
+      '${sanitizedHeaders.isNotEmpty ? 'Headers: ${_prettyPrint(sanitizedHeaders)}\n' : ''}'
+      '${body != null ? 'Body: ${_prettyPrint(body)}' : 'No body'}',
+    );
   }
 
   void logSuccess(
@@ -41,10 +43,12 @@ class ApiLogger {
   ) {
     final filteredHeaders = Map<String, List<String>>.from(headers)
       ..removeWhere((key, _) => !_loggingHeaders.contains(key));
-    _logger.i('[INFRASTRUCTURE] 📥 $method Success ($statusCode):\n'
-        'URL: ${Uri.decodeFull(uri.toString())}\n'
-        '${filteredHeaders.isNotEmpty ? 'Response Headers: ${_prettyPrint(filteredHeaders)}\n' : ''}'
-        'Response Body: ${_truncateAndPrettyPrint(responseBody)}');
+    _logger.i(
+      '[INFRASTRUCTURE] 📥 $method Success ($statusCode):\n'
+      'URL: ${Uri.decodeFull(uri.toString())}\n'
+      '${filteredHeaders.isNotEmpty ? 'Response Headers: ${_prettyPrint(filteredHeaders)}\n' : ''}'
+      'Response Body: ${_truncateAndPrettyPrint(responseBody)}',
+    );
   }
 
   void logFailure(
@@ -57,11 +61,13 @@ class ApiLogger {
   ) {
     final filteredHeaders = Map<String, List<String>>.from(headers)
       ..removeWhere((key, _) => !_loggingHeaders.contains(key));
-    _logger.e('[INFRASTRUCTURE] ❌ $method Failure ($statusCode):\n'
-        'URL: ${Uri.decodeFull(uri.toString())}\n'
-        '${requestBody != null ? 'Request Body: ${_prettyPrint(requestBody)}\n' : ''}'
-        '${filteredHeaders.isNotEmpty ? 'Response Headers: ${_prettyPrint(filteredHeaders)}\n' : ''}'
-        'Response Body: $responseBody');
+    _logger.e(
+      '[INFRASTRUCTURE] ❌ $method Failure ($statusCode):\n'
+      'URL: ${Uri.decodeFull(uri.toString())}\n'
+      '${requestBody != null ? 'Request Body: ${_prettyPrint(requestBody)}\n' : ''}'
+      '${filteredHeaders.isNotEmpty ? 'Response Headers: ${_prettyPrint(filteredHeaders)}\n' : ''}'
+      'Response Body: $responseBody',
+    );
   }
 
   String _prettyPrint(Object? object) {

@@ -42,8 +42,8 @@ class HomePageWidgetState extends State<HomePageWidget>
               BlocProvider(
                 create: (_) => getIt<EnrolledCoursesPageCubit>(),
                 child: EnrolledCoursesPageWidget(
-                    // appBarTrailing: UserAvatarButtonWidget(),
-                    ),
+                  // appBarTrailing: UserAvatarButtonWidget(),
+                ),
               ),
               BlocProvider<CareerPageCubit>(
                 create: (_) => getIt<CareerPageCubit>(),
@@ -65,10 +65,7 @@ class HomePageWidgetState extends State<HomePageWidget>
               //   icon: Icon(Icons.calendar_today),
               //   label: 'Horario',
               // ),
-              NavigationDestination(
-                icon: Icon(Icons.school),
-                label: 'Carrera',
-              ),
+              NavigationDestination(icon: Icon(Icons.school), label: 'Carrera'),
               NavigationDestination(
                 icon: Icon(Icons.person),
                 label: 'Estudiante',

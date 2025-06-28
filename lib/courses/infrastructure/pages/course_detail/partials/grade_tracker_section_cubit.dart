@@ -19,9 +19,8 @@ sealed class GradeTrackerSectionState with _$GradeTrackerSectionState {
   const factory GradeTrackerSectionState.ready({
     required CourseTracking courseTracking,
   }) = GradeTrackerSectionReadyState;
-  const factory GradeTrackerSectionState.error(
-    Object error,
-  ) = GradeTrackerSectionErrorState;
+  const factory GradeTrackerSectionState.error(Object error) =
+      GradeTrackerSectionErrorState;
 }
 
 @injectable
@@ -31,7 +30,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   String? _courseCode;
 
   GradeTrackerSectionCubit(this._gradeTrackingUseCases, this._logger)
-      : super(const GradeTrackerSectionState.empty());
+    : super(const GradeTrackerSectionState.empty());
 
   Future<void> init({required String courseId}) async {
     _courseCode = courseId;
@@ -59,10 +58,16 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
         emit(const GradeTrackerSectionState.empty());
       }
     } catch (e, s) {
-      _logger.e('[UI] Error loading grade tracking data', error: e, stackTrace: s);
-      emit(GradeTrackerSectionState.error(
-        "Error al cargar el seguimiento de notas: ${e.toString()}",
-      ));
+      _logger.e(
+        '[UI] Error loading grade tracking data',
+        error: e,
+        stackTrace: s,
+      );
+      emit(
+        GradeTrackerSectionState.error(
+          "Error al cargar el seguimiento de notas: ${e.toString()}",
+        ),
+      );
     }
   }
 
@@ -77,16 +82,19 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
       // Usamos el courseId guardado durante la inicialización como identificador
       // para asegurarnos de que siempre recuperemos el mismo curso
       if (_courseCode == null) {
-        emit(GradeTrackerSectionState.error(
-            "Error: No se pudo identificar el curso"));
+        emit(
+          GradeTrackerSectionState.error(
+            "Error: No se pudo identificar el curso",
+          ),
+        );
         return;
       }
 
-      final tracking =
-          await _gradeTrackingUseCases.createCourseTrackingWithDefaults(
-        courseCode: _courseCode!,
-        courseName: courseName,
-      );
+      final tracking = await _gradeTrackingUseCases
+          .createCourseTrackingWithDefaults(
+            courseCode: _courseCode!,
+            courseName: courseName,
+          );
 
       emit(GradeTrackerSectionState.ready(courseTracking: tracking));
     } catch (e, s) {
@@ -96,8 +104,10 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   }
 
   // Métodos para gestionar categorías
-  Future<void> addCategory(
-      {required String name, required double weight}) async {
+  Future<void> addCategory({
+    required String name,
+    required double weight,
+  }) async {
     final currentState = state;
     if (currentState is GradeTrackerSectionReadyState) {
       try {

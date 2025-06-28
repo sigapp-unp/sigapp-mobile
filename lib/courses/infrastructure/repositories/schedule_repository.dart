@@ -17,20 +17,23 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       '/Academico/ListarHorario',
       data: {'semestre': semesterId},
     );
-    final models = (response.data['results'] as List)
-        .map((json) => GetClassScheduleModel.fromJson(json))
-        .toList();
+    final models =
+        (response.data['results'] as List)
+            .map((json) => GetClassScheduleModel.fromJson(json))
+            .toList();
     return models
-        .map((model) => RawClassSchedule(
-              startHour: model.HoraInicio,
-              endHour: model.HoraFinal,
-              monday: model.Lunes,
-              tuesday: model.Martes,
-              wednesday: model.Miercoles,
-              thursday: model.Jueves,
-              friday: model.Viernes,
-              saturday: model.Sabado,
-            ))
+        .map(
+          (model) => RawClassSchedule(
+            startHour: model.HoraInicio,
+            endHour: model.HoraFinal,
+            monday: model.Lunes,
+            tuesday: model.Martes,
+            wednesday: model.Miercoles,
+            thursday: model.Jueves,
+            friday: model.Viernes,
+            saturday: model.Sabado,
+          ),
+        )
         .toList();
   }
 }

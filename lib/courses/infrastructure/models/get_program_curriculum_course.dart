@@ -1045,7 +1045,8 @@ part 'get_program_curriculum_course.g.dart';
 // }
 /// ```
 @freezed
-abstract class GetProgramCurriculumCourseModel with _$GetProgramCurriculumCourseModel {
+abstract class GetProgramCurriculumCourseModel
+    with _$GetProgramCurriculumCourseModel {
   const factory GetProgramCurriculumCourseModel({
     required String Ciclo,
     required String CodCurso,

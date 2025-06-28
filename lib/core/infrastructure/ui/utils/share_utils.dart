@@ -21,22 +21,13 @@ class ShareUtils {
       // await file.writeAsBytes(list);
 
       // 3. Compartir la imagen con una descripción
-      await Share.shareXFiles(
-        [
-          XFile.fromData(
-            list,
-            mimeType: mimeType,
-            name: name,
-          ),
-        ],
-        text: text,
-      );
+      await Share.shareXFiles([
+        XFile.fromData(list, mimeType: mimeType, name: name),
+      ], text: text);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al compartir la imagen'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al compartir la imagen')));
     }
   }
 }

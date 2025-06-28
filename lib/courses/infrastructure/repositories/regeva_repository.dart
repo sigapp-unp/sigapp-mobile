@@ -54,7 +54,8 @@ class RegevaRepositoryImpl implements RegevaRepository {
     final setCookieHeaders = response.headers['set-cookie'] ?? [];
     if (setCookieHeaders.isEmpty) {
       throw RegevaAuthenticationException(
-          'No set-cookie headers found, authentication failed');
+        'No set-cookie headers found, authentication failed',
+      );
     }
 
     return;
@@ -63,10 +64,13 @@ class RegevaRepositoryImpl implements RegevaRepository {
   void _ensureRedirectionSuccess(Response<dynamic> response) {
     final locationHeaders = response.headers['location'] ?? [];
     if (response.statusCode == 302 &&
-        !locationHeaders.any((value) =>
-            value.startsWith(RegevaClient.successCourseRedirectionLocation))) {
+        !locationHeaders.any(
+          (value) =>
+              value.startsWith(RegevaClient.successCourseRedirectionLocation),
+        )) {
       throw RegevaAuthenticationException(
-          'Redirection indicates authentication failure');
+        'Redirection indicates authentication failure',
+      );
     }
   }
 
@@ -85,7 +89,8 @@ class RegevaRepositoryImpl implements RegevaRepository {
   // });
   @override
   Future<SyllabusDownloadData?> downloadSyllabus(
-      String scheduledCourseId) async {
+    String scheduledCourseId,
+  ) async {
     final response = await _regevaClient.http.get(
       'http://regeva.unp.edu.pe:8081/Cursos/Silabo/$scheduledCourseId',
       options: Options(
@@ -110,8 +115,10 @@ class RegevaRepositoryImpl implements RegevaRepository {
   void _ensureSignOutNotTriggered(Response<dynamic> response) {
     final locationHeaders = response.headers['location'] ?? [];
     if (response.statusCode == 302 &&
-        locationHeaders.any((value) =>
-            value.startsWith(RegevaClient.forceSignOutRedirectionLocation))) {
+        locationHeaders.any(
+          (value) =>
+              value.startsWith(RegevaClient.forceSignOutRedirectionLocation),
+        )) {
       throw RegevaAuthenticationException('Regeva authentication failed');
     }
   }

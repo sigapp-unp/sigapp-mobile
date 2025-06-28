@@ -61,7 +61,11 @@ class EnrolledCoursesPageCubit extends Cubit<EnrolledCoursesPageState> {
       emit(nextState);
       _fetchEnrolledCourses(nextState);
     } catch (e, s) {
-      _logger.e('[UI] Error initializing enrolled courses page', error: e, stackTrace: s);
+      _logger.e(
+        '[UI] Error initializing enrolled courses page',
+        error: e,
+        stackTrace: s,
+      );
       emit(EnrolledCoursesPageState.error(e));
     }
   }

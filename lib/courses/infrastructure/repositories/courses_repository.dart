@@ -92,14 +92,16 @@ class CoursesRepositoryImpl implements CoursesRepository {
   // });
   @override
   Future<List<RawCourseRequirement>> getCourseRequirements(
-      String courseCode) async {
+    String courseCode,
+  ) async {
     final response = await _sigaClient.http.post(
       '/Academico/ListarRequisitosAlumno',
       data: {'CodCurso': courseCode},
     );
-    final models = (response.data['results'] as List)
-        .map((json) => GetCourseRequirementsModel.fromJson(json))
-        .toList();
+    final models =
+        (response.data['results'] as List)
+            .map((json) => GetCourseRequirementsModel.fromJson(json))
+            .toList();
     return models
         .map(
           (model) => RawCourseRequirement(
@@ -196,10 +198,12 @@ class CoursesRepositoryImpl implements CoursesRepository {
   /// ```
   @override
   Future<List<ScheduledCourse>> getScheduledCourses() async {
-    final response =
-        await _sigaClient.http.post('/Academico/ListarProgramacionAcad');
-    final models = (response.data['results'] as List)
-        .map((json) => GetScheduledCourseModel.fromJson(json));
+    final response = await _sigaClient.http.post(
+      '/Academico/ListarProgramacionAcad',
+    );
+    final models = (response.data['results'] as List).map(
+      (json) => GetScheduledCourseModel.fromJson(json),
+    );
     final entities = models.map(
       (model) => ScheduledCourse(
         enrollmentCapacity: model.Capacidad,

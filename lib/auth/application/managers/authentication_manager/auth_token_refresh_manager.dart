@@ -45,9 +45,7 @@ class AuthTokenRefreshManager {
 
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
-        _logger.i(
-          '[AUTH] Attempt $attempt/$_maxRetries of session refresh',
-        );
+        _logger.i('[AUTH] Attempt $attempt/$_maxRetries of session refresh');
 
         await _keepSessionAliveUsecase.execute();
 
@@ -63,9 +61,7 @@ class AuthTokenRefreshManager {
           );
         }
 
-        _logger.i(
-          '[AUTH] Session refreshed successfully on attempt $attempt',
-        );
+        _logger.i('[AUTH] Session refreshed successfully on attempt $attempt');
 
         _refreshSessionCompleter!.complete();
         return;
@@ -81,9 +77,7 @@ class AuthTokenRefreshManager {
 
         if (attempt < _maxRetries) {
           final waitTime = Duration(seconds: attempt * 2);
-          _logger.i(
-            '[AUTH] Retrying in ${waitTime.inSeconds} seconds...',
-          );
+          _logger.i('[AUTH] Retrying in ${waitTime.inSeconds} seconds...');
           await Future.delayed(waitTime);
         }
       }
@@ -102,15 +96,18 @@ class AuthTokenRefreshManager {
       _logger.w(
         '[AUTH] Network error detected, session will not be closed to allow offline mode',
       );
-      _toastService.show('Connection problems. Offline mode active',
-          isError: false);
+      _toastService.show(
+        'Connection problems. Offline mode active',
+        isError: false,
+      );
     } else {
-      final sessionError = lastError is SessionException
-          ? lastError
-          : SessionException.refreshError(
-              message: 'Error en múltiples intentos de refresco de sesión',
-              originalError: lastError,
-            );
+      final sessionError =
+          lastError is SessionException
+              ? lastError
+              : SessionException.refreshError(
+                message: 'Error en múltiples intentos de refresco de sesión',
+                originalError: lastError,
+              );
       await _signOutUseCase.execute(sessionError);
     }
     _refreshSessionCompleter = null;
@@ -135,9 +132,7 @@ class AuthTokenRefreshManager {
   /// Agrega un log al inicio de waitForOngoingRefresh para mayor visibilidad
   Future<void> waitForOngoingRefresh() async {
     if (_refreshSessionCompleter != null) {
-      _logger.i(
-        '[AUTH] Waiting for ongoing session refresh to complete',
-      );
+      _logger.i('[AUTH] Waiting for ongoing session refresh to complete');
       await _refreshSessionCompleter!.future;
     }
   }
@@ -146,9 +141,7 @@ class AuthTokenRefreshManager {
 
   /// Reinicia el estado del refresco para evitar inconsistencias
   void reset() {
-    _logger.i(
-      '[AUTH] Resetting AuthTokenRefreshManager state',
-    );
+    _logger.i('[AUTH] Resetting AuthTokenRefreshManager state');
     _refreshSessionCompleter = null;
   }
 }

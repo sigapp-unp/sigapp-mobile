@@ -13,10 +13,20 @@ class TimeUtils {
   /// Formats the duration of an event in 12-hour format with AM/PM.
   /// Example: 14:00 - 16:00 -> '2 - 4pm'
   static String formatEventDuration(EventDuration duration) {
-    final DateTime startTime =
-        DateTime(0, 1, 1, duration.startHour, duration.startMinute);
-    final DateTime endTime =
-        DateTime(0, 1, 1, duration.endHour, duration.endMinute);
+    final DateTime startTime = DateTime(
+      0,
+      1,
+      1,
+      duration.startHour,
+      duration.startMinute,
+    );
+    final DateTime endTime = DateTime(
+      0,
+      1,
+      1,
+      duration.endHour,
+      duration.endMinute,
+    );
 
     final DateFormat timeFormatter = DateFormat('h:mm a');
     String startFormatted = timeFormatter.format(startTime).toLowerCase();
@@ -32,7 +42,8 @@ class TimeUtils {
     }
 
     // Check if both times are in the same period (AM/PM)
-    final bool sameAmPmPeriod = (startTime.hour < 12 && endTime.hour < 12) ||
+    final bool sameAmPmPeriod =
+        (startTime.hour < 12 && endTime.hour < 12) ||
         (startTime.hour >= 12 && endTime.hour >= 12);
 
     String start = startFormatted;
@@ -55,7 +66,7 @@ class TimeUtils {
       'jueves',
       'viernes',
       'sábado',
-      'domingo'
+      'domingo',
     ];
 
     if (day < 1 || day > 7) {

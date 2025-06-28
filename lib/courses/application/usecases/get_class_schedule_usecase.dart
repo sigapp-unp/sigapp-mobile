@@ -19,7 +19,8 @@ class GetClassScheduleUsecase {
   }
 
   List<WeeklyScheduleEvent> _processClassSchedule(
-      List<RawClassSchedule> schedule) {
+    List<RawClassSchedule> schedule,
+  ) {
     // Map<String, Color> courseColorMap = {};
 
     List<WeeklyScheduleEvent> weeklyScheduleEvents = [];
@@ -107,17 +108,19 @@ class GetClassScheduleUsecase {
 
         final id =
             '$_eventsIdsPrefix-[$courseName]-${eventStart.toString().substring(0, 16)}-${eventEnd.toString().substring(0, 16)}';
-        weeklyScheduleEvents.add(WeeklyScheduleEvent(
-          id: id,
-          courseName: courseName,
-          weekday: weekday,
-          startHour: eventStart.hour,
-          startMinutes: eventStart.minute,
-          endHour: eventEnd.hour,
-          endMinutes: eventEnd.minute,
-          // color: _courseService.getBackgroundColor(courseName),
-          location: classLocation,
-        ));
+        weeklyScheduleEvents.add(
+          WeeklyScheduleEvent(
+            id: id,
+            courseName: courseName,
+            weekday: weekday,
+            startHour: eventStart.hour,
+            startMinutes: eventStart.minute,
+            endHour: eventEnd.hour,
+            endMinutes: eventEnd.minute,
+            // color: _courseService.getBackgroundColor(courseName),
+            location: classLocation,
+          ),
+        );
       }
     }
     return weeklyScheduleEvents;

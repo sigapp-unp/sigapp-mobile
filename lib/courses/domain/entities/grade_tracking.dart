@@ -25,8 +25,9 @@ class CourseTracking {
 
   double get finalGrade {
     if (categories.isEmpty) return 0.0;
-    final totalContribution =
-        categories.map((c) => c.weightedContribution).reduce((a, b) => a + b);
+    final totalContribution = categories
+        .map((c) => c.weightedContribution)
+        .reduce((a, b) => a + b);
     return totalContribution;
   }
 
@@ -52,33 +53,46 @@ class CourseTracking {
     for (int i = 1; i <= 4; i++) {
       evaluacionesGrades.add(Grade(name: "Evaluación $i", score: 0.0));
     }
-    defaultCategories.add(GradeCategory(
+    defaultCategories.add(
+      GradeCategory(
         name: "Evaluaciones",
         weight: evaluacionesWeight,
-        grades: evaluacionesGrades));
+        grades: evaluacionesGrades,
+      ),
+    );
 
     // Examen parcial
-    defaultCategories.add(GradeCategory(
+    defaultCategories.add(
+      GradeCategory(
         name: "Examen Parcial",
         weight: examenParcialWeight,
-        grades: [Grade(name: "Nota", score: 0.0)]));
+        grades: [Grade(name: "Nota", score: 0.0)],
+      ),
+    );
 
     // Examen final
-    defaultCategories.add(GradeCategory(
+    defaultCategories.add(
+      GradeCategory(
         name: "Examen Final",
         weight: examenFinalWeight,
-        grades: [Grade(name: "Nota", score: 0.0)]));
+        grades: [Grade(name: "Nota", score: 0.0)],
+      ),
+    );
 
     // Trabajo final
-    defaultCategories.add(GradeCategory(
+    defaultCategories.add(
+      GradeCategory(
         name: "Trabajo Final",
         weight: trabajoFinalWeight,
-        grades: [Grade(name: "Nota", score: 0.0)]));
+        grades: [Grade(name: "Nota", score: 0.0)],
+      ),
+    );
 
     return CourseTracking(
-        courseCode: courseCode,
-        studentCode: studentCode,
-        categories: defaultCategories);
+      courseCode: courseCode,
+      studentCode: studentCode,
+      categories: defaultCategories,
+    );
   }
 
   CourseTracking copyWith({
@@ -148,12 +162,7 @@ class Grade {
     this.enabled = true,
   });
 
-  Grade copyWith({
-    String? id,
-    String? name,
-    double? score,
-    bool? enabled,
-  }) {
+  Grade copyWith({String? id, String? name, double? score, bool? enabled}) {
     return Grade(
       id: id ?? this.id,
       name: name ?? this.name,

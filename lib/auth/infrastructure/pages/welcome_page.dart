@@ -36,15 +36,14 @@ class WelcomePage extends StatelessWidget {
                     children: [
                       Text(
                         'Hey, Unepino 👋',
-                        style: textTheme.headlineLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: textTheme.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 30),
                       const Text(
                         'Esto no es una app oficial de la universidad.',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 10),
@@ -113,10 +112,7 @@ class WelcomePage extends StatelessWidget {
                       vertical: 15,
                     ),
                   ),
-                  child: const Text(
-                    'Gracias',
-                    style: TextStyle(fontSize: 18),
-                  ),
+                  child: const Text('Gracias', style: TextStyle(fontSize: 18)),
                 ),
               ],
             ),

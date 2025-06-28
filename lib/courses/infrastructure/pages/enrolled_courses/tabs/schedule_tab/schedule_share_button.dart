@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sigapp/core/infrastructure/ui/widgets/brand_text.dart';
+import 'package:sigapp/core/injection/get_it.dart';
 import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule/course_visibility_cubit.dart';
@@ -35,7 +36,7 @@ class ScheduleShareButtonWidget extends StatefulWidget {
 
 class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
   late final ScheduleShareButtonCubit _cubit;
-  final Logger _logger = Logger(); // Replace with DI if possible
+  final Logger _logger = getIt<Logger>();
 
   @override
   void initState() {
@@ -50,30 +51,26 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
       builder: (context, state) {
         return state.loadingShare
             ? FloatingActionButton(
-                onPressed: null,
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(),
-                ),
-              )
+              onPressed: null,
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(),
+              ),
+            )
             : FloatingActionButton(
-                onPressed: () => _captureAndShare(state),
-                child: Icon(Icons.share),
-              );
+              onPressed: () => _captureAndShare(state),
+              child: Icon(Icons.share),
+            );
       },
       listener: (context, state) {
         if (state.errorMessage != null && state.errorMessageWasShown == false) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage!),
-                ),
-              )
+              .showSnackBar(SnackBar(content: Text(state.errorMessage!)))
               .closed
               .then((_) {
-            _cubit.setErrorMessageAsShown();
-          });
+                _cubit.setErrorMessageAsShown();
+              });
         }
       },
     );
@@ -94,11 +91,9 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
       final Uint8List image = await screenshotController.captureFromWidget(
         DefaultTextStyle(
           style: GoogleFonts.lato(
-            color: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.color
-                ?.withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
           ),
           child: SizedBox(
             width: pixelsToDIP(context, 1920),
@@ -106,8 +101,8 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
               create: (context) {
                 final cubit = CourseVisibilityCubit();
                 cubit.loadHiddenEvents(
-                    WeeklyScheduleWidget(courses: widget.enrolledCourses)
-                        .events);
+                  WeeklyScheduleWidget(courses: widget.enrolledCourses).events,
+                );
                 return cubit;
               },
               child: WeeklyScheduleWidget(
@@ -123,9 +118,11 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
                   ],
                 ),
                 bottomLeft: Text(
-                    '${widget.academicReport.firstName} ${widget.academicReport.lastName}'),
+                  '${widget.academicReport.firstName} ${widget.academicReport.lastName}',
+                ),
                 bottomRight: Text(
-                    '${widget.academicReport.school} - Promoción ${widget.academicReport.cohort}'),
+                  '${widget.academicReport.school} - Promoción ${widget.academicReport.cohort}',
+                ),
                 disableScroll: true,
                 fontSize: pixelsToDIP(context, 40),
                 hourWidth: pixelsToDIP(context, 200),
@@ -151,8 +148,9 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
       _cubit.updateRenderingImageForSharing(false);
 
       // Updated to use shareXFiles for sharing files
-      final result = await Share.shareXFiles([XFile(imagePath.path)],
-          text: 'Mi horario ${widget.selectedSemester.name}');
+      final result = await Share.shareXFiles([
+        XFile(imagePath.path),
+      ], text: 'Mi horario ${widget.selectedSemester.name}');
 
       // Handling the result of sharing
       if (result.status == ShareResultStatus.success) {
@@ -165,7 +163,8 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
       _cubit.updateRenderingImageForSharing(false);
 
       _cubit.showErrorMessage(
-          'Ocurrió un error al intentar compartir el horario. Por favor, inténtalo de nuevo.');
+        'Ocurrió un error al intentar compartir el horario. Por favor, inténtalo de nuevo.',
+      );
     }
   }
 }

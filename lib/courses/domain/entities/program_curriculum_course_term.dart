@@ -32,10 +32,7 @@ class ProgramCurriculumCourse {
   double? lastGrade;
   bool? isEnrolled;
 
-  ProgramCurriculumCourse({
-    required this.info,
-    required this.prerequisites,
-  });
+  ProgramCurriculumCourse({required this.info, required this.prerequisites});
 
   bool? get isApproved {
     if (lastGrade == null) return null;
@@ -123,10 +120,7 @@ class CourseTreeNode {
   final ProgramCurriculumCourse course;
   final List<CourseTreeNode> children;
 
-  CourseTreeNode({
-    required this.course,
-    required this.children,
-  });
+  CourseTreeNode({required this.course, required this.children});
 
   int get depth {
     if (children.isEmpty) return 1;
@@ -138,10 +132,7 @@ class ProgramCurriculumTerm {
   final int termNumber;
   final List<ProgramCurriculumCourse> courses;
 
-  ProgramCurriculumTerm({
-    required this.termNumber,
-    required this.courses,
-  });
+  ProgramCurriculumTerm({required this.termNumber, required this.courses});
 
   String get termRomanNumeral {
     return _termNumberToRomanNumeral(termNumber);

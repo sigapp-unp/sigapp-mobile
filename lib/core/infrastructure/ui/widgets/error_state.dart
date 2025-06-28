@@ -2,11 +2,7 @@
 import 'package:flutter/material.dart';
 
 class ErrorStateWidget extends StatelessWidget {
-  const ErrorStateWidget({
-    super.key,
-    required this.message,
-    this.onRetry,
-  });
+  const ErrorStateWidget({super.key, required this.message, this.onRetry});
 
   factory ErrorStateWidget.from(Object error, {void Function()? onRetry}) {
     String message;
@@ -44,7 +40,7 @@ class ErrorStateWidget extends StatelessWidget {
               ElevatedButton(
                 onPressed: onRetry,
                 child: const Text('Reintentar'),
-              )
+              ),
             ],
           ],
         ),

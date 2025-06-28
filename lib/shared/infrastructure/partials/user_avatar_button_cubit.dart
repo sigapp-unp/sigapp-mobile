@@ -26,8 +26,11 @@ class UserAvatarButtonCubit extends Cubit<UserAvatarButtonState> {
   final SignOutUseCase _signOutUseCase;
   final Logger _logger;
 
-  UserAvatarButtonCubit(this._sessionInfoService, this._signOutUseCase, this._logger)
-    : super(UserAvatarButtonState.initial());
+  UserAvatarButtonCubit(
+    this._sessionInfoService,
+    this._signOutUseCase,
+    this._logger,
+  ) : super(UserAvatarButtonState.initial());
 
   void init() async {
     if (state is UserAvatarButtonLoadingState) {
@@ -56,7 +59,11 @@ class UserAvatarButtonCubit extends Cubit<UserAvatarButtonState> {
       await _signOutUseCase.execute();
       emit(UserAvatarButtonState.initial());
     } catch (e, s) {
-      _logger.e('[UI] Error signing out from avatar button', error: e, stackTrace: s);
+      _logger.e(
+        '[UI] Error signing out from avatar button',
+        error: e,
+        stackTrace: s,
+      );
       if (loadedData == null) {
         emit(UserAvatarButtonState.error(e));
         return;

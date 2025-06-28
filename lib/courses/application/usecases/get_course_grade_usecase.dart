@@ -10,30 +10,31 @@ class GetCourseGradeUsecase {
 
   GetCourseGradeUsecase(this._studentSessionService, this._regevaRepository);
 
-  Future<CourseGradeInfo> execute(String scheduledCourseId,
-      [bool? refresh]) async {
+  Future<CourseGradeInfo> execute(
+    String scheduledCourseId, [
+    bool? refresh,
+  ]) async {
     final credentials = await _studentSessionService.getInfo(refresh);
     return CourseGradeInfo(
       grade: await _regevaRepository
           .getCourseGrade(
-        scheduledCourseId: scheduledCourseId,
-        studentCode: credentials.studentCode,
-        sigaToken1: credentials.regevaToken1,
-        sigaToken2: credentials.regevaToken2,
-      )
+            scheduledCourseId: scheduledCourseId,
+            studentCode: credentials.studentCode,
+            sigaToken1: credentials.regevaToken1,
+            sigaToken2: credentials.regevaToken2,
+          )
           .then((value) {
-        if (value == null) {
-          return CourseGradePreview.empty();
-        }
-        return CourseGradePreview.loaded(
-          value: value.value,
-          isPartial: value.isPartial,
-        );
-      }).catchError(
-        (error) {
-          return CourseGradePreview.error(error);
-        },
-      ),
+            if (value == null) {
+              return CourseGradePreview.empty();
+            }
+            return CourseGradePreview.loaded(
+              value: value.value,
+              isPartial: value.isPartial,
+            );
+          })
+          .catchError((error) {
+            return CourseGradePreview.error(error);
+          }),
       url: _regevaRepository.buildGradesUrl(
         scheduledCourseId: scheduledCourseId,
         studentCode: credentials.studentCode,

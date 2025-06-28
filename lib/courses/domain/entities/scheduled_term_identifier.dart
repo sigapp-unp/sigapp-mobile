@@ -14,17 +14,20 @@ class ScheduledTermIdentifier {
   factory ScheduledTermIdentifier.buildFromId(String id) {
     if (id.length != 5) {
       throw ArgumentError(
-          'El ID del semestre debe tener exactamente 5 caracteres, pero se recibió "$id".');
+        'El ID del semestre debe tener exactamente 5 caracteres, pero se recibió "$id".',
+      );
     }
     final year = int.tryParse(id.substring(0, 4));
     if (year == null) {
       throw ArgumentError(
-          'El ID del semestre debe comenzar con un año válido de 4 dígitos, pero se recibió "$id".');
+        'El ID del semestre debe comenzar con un año válido de 4 dígitos, pero se recibió "$id".',
+      );
     }
     final period = int.tryParse(id.substring(4));
     if (period == null || period < 0 || period > 2) {
       throw ArgumentError(
-          'El período del semestre debe ser un número entre 0 y 2, pero se recibió "$period" ("$id").');
+        'El período del semestre debe ser un número entre 0 y 2, pero se recibió "$period" ("$id").',
+      );
     }
     final name = '$year-$period';
     return ScheduledTermIdentifier._(
@@ -39,17 +42,20 @@ class ScheduledTermIdentifier {
     final parts = name.split('-');
     if (parts.length != 2) {
       throw ArgumentError(
-          'El nombre del semestre debe estar en el formato "YYYY-X", pero se recibió "$name".');
+        'El nombre del semestre debe estar en el formato "YYYY-X", pero se recibió "$name".',
+      );
     }
     final year = int.tryParse(parts[0]);
     if (year == null) {
       throw ArgumentError(
-          'El año en el nombre del semestre debe ser un número válido de 4 dígitos, pero se recibió "$name".');
+        'El año en el nombre del semestre debe ser un número válido de 4 dígitos, pero se recibió "$name".',
+      );
     }
     final period = int.tryParse(parts[1]);
     if (period == null || period < 0 || period > 2) {
       throw ArgumentError(
-          'El período en el nombre debe ser un número entre 0 y 2, pero se recibió "$period" ("$name").');
+        'El período en el nombre debe ser un número entre 0 y 2, pero se recibió "$period" ("$name").',
+      );
     }
     final id = '$year$period';
     return ScheduledTermIdentifier._(

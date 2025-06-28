@@ -40,8 +40,9 @@ class StudentSessionRepositoryImpl implements StudentSessionRepository {
     return StudentSessionInfo(
       studentCode: studentCode,
       schoolName: schoolName,
-      currentSemester:
-          ScheduledTermIdentifier.buildFromName(currentSemesterName),
+      currentSemester: ScheduledTermIdentifier.buildFromName(
+        currentSemesterName,
+      ),
       regevaToken1: regevaToken1,
       regevaToken2: regevaToken2,
     );

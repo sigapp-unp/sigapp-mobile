@@ -38,12 +38,13 @@ abstract class GetAcademicHistoryTermStatisticsModel
   }) = _GetAcademicHistoryTermStatisticsModel;
 
   factory GetAcademicHistoryTermStatisticsModel.fromJson(
-          Map<String, Object?> json) =>
-      _$GetAcademicHistoryTermStatisticsModelFromJson(json);
+    Map<String, Object?> json,
+  ) => _$GetAcademicHistoryTermStatisticsModelFromJson(json);
 }
 
 @freezed
-abstract class GetAcademicHistoryCourseModel with _$GetAcademicHistoryCourseModel {
+abstract class GetAcademicHistoryCourseModel
+    with _$GetAcademicHistoryCourseModel {
   const factory GetAcademicHistoryCourseModel({
     required String courseCode,
     required String courseName,

@@ -26,20 +26,11 @@ class MailUtils {
     );
 
     try {
-      await launchUrl(
-        emailUri,
-        mode: LaunchMode.externalApplication,
-      );
+      await launchUrl(emailUri, mode: LaunchMode.externalApplication);
     } catch (e, s) {
-      _logger.e(
-        '[UI] Error launching email app: $e',
-        error: e,
-        stackTrace: s,
-      );
+      _logger.e('[UI] Error launching email app: $e', error: e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ocurrió un error al abrir el correo'),
-        ),
+        const SnackBar(content: Text('Ocurrió un error al abrir el correo')),
       );
     }
   }

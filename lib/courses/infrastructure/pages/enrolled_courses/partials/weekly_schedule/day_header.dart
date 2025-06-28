@@ -36,10 +36,7 @@ class DayHeaderWidget extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(8),
-        child: Center(
-            child: Text(
-          dayLabel,
-        )),
+        child: Center(child: Text(dayLabel)),
       ),
     );
   }

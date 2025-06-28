@@ -76,17 +76,19 @@ class SerializableCookie {
     return SerializableCookie(
       name: json['name'] as String,
       value: json['value'] as String,
-      expires: json['expires'] != null
-          ? DateTime.tryParse(json['expires'] as String)?.toLocal()
-          : null,
+      expires:
+          json['expires'] != null
+              ? DateTime.tryParse(json['expires'] as String)?.toLocal()
+              : null,
       maxAge: json['maxAge'] as int?,
       domain: json['domain'] as String?,
       path: json['path'] as String?,
       secure: json['secure'] as bool? ?? false,
       httpOnly: json['httpOnly'] as bool? ?? false,
-      sameSite: json['sameSite'] != null
-          ? SameSite.values.firstWhere((e) => e.name == json['sameSite'])
-          : null,
+      sameSite:
+          json['sameSite'] != null
+              ? SameSite.values.firstWhere((e) => e.name == json['sameSite'])
+              : null,
     );
   }
 }
@@ -100,9 +102,9 @@ class CookieManager {
     required String id,
     required SharedPreferences prefs,
     required Logger logger,
-  })  : _prefs = prefs,
-        _id = id,
-        _logger = logger;
+  }) : _prefs = prefs,
+       _id = id,
+       _logger = logger;
 
   /// Returns the key used in SharedPreferences for a specific host.
   String _buildKey(String host) => '${_id}_cookies_$host';
@@ -113,9 +115,10 @@ class CookieManager {
   /// - `setCookieHeaders`: list of 'Set-Cookie' strings.
   Future<void> saveCookies(String host, List<String> setCookieHeaders) async {
     // 1. Parses strings into Cookie objects
-    final newCookies = setCookieHeaders
-        .map((header) => Cookie.fromSetCookieValue(header))
-        .toList();
+    final newCookies =
+        setCookieHeaders
+            .map((header) => Cookie.fromSetCookieValue(header))
+            .toList();
 
     // 2. Load existing cookies for the host
     final existing = _loadCookies(host);

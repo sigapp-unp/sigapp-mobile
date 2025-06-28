@@ -29,7 +29,9 @@ class LocalSyllabusRepositoryImpl implements LocalSyllabusRepository {
   }
 
   Future<String> _createFilePath(
-      String scheduledCourseId, String? mimeType) async {
+    String scheduledCourseId,
+    String? mimeType,
+  ) async {
     final directory = await _getLocalDirectory();
     final extension = mimeType != null ? extensionFromMime(mimeType) : null;
     return '${directory.path}/$scheduledCourseId${extension != null ? '.$extension' : ''}';
@@ -37,11 +39,15 @@ class LocalSyllabusRepositoryImpl implements LocalSyllabusRepository {
 
   @override
   Future<File> replaceOrCreate(
-      String scheduledCourseId, Uint8List fileBytes, String? mimeType) async {
+    String scheduledCourseId,
+    Uint8List fileBytes,
+    String? mimeType,
+  ) async {
     final file = await _getFile(scheduledCourseId);
     if (file != null) await file.delete();
-    return await File(await _createFilePath(scheduledCourseId, mimeType))
-        .writeAsBytes(fileBytes);
+    return await File(
+      await _createFilePath(scheduledCourseId, mimeType),
+    ).writeAsBytes(fileBytes);
   }
 
   @override

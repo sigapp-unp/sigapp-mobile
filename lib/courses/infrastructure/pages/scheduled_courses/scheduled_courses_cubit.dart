@@ -25,19 +25,25 @@ class ScheduledCoursesPageCubit extends Cubit<ScheduledCoursesPageState> {
   final Logger _logger;
 
   ScheduledCoursesPageCubit(this._getScheduledCoursesUsecase, this._logger)
-      : super(ScheduledCoursesPageState.loading());
+    : super(ScheduledCoursesPageState.loading());
 
   Future<void> setup() async {
     emit(ScheduledCoursesPageState.loading());
     try {
       final items = await _getScheduledCoursesUsecase.execute();
-      emit(ScheduledCoursesPageState.success(
-        scheduledCourses: items,
-        filteredCourses: items,
-        searchQuery: '',
-      ));
+      emit(
+        ScheduledCoursesPageState.success(
+          scheduledCourses: items,
+          filteredCourses: items,
+          searchQuery: '',
+        ),
+      );
     } catch (e, s) {
-      _logger.e('[UI] Error loading scheduled courses', error: e, stackTrace: s);
+      _logger.e(
+        '[UI] Error loading scheduled courses',
+        error: e,
+        stackTrace: s,
+      );
       emit(ScheduledCoursesPageState.error(e));
     }
   }
@@ -50,23 +56,28 @@ class ScheduledCoursesPageCubit extends Cubit<ScheduledCoursesPageState> {
 
       if (normalizedQuery.isEmpty) {
         // Si la búsqueda está vacía, mostrar todos los cursos
-        emit(ScheduledCoursesPageState.success(
-          scheduledCourses: currentState.scheduledCourses,
-          filteredCourses: currentState.scheduledCourses,
-          searchQuery: normalizedQuery,
-        ));
+        emit(
+          ScheduledCoursesPageState.success(
+            scheduledCourses: currentState.scheduledCourses,
+            filteredCourses: currentState.scheduledCourses,
+            searchQuery: normalizedQuery,
+          ),
+        );
       } else {
         // Filtrar los cursos basados en el texto de búsqueda
-        final filteredCourses = currentState.scheduledCourses.where((course) {
-          // Buscar en todos los campos de texto del curso
-          return _courseContainsQuery(course, normalizedQuery);
-        }).toList();
+        final filteredCourses =
+            currentState.scheduledCourses.where((course) {
+              // Buscar en todos los campos de texto del curso
+              return _courseContainsQuery(course, normalizedQuery);
+            }).toList();
 
-        emit(ScheduledCoursesPageState.success(
-          scheduledCourses: currentState.scheduledCourses,
-          filteredCourses: filteredCourses,
-          searchQuery: normalizedQuery,
-        ));
+        emit(
+          ScheduledCoursesPageState.success(
+            scheduledCourses: currentState.scheduledCourses,
+            filteredCourses: filteredCourses,
+            searchQuery: normalizedQuery,
+          ),
+        );
       }
     }
   }

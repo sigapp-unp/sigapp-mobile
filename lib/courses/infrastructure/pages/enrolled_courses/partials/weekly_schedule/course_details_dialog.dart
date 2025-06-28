@@ -7,10 +7,7 @@ import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/we
 class CourseDetailsDialog extends StatelessWidget {
   final WeeklyScheduleWidgetItem event;
 
-  const CourseDetailsDialog({
-    super.key,
-    required this.event,
-  });
+  const CourseDetailsDialog({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -20,25 +17,15 @@ class CourseDetailsDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(
         event.data.courseName,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow(
-            Icons.location_on,
-            'Ubicación:',
-            event.data.location,
-          ),
+          _buildInfoRow(Icons.location_on, 'Ubicación:', event.data.location),
           const SizedBox(height: 12),
-          _buildInfoRow(
-            Icons.access_time,
-            'Horario:',
-            _getDayAndTime(),
-          ),
+          _buildInfoRow(Icons.access_time, 'Horario:', _getDayAndTime()),
           const SizedBox(height: 12),
           // Checkbox para ocultar/desocultar el evento
           BlocBuilder<CourseVisibilityCubit, CourseVisibilityState>(
@@ -48,23 +35,25 @@ class CourseDetailsDialog extends StatelessWidget {
               return ListTile(
                 contentPadding: EdgeInsets.all(0),
                 title: Text('Marcar como no programado'),
-                subtitle: isEventHidden
-                    ? const Text(
-                        'Este curso se mostrará en gris en el horario',
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
-                        ),
-                      )
-                    : null,
+                subtitle:
+                    isEventHidden
+                        ? const Text(
+                          'Este curso se mostrará en gris en el horario',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
+                        )
+                        : null,
                 onTap: () => cubit.toggleEventVisibility(event, !isEventHidden),
                 leading: Icon(
                   isEventHidden
                       ? Icons.check_box
                       : Icons.check_box_outline_blank,
-                  color: isEventHidden
-                      ? Theme.of(context).colorScheme.primary
-                      : null,
+                  color:
+                      isEventHidden
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
                 ),
               );
             },
@@ -90,12 +79,7 @@ class CourseDetailsDialog extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
               Text(value),
             ],
           ),
@@ -132,12 +116,14 @@ class CourseDetailsDialog extends StatelessWidget {
         day = '';
     }
 
-    String time = TimeUtils.formatEventDuration(EventDuration(
-      startHour: event.data.startHour,
-      startMinute: event.data.startMinutes,
-      endHour: event.data.endHour,
-      endMinute: event.data.endMinutes,
-    ));
+    String time = TimeUtils.formatEventDuration(
+      EventDuration(
+        startHour: event.data.startHour,
+        startMinute: event.data.startMinutes,
+        endHour: event.data.endHour,
+        endMinute: event.data.endMinutes,
+      ),
+    );
 
     return '$day, $time';
   }

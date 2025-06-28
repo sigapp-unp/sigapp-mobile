@@ -55,14 +55,19 @@ class EventWidget extends StatelessWidget {
 
         // Calcular dimensiones de contenido teniendo en cuenta el borde
         final contentMeasures = _calculateContentDimensions(
-            positionData.height, layoutMeasures, textMeasures, borderWidth);
+          positionData.height,
+          layoutMeasures,
+          textMeasures,
+          borderWidth,
+        );
 
         // Determinar si mostrar captions basado en el espacio disponible
-        final shouldShowCaptions = isHidden
-            ? (contentMeasures.captionsCanBeShown &&
-                contentMeasures.availableHeightForTitle >
-                    textMeasures.titleOneLineHeight * 1.2)
-            : contentMeasures.captionsCanBeShown;
+        final shouldShowCaptions =
+            isHidden
+                ? (contentMeasures.captionsCanBeShown &&
+                    contentMeasures.availableHeightForTitle >
+                        textMeasures.titleOneLineHeight * 1.2)
+                : contentMeasures.captionsCanBeShown;
 
         return Positioned(
           top: positionData.top,
@@ -74,8 +79,9 @@ class EventWidget extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: displayColor,
-                borderRadius:
-                    BorderRadius.circular(layoutMeasures.verticalPadding),
+                borderRadius: BorderRadius.circular(
+                  layoutMeasures.verticalPadding,
+                ),
                 border: border,
               ),
               child: Padding(
@@ -88,10 +94,16 @@ class EventWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildTitleSection(
-                        textColor, textMeasures, contentMeasures),
+                      textColor,
+                      textMeasures,
+                      contentMeasures,
+                    ),
                     if (shouldShowCaptions)
-                      _buildCaptionsSection(textColor, textMeasures,
-                          contentMeasures.availableWidth),
+                      _buildCaptionsSection(
+                        textColor,
+                        textMeasures,
+                        contentMeasures.availableWidth,
+                      ),
                   ],
                 ),
               ),
@@ -104,7 +116,8 @@ class EventWidget extends StatelessWidget {
 
   /// Calcula las dimensiones y posición del evento en la cuadrícula
   _PositionData _calculatePositionData() {
-    final top = (event.data.startHour - startHour) * rowHeight +
+    final top =
+        (event.data.startHour - startHour) * rowHeight +
         (event.data.startMinutes / 60) * rowHeight;
 
     final gridWidth =
@@ -115,7 +128,8 @@ class EventWidget extends StatelessWidget {
     final dayIndex = daysWithEvents.indexOf(event.data.weekday);
     final left = hourWidth + dayIndex * gridWidth;
 
-    final height = ((event.data.endHour - event.data.startHour) * rowHeight +
+    final height =
+        ((event.data.endHour - event.data.startHour) * rowHeight +
             ((event.data.endMinutes - event.data.startMinutes) / 60) *
                 rowHeight) -
         sideMargin;
@@ -161,17 +175,22 @@ class EventWidget extends StatelessWidget {
 
   /// Calcula las dimensiones del contenido basado en el espacio disponible
   _ContentMeasures _calculateContentDimensions(
-      double height, _LayoutMeasures layoutMeasures, _TextMeasures textMeasures,
-      [double borderWidth = 0.0]) {
+    double height,
+    _LayoutMeasures layoutMeasures,
+    _TextMeasures textMeasures, [
+    double borderWidth = 0.0,
+  ]) {
     // Ajustar el espacio disponible considerando el borde
     final availableHeight =
         height - (layoutMeasures.verticalPadding * 2) - (borderWidth * 2);
-    final availableWidth = _calculatePositionData().width -
+    final availableWidth =
+        _calculatePositionData().width -
         (layoutMeasures.horizontalPadding * 2) -
         (borderWidth * 2);
 
     // Determinar si hay espacio para mostrar las leyendas
-    final captionsCanBeShown = availableHeight >
+    final captionsCanBeShown =
+        availableHeight >
         (textMeasures.titleOneLineHeight +
             layoutMeasures.separatorSpace +
             layoutMeasures.captionsHeight);
@@ -185,9 +204,10 @@ class EventWidget extends StatelessWidget {
 
     // Calcular número máximo de líneas para el título
     final safetyMargin = textMeasures.titleOneLineHeight * 0.15;
-    final titleMaxLines = ((availableHeightForTitle - safetyMargin) /
-            textMeasures.titleOneLineHeight)
-        .floor();
+    final titleMaxLines =
+        ((availableHeightForTitle - safetyMargin) /
+                textMeasures.titleOneLineHeight)
+            .floor();
     final finalTitleMaxLines = titleMaxLines > 0 ? titleMaxLines : 1;
 
     return _ContentMeasures(
@@ -199,8 +219,11 @@ class EventWidget extends StatelessWidget {
   }
 
   /// Construye la sección del título
-  Widget _buildTitleSection(Color textColor, _TextMeasures textMeasures,
-      _ContentMeasures contentMeasures) {
+  Widget _buildTitleSection(
+    Color textColor,
+    _TextMeasures textMeasures,
+    _ContentMeasures contentMeasures,
+  ) {
     return SizedBox(
       height: contentMeasures.availableHeightForTitle,
       width: contentMeasures.availableWidth,
@@ -220,7 +243,10 @@ class EventWidget extends StatelessWidget {
 
   /// Construye la sección de leyendas (ubicación y duración)
   Widget _buildCaptionsSection(
-      Color textColor, _TextMeasures textMeasures, double availableWidth) {
+    Color textColor,
+    _TextMeasures textMeasures,
+    double availableWidth,
+  ) {
     return SizedBox(
       width: availableWidth,
       child: Column(
@@ -237,12 +263,14 @@ class EventWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            TimeUtils.formatEventDuration(EventDuration(
-              startHour: event.data.startHour,
-              startMinute: event.data.startMinutes,
-              endHour: event.data.endHour,
-              endMinute: event.data.endMinutes,
-            )),
+            TimeUtils.formatEventDuration(
+              EventDuration(
+                startHour: event.data.startHour,
+                startMinute: event.data.startMinutes,
+                endHour: event.data.endHour,
+                endMinute: event.data.endMinutes,
+              ),
+            ),
             style: TextStyle(
               color: textColor,
               fontSize: textMeasures.captionFontSize,

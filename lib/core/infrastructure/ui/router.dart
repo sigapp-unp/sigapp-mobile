@@ -20,17 +20,19 @@ class RouterBuilder {
       routes: [
         GoRoute(
           path: '/login',
-          builder: (context, state) => BlocProvider(
-            create: (context) => getIt<LoginCubit>(),
-            child: LoginPage(),
-          ),
+          builder:
+              (context, state) => BlocProvider(
+                create: (context) => getIt<LoginCubit>(),
+                child: LoginPage(),
+              ),
         ),
         GoRoute(
           path: '/',
-          builder: (context, state) => BlocProvider(
-            create: (context) => getIt<HomePageCubit>(),
-            child: const HomePageWidget(),
-          ),
+          builder:
+              (context, state) => BlocProvider(
+                create: (context) => getIt<HomePageCubit>(),
+                child: const HomePageWidget(),
+              ),
         ),
         GoRoute(
           path: '/about',
@@ -44,13 +46,10 @@ class RouterBuilder {
         }
         return null;
       },
-      errorPageBuilder: (context, state) => const MaterialPage(
-        child: Scaffold(
-          body: Center(
-            child: Text('Page not found'),
+      errorPageBuilder:
+          (context, state) => const MaterialPage(
+            child: Scaffold(body: Center(child: Text('Page not found'))),
           ),
-        ),
-      ),
     );
     return router;
   }

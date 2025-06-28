@@ -58,16 +58,20 @@ class _ExportToCalendarState extends State<ExportToCalendar> {
                     const Text('Select a calendar'),
                     DropdownButton<String>(
                       value: state.selectedCalendar.id,
-                      items: state.calendars
-                          .map((calendar) => DropdownMenuItem(
-                                value: calendar.id,
-                                child: Text(calendar.name ?? '(no name)'),
-                              ))
-                          .toList(),
+                      items:
+                          state.calendars
+                              .map(
+                                (calendar) => DropdownMenuItem(
+                                  value: calendar.id,
+                                  child: Text(calendar.name ?? '(no name)'),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (calendarId) {
                         _cubit.selectCalendar(
                           state.calendars.firstWhere(
-                              (calendar) => calendar.id == calendarId),
+                            (calendar) => calendar.id == calendarId,
+                          ),
                         );
                       },
                     ),
@@ -107,11 +111,9 @@ class _ExportToCalendarState extends State<ExportToCalendar> {
                                 print(e);
                                 print(s);
                               }
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('$e'),
-                                ),
-                              );
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text('$e')));
                             }
                           },
                           child: const Text('Export'),
