@@ -55,7 +55,9 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
               child: SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             )
             : FloatingActionButton(
@@ -88,6 +90,29 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
     _cubit.updateRenderingImageForSharing(true);
 
     try {
+      final weeklyScheduleWidget = WeeklyScheduleWidget(
+        courses: widget.enrolledCourses,
+        topLeft: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BrandTextWidget(),
+            Text(
+              'Horario ${widget.selectedSemester.name}',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        bottomLeft: Text(
+          '${widget.academicReport.firstName} ${widget.academicReport.lastName}',
+        ),
+        bottomRight: Text(
+          '${widget.academicReport.school} - Promoción ${widget.academicReport.cohort}',
+        ),
+        disableScroll: true,
+        fontSize: pixelsToDIP(context, 40),
+        hourWidth: pixelsToDIP(context, 200),
+        rowHeight: pixelsToDIP(context, 200),
+      );
       final Uint8List image = await screenshotController.captureFromWidget(
         DefaultTextStyle(
           style: GoogleFonts.lato(
@@ -98,35 +123,13 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
           child: SizedBox(
             width: pixelsToDIP(context, 1920),
             child: BlocProvider(
-              create: (context) {
-                final cubit = CourseVisibilityCubit();
-                cubit.loadHiddenEvents(
-                  WeeklyScheduleWidget(courses: widget.enrolledCourses).events,
-                );
-                return cubit;
-              },
-              child: WeeklyScheduleWidget(
-                courses: widget.enrolledCourses,
-                topLeft: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BrandTextWidget(),
-                    Text(
-                      'Horario ${widget.selectedSemester.name}',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                  ],
-                ),
-                bottomLeft: Text(
-                  '${widget.academicReport.firstName} ${widget.academicReport.lastName}',
-                ),
-                bottomRight: Text(
-                  '${widget.academicReport.school} - Promoción ${widget.academicReport.cohort}',
-                ),
-                disableScroll: true,
-                fontSize: pixelsToDIP(context, 40),
-                hourWidth: pixelsToDIP(context, 200),
-                rowHeight: pixelsToDIP(context, 200),
+              create:
+                  (context) =>
+                      CourseVisibilityCubit()
+                        ..loadHiddenEvents(weeklyScheduleWidget.events),
+              child: Container(
+                color: Theme.of(context).colorScheme.surface,
+                child: weeklyScheduleWidget,
               ),
             ),
           ),
