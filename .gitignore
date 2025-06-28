@@ -44,10 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Environment variables
-.env
-*.env
-!.env.example
+# Environment specific files
+environments/local.env
+environments/prod.env
+!environments/*.env.example
 
 # Firebase configuration (contains sensitive API keys)
 lib/firebase_options.dart

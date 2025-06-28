@@ -1,7 +1,7 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sigapp/core/config/environment_config.dart';
 import 'package:sigapp/core/infrastructure/ui/app.dart';
 import 'package:sigapp/core/injection/get_it.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,8 +12,7 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Cargar variables de entorno
-  await dotenv.load(fileName: '.env');
+  await EnvironmentConfig.loadEnvironment();
 
   await configureDependencies();
 

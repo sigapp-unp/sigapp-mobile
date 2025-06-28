@@ -138,8 +138,7 @@ flutter:
   assets:
     #   - assets/client_secret.json
     - assets/
-    - .env
-    - .env.example
+    - environments/
     - assets/lottie/
     - assets/img/
     - assets/svg/

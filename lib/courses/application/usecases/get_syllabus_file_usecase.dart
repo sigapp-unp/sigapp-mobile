@@ -28,7 +28,7 @@ class GetSyllabusFileUsecase {
     if (forceDownload != true) {
       // Try to get the syllabus file from the local repository
       cached = await _localSyllabusRepository.get(scheduledCourseId);
-      if (cached != null) return cached;
+      return cached;
     }
 
     // If the file is not cached, download it

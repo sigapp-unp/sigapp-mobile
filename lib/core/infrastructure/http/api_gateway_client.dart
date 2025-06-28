@@ -21,9 +21,9 @@ class ApiGatewayClient {
       logger = ApiLogger(_logger) {
     http = Dio();
 
-    final baseUrl = dotenv.env['SUPABASE_GATEWAY_URL'];
+    final baseUrl = dotenv.env['API_GATEWAY_URL'];
     if (baseUrl == null) {
-      throw Exception('SUPABASE_GATEWAY_URL not found in .env file');
+      throw Exception('API_GATEWAY_URL not found in .env file');
     }
     _url = baseUrl;
 

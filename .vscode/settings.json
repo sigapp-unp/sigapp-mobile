@@ -15,5 +15,9 @@
     "usecase",
     "usecases"
   ],
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "files.associations": {
+    "*.env": "properties",
+    "*.env.*": "properties"
+  }
 }
