@@ -105,14 +105,21 @@ class _StudentPageViewState extends State<StudentPageView> {
     final electiveOver = math.max(passedElective - totalElective, 0).toDouble();
 
     // Over message
+    String getCreditsText(int credits, String type) {
+      final plural = credits == 1 ? '' : 's';
+      return '$credits crédito$plural $type$plural';
+    }
+
     var overMsg = '';
     if (mandatoryOver > 0 && electiveOver > 0) {
       overMsg =
-          'Has excedido $mandatoryOver créditos obligatorios y $electiveOver créditos electivos.';
+          'Has excedido ${getCreditsText(mandatoryOver.toInt(), 'obligatorio')} y ${getCreditsText(electiveOver.toInt(), 'electivo')}.';
     } else if (mandatoryOver > 0) {
-      overMsg = 'Has excedido $mandatoryOver créditos obligatorios.';
+      overMsg =
+          'Has excedido ${getCreditsText(mandatoryOver.toInt(), 'obligatorio')}.';
     } else if (electiveOver > 0) {
-      overMsg = 'Has excedido $electiveOver créditos electivos.';
+      overMsg =
+          'Has excedido ${getCreditsText(electiveOver.toInt(), 'electivo')}.';
     }
 
     final rawData = [

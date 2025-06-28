@@ -30,7 +30,7 @@ class AvatarCircleWidget extends StatelessWidget {
         onPressed: onTap,
         enableGradient: true,
         child: Container(
-          padding: const EdgeInsets.all(16 * 0.6),
+          padding: const EdgeInsets.all(16 * 0.3),
           child: ColorFiltered(
             colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             child: Image.asset(imageFilePath!, fit: BoxFit.cover),

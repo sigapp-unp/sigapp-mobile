@@ -38,16 +38,16 @@ class UserAvatarButtonWidget extends StatelessWidget {
   }
 
   Widget _build(BuildContext context, UserAvatarButtonState state) {
-    final academicProgram = switch (state) {
-      UserAvatarButtonSuccessState(:final data) => data.academicProgram,
+    final faculty = switch (state) {
+      UserAvatarButtonSuccessState(:final data) => data.faculty,
       _ => null,
     };
 
     final userData = _extractUserData(state);
     final cubit = BlocProvider.of<UserAvatarButtonCubit>(context);
 
-    if (academicProgram != null) {
-      final imageFilePath = _getCareerImagePath(academicProgram);
+    if (faculty != null) {
+      final imageFilePath = _getImagePath(faculty);
       return _buildAvatar(
         context: context,
         imageFilePath: imageFilePath,
@@ -174,78 +174,36 @@ class UserAvatarButtonWidget extends StatelessWidget {
     );
   }
 
-  String _getCareerImagePath(AcademicProgram academicProgram) {
-    switch (academicProgram) {
-      case AcademicProgram.administration:
-        return 'assets/img/administracion.png';
-      case AcademicProgram.agricultural:
-        return 'assets/img/agricola.png';
-      case AcademicProgram.agroindustrialFood:
-        return 'assets/img/agroindustrial_alimentaria.png';
-      case AcademicProgram.agronomy:
-        return 'assets/img/agronomia.png';
-      case AcademicProgram.environmental:
-        return 'assets/img/ambiental.png';
-      case AcademicProgram.architecture:
-        return 'assets/img/arquitectura.png';
-      case AcademicProgram.biology:
-        return 'assets/img/biologia.png';
-      case AcademicProgram.civil:
-        return 'assets/img/civil.png';
-      case AcademicProgram.communication:
-        return 'assets/img/comunicacion.png';
-      case AcademicProgram.accounting:
-        return 'assets/img/contabilidad.png';
-      case AcademicProgram.law:
-        return 'assets/img/derecho.png';
-      case AcademicProgram.economics:
-        return 'assets/img/economia.png';
-      case AcademicProgram.initialEducation:
-        return 'assets/img/educacion_inicial.png';
-      case AcademicProgram.primaryEducation:
-        return 'assets/img/educacion_primaria.png';
-      case AcademicProgram.electronic:
-        return 'assets/img/electronica.png';
-      case AcademicProgram.nursing:
-        return 'assets/img/enfermeria.png';
-      case AcademicProgram.statistics:
-        return 'assets/img/estadistica.png';
-      case AcademicProgram.stomatology:
-        return 'assets/img/estomatologia.png';
-      case AcademicProgram.physics:
-        return 'assets/img/fisica.png';
-      case AcademicProgram.geological:
-        return 'assets/img/geologica.png';
-      case AcademicProgram.historyGeography:
-        return 'assets/img/historia_y_geografia.png';
-      case AcademicProgram.industrial:
-        return 'assets/img/industrial.png';
-      case AcademicProgram.informatics:
-        return 'assets/img/informatica.png';
-      case AcademicProgram.languageLiterature:
-        return 'assets/img/lengua_y_literatura.png';
-      case AcademicProgram.mathematics:
-        return 'assets/img/matematica.png';
-      case AcademicProgram.mechatronics:
-        return 'assets/img/mecatronica.png';
-      case AcademicProgram.medicine:
-        return 'assets/img/medicina.png';
-      case AcademicProgram.mining:
-        return 'assets/img/minas.png';
-      case AcademicProgram.obstetrics:
-        return 'assets/img/obstetricia.png';
-      case AcademicProgram.fishing:
-        return 'assets/img/pesquera.png';
-      case AcademicProgram.petroleum:
-        return 'assets/img/petroleo.png';
-      case AcademicProgram.psychology:
-        return 'assets/img/psicologia.png';
-      case AcademicProgram.chemistry:
-        return 'assets/img/quimica.png';
-      case AcademicProgram.veterinary:
-        return 'assets/img/veterinaria.png';
-      case AcademicProgram.zootechnics:
-        return 'assets/img/zootecnia.png';
+  String _getImagePath(Faculty faculty) {
+    switch (faculty) {
+      case Faculty.agronomy:
+        return 'assets/img/facultad-agronomia.png';
+      case Faculty.architectureUrban:
+        return 'assets/img/facultad-arquitectura-y-urbanismo.png';
+      case Faculty.administrativeSciences:
+        return 'assets/img/facultad-ciencias-administrativas.png';
+      case Faculty.accountingFinancial:
+        return 'assets/img/facultad-ciencias-contables-financieras.png';
+      case Faculty.sciences:
+        return 'assets/img/facultad-ciencias.png';
+      case Faculty.healthSciences:
+        return 'assets/img/facultad-ciencias-salud.png';
+      case Faculty.socialSciencesEducation:
+        return 'assets/img/facultad-ciencias-sociales-educacion.png';
+      case Faculty.lawPoliticalSciences:
+        return 'assets/img/facultad-derecho-ciencias-politicas.png';
+      case Faculty.economics:
+        return 'assets/img/facultad-economia.png';
+      case Faculty.civilEngineering:
+        return 'assets/img/facultad-ingenieria-civil.png';
+      case Faculty.industrialEngineering:
+        return 'assets/img/facultad-ingenieria-industrial.png';
+      case Faculty.miningEngineering:
+        return 'assets/img/facultad-ingenieria-minas.png';
+      case Faculty.fishingEngineering:
+        return 'assets/img/facultad-ingenieria-pesquera.png';
+      case Faculty.zootechnicsEngineering:
+        return 'assets/img/facultad-ingenieria-zootecnia.png';
     }
   }
 }

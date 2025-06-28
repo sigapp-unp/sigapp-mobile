@@ -34,9 +34,7 @@ class AcademicInfoServiceImpl extends AcademicInfoService {
     _data = AcademicInfoData(
       academicReport: academicReport,
       semesterContext: semesterContext,
-      academicProgram: AcademicProgramIdentifier.identifyProgram(
-        academicReport.school,
-      ),
+      faculty: FacultyIdentifier.identifyFaculty(academicReport.faculty),
     );
 
     return _data!;
