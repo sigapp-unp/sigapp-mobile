@@ -1,5 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/auth/application/services/api_gateway_auth_service.dart';
+import 'package:sigapp/auth/application/usecases/direct_sign_in_usecase.dart';
+import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
+import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
 import 'package:sigapp/auth/domain/repositories/auth_repository.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
 import 'package:sigapp/auth/domain/services/navigation_service.dart';
@@ -18,6 +22,8 @@ class SignInUseCase {
   final AcademicInfoService _academicInfoService;
   final SessionLifecycleService _sessionLifecycleService;
   final Logger _logger;
+  // final SignOutUseCase _signOutUseCase;
+  final DirectSignInUsecase _directSignInUse;
 
   SignInUseCase(
     this._authRepository,
@@ -27,14 +33,17 @@ class SignInUseCase {
     this._academicInfoService,
     this._sessionLifecycleService,
     this._logger,
+    this._directSignInUse,
+    // this._signOutUseCase,
   );
 
   Future<bool> execute(String username, String password) async {
-    final response = await _authRepository.login(username, password);
-    final success = _sessionLifecycleService.checkLoginResult(
-      headers: response.headers,
-      statusCode: response.statusCode,
-    );
+    // final response = await _authRepository.login(username, password);
+    // final success = _sessionLifecycleService.checkLoginResult(
+    //   headers: response.headers,
+    //   statusCode: response.statusCode,
+    // );
+    final success = await _directSignInUse.execute(username, password);
     if (!success) return false;
 
     await _sharedPreferencesAuthRepository.saveCredentials(username, password);
@@ -43,6 +52,22 @@ class SignInUseCase {
     // This could throw an exception if the student is newly registered
     try {
       await _academicInfoService.getSessionInfo();
+    } on DioException catch (e) {
+      // Si es una encuesta pendiente, la propagamos sin modificar (no es un error real)
+      // switch (e.error) {
+      //   case PendingSurveySessionException():
+      //     _signOutUseCase.execute(e.error as PendingSurveySessionException);
+      //     rethrow;
+      //   default:
+      // }
+
+      // Otros tipos de SessionException se manejan como errores reales
+      _logger.e(
+        '[APPLICATION] Error de sesión al obtener información del estudiante.',
+        error: e,
+      );
+      // throw Exception('Ocurrió un error al obtener tu información: $e');
+      rethrow;
     } catch (e, s) {
       _logger.e(
         '[APPLICATION] Error al obtener la información de la sesión del estudiante.',

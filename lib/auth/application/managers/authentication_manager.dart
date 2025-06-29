@@ -8,6 +8,7 @@ import 'package:sigapp/auth/application/managers/authentication_manager/async_op
 import 'package:sigapp/auth/application/managers/authentication_manager/auth_token_refresh_manager.dart';
 import 'package:sigapp/auth/application/usecases/get_stored_credentials_usecase.dart';
 import 'package:sigapp/auth/application/usecases/keep_session_alive_usecase.dart';
+import 'package:sigapp/auth/application/usecases/direct_sign_in_usecase.dart';
 import 'package:sigapp/auth/application/usecases/sign_in_usecase.dart';
 import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
 import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
@@ -30,7 +31,7 @@ class AuthenticationManager {
   final GetStoredCredentialsUseCase _getStoredCredentialsUseCase;
   final SignOutUseCase _signOutUseCase;
   final KeepSessionAliveUsecase _keepSessionAliveUsecase;
-  final SignInUseCase _signInUseCase;
+  final DirectSignInUsecase _signInUseCase;
   final ToastService _toastService;
   final Logger _logger;
 
@@ -57,9 +58,7 @@ class AuthenticationManager {
     _authTokenRefreshManager = AuthTokenRefreshManager(
       _keepSessionAliveUsecase,
       _signInUseCase,
-      _signOutUseCase,
       _getStoredCredentialsUseCase,
-      _toastService,
       _logger,
     );
     _asyncOperationGuard = AsyncOperationGuard(_logger);
@@ -69,7 +68,7 @@ class AuthenticationManager {
       logger: _logger,
     );
 
-    _inicializar();
+    _initialize();
   }
 
   /// Determina si se necesita refrescar la sesión antes de una solicitud
@@ -79,38 +78,18 @@ class AuthenticationManager {
         _sessionTimeoutDuration;
   }
 
-  Future<void> _inicializar() async {
+  Future<void> _initialize() async {
     // Configurar interceptores para encuestas pendientes
-    _configureEncuestasPendientesInterceptors();
+    // _configureEncuestasPendientesInterceptors();
 
     // Configurar interceptores de sesión
     _configureSessionInterceptors();
 
-    // Programar SOLO refresco inicial, eliminamos el timer periódico
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Realizamos el refresco inicial
-      await _forceSessionRefresh();
-    });
-  }
-
-  void _configureEncuestasPendientesInterceptors() {
-    _sessionService.configureSurveyAssertionInterceptors(
-      ensureNoPendingSurvey: (response) async {
-        if (_sessionService.evaluateIsSurveyAvailable(response)) {
-          if (!_sessionService.evaluateIsSurveyAvailable(response)) {
-            _logger.i('[DOMAIN] No hay encuestas pendientes');
-            return;
-          }
-          _logger.w('[DOMAIN] Encuesta pendiente encontrada, cerrando sesión');
-          _signOutUseCase.execute(
-            SessionException.pendingSurveyError(
-              message: 'Encuesta pendiente encontrada',
-              originalError: 'Encuesta pendiente encontrada',
-            ),
-          );
-        }
-      },
-    );
+    // // Programar SOLO refresco inicial, eliminamos el timer periódico
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   // Realizamos el refresco inicial
+    //   await _forceSessionRefresh();
+    // });
   }
 
   void _configureSessionInterceptors() {
@@ -126,9 +105,8 @@ class AuthenticationManager {
         ApiPathAndMethod(ApiMethod.get, SigaClient.survey1RedirectionLocation),
         ApiPathAndMethod(ApiMethod.get, SigaClient.survey2RedirectionLocation),
       ],
-      onSessionExpired: () {
-        _signOutUseCase.execute();
-      },
+      onSessionExpired:
+          _signOutUseCase.execute, // Handle auth error and pending surveys
     );
   }
 
@@ -143,14 +121,8 @@ class AuthenticationManager {
         _logger.i(
           '[DOMAIN] Han pasado más de ${_sessionTimeoutDuration.inSeconds} segundos desde el último refresco, iniciando nuevo refresco',
         );
-        await _authTokenRefreshManager.refreshSession();
-        _lastSuccessfulRefreshTime = DateTime.now();
-        _lastSuccessfulRefresh = DateTime.now();
-
-        if (_isOfflineMode) {
-          _isOfflineMode = false;
-          _toastService.show('Conexión recuperada');
-        }
+        final refreshResult = await _authTokenRefreshManager.refreshSession();
+        await _handleRefreshResult(refreshResult, 'interceptor');
       } else {
         _logger.d(
           '[DOMAIN] Refresco no necesario, último refresco hace ${DateTime.now().difference(_lastSuccessfulRefreshTime).inSeconds} segundos',
@@ -160,35 +132,26 @@ class AuthenticationManager {
   }
 
   /// Fuerza un refresco completo de sesión
-  Future<void> _forceSessionRefresh() async {
-    final storedCredentials = _getStoredCredentialsUseCase.execute();
-    if (!storedCredentials.hasCredentials) {
-      _logger.i(
-        '[DOMAIN] No hay credenciales almacenadas, no se intenta refresco',
-      );
-      return;
-    }
+  // Future<void> _forceSessionRefresh() async {
+  //   final storedCredentials = _getStoredCredentialsUseCase.execute();
+  //   if (!storedCredentials.hasCredentials) {
+  //     _logger.i(
+  //       '[DOMAIN] No hay credenciales almacenadas, no se intenta refresco',
+  //     );
+  //     return;
+  //   }
 
-    await _asyncOperationGuard.executeSafely(() async {
-      try {
-        _logger.i(
-          '[DOMAIN] Iniciando refresco forzado de sesión al iniciar la app',
-        );
+  //   await _asyncOperationGuard.executeSafely(() async {
+  //     _logger.i(
+  //       '[DOMAIN] Iniciando refresco forzado de sesión al iniciar la app',
+  //     );
 
-        _authTokenRefreshManager.reset();
-        await _authTokenRefreshManager.refreshSession();
-        _lastSuccessfulRefresh = DateTime.now();
-        _lastSuccessfulRefreshTime = DateTime.now();
-        if (_isOfflineMode) {
-          _isOfflineMode = false;
-          _toastService.show('Conexión recuperada');
-        }
-        _logger.i('[DOMAIN] Refresco forzado completado exitosamente');
-      } catch (e, s) {
-        _handleRefreshError(e, s, 'forzado');
-      }
-    }, operationKey: _sessionRefreshKey); // MISMA CLAVE que otros refrescos
-  }
+  //     _authTokenRefreshManager.reset();
+  //     final result = await _authTokenRefreshManager.refreshSession();
+  //     await _handleRefreshResult(result, 'forzado');
+  //     _logger.i('[DOMAIN] Refresco forzado completado exitosamente');
+  //   }, operationKey: _sessionRefreshKey); // MISMA CLAVE que otros refrescos
+  // }
 
   /// Maneja el evento cuando la app vuelve a primer plano
   Future<void> _handleAppResumed(Duration backgroundDuration) async {
@@ -211,82 +174,95 @@ class AuthenticationManager {
       return;
     }
     await _asyncOperationGuard.executeSafely(() async {
-      try {
-        _logger.i(
-          '[DOMAIN] Refrescando sesión después de volver a primer plano',
-        );
+      _logger.i('[DOMAIN] Refrescando sesión después de volver a primer plano');
 
-        _authTokenRefreshManager.reset();
-        await _authTokenRefreshManager.refreshSession();
-        _lastSuccessfulRefresh = DateTime.now();
-        _lastSuccessfulRefreshTime = DateTime.now();
-        if (_isOfflineMode) {
-          _isOfflineMode = false;
-          _toastService.show('Conexión recuperada');
-        }
-        _logger.i(
-          '[DOMAIN] Refresco después de reactivación completado exitosamente',
-        );
-      } catch (e, s) {
-        _handleRefreshError(e, s, 'reactivación');
-      }
+      _authTokenRefreshManager.reset();
+      final result = await _authTokenRefreshManager.refreshSession();
+      await _handleRefreshResult(result, 'reactivación');
+      _logger.i(
+        '[DOMAIN] Refresco después de reactivación completado exitosamente',
+      );
     }, operationKey: _sessionRefreshKey); // MISMA CLAVE que otros refrescos
   }
 
-  void _handleRefreshError(
+  /// Maneja el resultado del refresco de sesión
+  Future<void> _handleRefreshResult(
+    RefreshResult result,
+    String refreshType,
+  ) async {
+    if (result.isSuccess) {
+      _lastSuccessfulRefreshTime = DateTime.now();
+      _lastSuccessfulRefresh = DateTime.now();
+      if (_isOfflineMode) {
+        _isOfflineMode = false;
+        _toastService.show('Conexión recuperada');
+      }
+    } else if (result.isNetworkError) {
+      _handleRefreshNetworkError(
+        result.error!,
+        result.stackTrace ?? StackTrace.current,
+        refreshType,
+      );
+    } else if (result.isUnknownError) {
+      // _handleRefreshError(
+      //   result.error!,
+      //   result.stackTrace ?? StackTrace.current,
+      //   refreshType,
+      // );
+      throw result.error!;
+    } else if (result.hasNoCredentials) {
+      _logger.i('[DOMAIN] No hay credenciales para el refresco $refreshType');
+    }
+  }
+
+  void _handleRefreshNetworkError(
     Object error,
     StackTrace stackTrace,
     String refreshType,
   ) {
-    final isNetworkError = _isNetworkError(error);
-    if (isNetworkError) {
-      if (!_isOfflineMode) {
-        _isOfflineMode = true;
-        _toastService.show('Modo sin conexión activo', isError: false);
-      }
-      if (_isWithinOfflineGracePeriod()) {
-        _logger.w(
-          '[DOMAIN] Error de red en refresco $refreshType, pero dentro del período de gracia offline',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      } else {
-        _logger.e(
-          '[DOMAIN] Error de red en refresco $refreshType y FUERA del período de gracia',
-          error: error,
-          stackTrace: stackTrace,
-        );
-        _toastService.show(
-          'Sesión cerrada por estar demasiado tiempo sin conexión',
-          isError: true,
-        );
-        _signOutUseCase.execute(
-          SessionException.refreshError(
-            message: 'Período de modo offline expirado',
-            originalError: 'Sin conexión por demasiado tiempo',
-          ),
-        );
-      }
-    } else {
-      _logger.e(
-        '[DOMAIN] Error en refresco $refreshType: $error',
+    // final isNetworkError = _isNetworkError(error);
+
+    // // Si no es error de red, solo registrar y salir
+    // if (!isNetworkError) {
+    //   _logger.e(
+    //     '[DOMAIN] Error en refresco $refreshType: $error',
+    //     error: error,
+    //     stackTrace: stackTrace,
+    //   );
+    //   return;
+    // }
+
+    // Es error de red - activar modo offline si no está activo
+    if (!_isOfflineMode) {
+      _isOfflineMode = true;
+      _toastService.show('Modo sin conexión activo', isError: false);
+    }
+
+    // Verificar si estamos dentro del período de gracia
+    if (_isWithinOfflineGracePeriod()) {
+      _logger.w(
+        '[DOMAIN] Error de red en refresco $refreshType, pero dentro del período de gracia offline',
         error: error,
         stackTrace: stackTrace,
       );
+      return;
     }
-  }
 
-  bool _isNetworkError(Object error) {
-    if (error is DioException) {
-      return error.type == DioExceptionType.connectionTimeout ||
-          error.type == DioExceptionType.sendTimeout ||
-          error.type == DioExceptionType.receiveTimeout ||
-          error.type == DioExceptionType.connectionError ||
-          (error.type == DioExceptionType.unknown &&
-              (error.error is SocketException ||
-                  error.message?.contains('Failed host lookup') == true));
-    }
-    return false;
+    // Fuera del período de gracia - cerrar sesión
+    _logger.e(
+      '[DOMAIN] Error de red en refresco $refreshType y FUERA del período de gracia',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    _toastService.show(
+      'Sesión cerrada por estar demasiado tiempo sin conexión',
+      isError: true,
+    );
+    _signOutUseCase.execute(
+      SessionException.refreshError(
+        originalError: 'Sin conexión por demasiado tiempo',
+      ),
+    );
   }
 
   bool _isWithinOfflineGracePeriod() {

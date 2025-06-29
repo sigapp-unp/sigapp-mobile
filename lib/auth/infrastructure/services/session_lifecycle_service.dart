@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
-import 'package:sigapp/auth/domain/value-objects/api_response.dart';
+import 'package:sigapp/core/infrastructure/http/network_utils.dart';
 import 'package:sigapp/core/infrastructure/http/siga_client.dart';
 import 'package:sigapp/auth/domain/services/session_lifecycle_service.dart';
 import 'package:sigapp/auth/domain/value-objects/api_path_and_method.dart';
@@ -19,45 +19,6 @@ class SessionLifecycleServiceImpl implements SessionLifecycleService {
 
   SessionLifecycleServiceImpl(this._sigaClient, this._logger);
 
-  @override
-  void configureSurveyAssertionInterceptors({
-    required Future<void> Function(ApiResponse a) ensureNoPendingSurvey,
-  }) {
-    _sigaClient.http.interceptors.add(
-      InterceptorsWrapper(
-        onResponse: (response, handler) async {
-          await ensureNoPendingSurvey(
-            ApiResponse(
-              statusCode: response.statusCode ?? -1,
-              headers: response.headers.map,
-              pathAndMethod: ApiPathAndMethod(
-                ApiMethod.fromString(response.requestOptions.method),
-                response.requestOptions.path,
-              ),
-            ),
-          );
-
-          handler.next(response);
-        },
-        onError: (error, handler) async {
-          if (error.response != null) {
-            await ensureNoPendingSurvey(
-              ApiResponse(
-                statusCode: error.response!.statusCode ?? -1,
-                headers: error.response!.headers.map,
-                pathAndMethod: ApiPathAndMethod(
-                  ApiMethod.fromString(error.requestOptions.method),
-                  error.requestOptions.path,
-                ),
-              ),
-            );
-          }
-          handler.next(error);
-        },
-      ),
-    );
-  }
-
   /// Sets up the logic to refresh the session before requests (unless excluded)
   /// and to detect session expiration after responses. Calls [onSessionExpired]
   /// if the session is determined to be expired.
@@ -66,53 +27,8 @@ class SessionLifecycleServiceImpl implements SessionLifecycleService {
     required Future<void> Function() awaitOngoingSessionRefresh,
     // Actualizando el nombre del parámetro para que coincida con la interfaz
     required List<ApiPathAndMethod> endpointsExcludedFromPreRequestRefresh,
-    required void Function() onSessionExpired,
+    required void Function(SessionException? technicalReason) onSessionExpired,
   }) {
-    Response handleResponse(Response response) {
-      // Skip session expiration check if the response is from an excluded request.
-      if (_isExcludedRequest(
-        response.requestOptions,
-        endpointsExcludedFromPreRequestRefresh,
-      )) {
-        _logger.d(
-          '[INFRASTRUCTURE] Response from ${response.requestOptions.method} ${response.requestOptions.path} is excluded from session expiration evaluation.',
-        );
-        return response;
-      }
-
-      // Evaluate if the session has expired based on headers and status code.
-      final hasExpired =
-          response.statusCode != null &&
-          _checkSessionExpiration(
-            headers: response.headers.map,
-            statusCode: response.statusCode!,
-          );
-      if (hasExpired) {
-        // Lanzar una excepción específica en lugar de simplemente llamar a onSessionExpired
-        final locationUrl =
-            response.headers.map['location']?.first ?? 'Unknown redirection';
-        if (locationUrl.contains(SigaClient.forceSignOutRedirectionLocation)) {
-          _logger.w(
-            '[INFRASTRUCTURE] Lanzando SessionException.authenticationError por forceSignOut',
-          );
-          throw SessionException.authenticationError(
-            message: 'Sesión cerrada por el servidor',
-            originalError: 'Redirección a forceSignOut: $locationUrl',
-          );
-        } else {
-          _logger.w(
-            '[INFRASTRUCTURE] Lanzando SessionException.refreshError por redirección a login',
-          );
-          throw SessionException.refreshError(
-            message: 'Sesión expirada',
-            originalError: 'Redirección a página de login: $locationUrl',
-          );
-        }
-      }
-
-      return response;
-    }
-
     _sigaClient.http.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -160,29 +76,24 @@ class SessionLifecycleServiceImpl implements SessionLifecycleService {
         },
         onResponse: (response, handler) {
           try {
-            handler.next(handleResponse(response));
-          } catch (e) {
-            // Si es un SessionException, no lo manejamos aquí, lo propagamos
-            if (e is SessionException) {
-              onSessionExpired();
-              handler.reject(
-                DioException(requestOptions: response.requestOptions, error: e),
-              );
-            } else {
-              // Otros errores se pasan a través normalmente
-              handler.next(response);
+            handler.next(
+              _handleResponse(response, endpointsExcludedFromPreRequestRefresh),
+            );
+          } on SessionException catch (e) {
+            if (e is AuthenticationSessionException ||
+                e is PendingSurveySessionException) {
+              onSessionExpired(e);
             }
+            handler.reject(
+              DioException(requestOptions: response.requestOptions, error: e),
+            );
+          } catch (e) {
+            handler.next(response);
           }
         },
         onError: (error, handler) {
           // Detectar error de red y NO cerrar sesión ni lanzar SessionException
-          if (error.type == DioExceptionType.connectionTimeout ||
-              error.type == DioExceptionType.sendTimeout ||
-              error.type == DioExceptionType.receiveTimeout ||
-              error.type == DioExceptionType.connectionError ||
-              (error.type == DioExceptionType.unknown &&
-                  (error.error is SocketException ||
-                      error.message?.contains('Failed host lookup') == true))) {
+          if (isNetworkError(error)) {
             _logger.d(
               '[INFRASTRUCTURE] Error de red detectado en interceptor, no se cierra sesión',
               error: error,
@@ -190,37 +101,34 @@ class SessionLifecycleServiceImpl implements SessionLifecycleService {
             handler.next(error);
             return;
           }
-          if (error.response != null) {
-            try {
-              handleResponse(error.response!);
-              handler.next(error);
-            } catch (e) {
-              // Si es un SessionException, no lo manejamos aquí, lo propagamos
-              if (e is SessionException) {
-                onSessionExpired();
-                handler.reject(
-                  DioException(requestOptions: error.requestOptions, error: e),
-                );
-              } else {
-                // Otros errores se pasan a través normalmente
-                handler.next(error);
-              }
+
+          // Si hay un error de respuesta, manejarlo
+          if (error.response == null) {
+            handler.next(error);
+            return;
+          }
+
+          // Si un response , manejarlo y evaluar la sesión
+          try {
+            _handleResponse(
+              error.response!,
+              endpointsExcludedFromPreRequestRefresh,
+            );
+            handler.next(error);
+          } on SessionException catch (e) {
+            if (e is AuthenticationSessionException ||
+                e is PendingSurveySessionException) {
+              onSessionExpired(e);
             }
-          } else {
+            handler.reject(
+              DioException(requestOptions: error.requestOptions, error: e),
+            );
+          } catch (e) {
             handler.next(error);
           }
         },
       ),
     );
-  }
-
-  @override
-  bool evaluateIsSurveyAvailable(ApiResponse response) {
-    final locationHeaderValue = response.headers['location'];
-    if (locationHeaderValue == null) {
-      return false;
-    }
-    return _evaluateSurveyRedirection(locationHeaderValue.first);
   }
 
   bool _evaluateSurveyRedirection(String locationUrl) {
@@ -232,39 +140,54 @@ class SessionLifecycleServiceImpl implements SessionLifecycleService {
   // Private methods
   // ----------------
 
-  /// Determines if the session has expired based on the provided response headers and status code.
-  /// Returns `true` if there is a 302 redirect to the sign-out or sign-in page.
-  bool _checkSessionExpiration({
-    required Map<String, List<String>> headers,
-    required int statusCode,
-  }) {
+  Response _handleResponse(
+    Response response,
+    List<ApiPathAndMethod> excludedRequests,
+  ) {
+    // Skip session expiration check if the response is from an excluded request.
+    if (_isExcludedRequest(response.requestOptions, excludedRequests)) {
+      _logger.d(
+        '[INFRASTRUCTURE] Response from ${response.requestOptions.method} ${response.requestOptions.path} is excluded from session expiration evaluation.',
+      );
+      return response;
+    }
+
+    // throw SessionException.pendingSurveyError(originalError: 'DEBUGGING');
+
+    // Evaluate redirection and session expiration
+    if (response.statusCode == null) return response;
+    final statusCode = response.statusCode!;
+    final headers = response.headers.map;
     final locationHeaderValue = headers['location'] ?? [];
     if (statusCode != 302 && locationHeaderValue.isEmpty) {
-      _logger.d(
-        '[INFRASTRUCTURE] No hay respuesta 302 o header location, no se evalúa expiración',
-      );
-      return false;
+      // No hay redirección 302 o header location, no se evalúa expiración
+      return response;
     }
 
     final locationUrl = locationHeaderValue.first;
+
+    // Verificar si es una redirección de cierre de sesión
     if (_evaluateSignOutRedirection(locationUrl)) {
       _logger.w(
         '[INFRASTRUCTURE] SESIÓN EXPIRADA: Detectada redirección de cierre se sesión: $locationUrl',
       );
-      return true;
+      throw SessionException.authenticationError(
+        originalError: 'Redirección a forceSignOut: $locationUrl',
+      );
     }
 
-    // WTF LOL
-    // if (_evaluateSignInRedirection(locationUrl)) {
-    //   _logger.w('[INFRASTRUCTURE] SESIÓN EXPIRADA: Detectada redirección a página de login: $locationUrl');
-    //   return true;
-    // }
+    // Verificar si es una redirección a encuesta pendiente
+    if (_evaluateSurveyRedirection(locationUrl)) {
+      _logger.w(
+        '[INFRASTRUCTURE] ENCUESTA PENDIENTE: Detectada redirección a encuesta: $locationUrl',
+      );
+      throw SessionException.pendingSurveyError(
+        originalError: 'Redirección a encuesta: $locationUrl',
+      );
+    }
 
     // Si llegamos aquí, es una redirección 302 a otra página (no expiró la sesión)
-    _logger.d(
-      '[INFRASTRUCTURE] Redirección 302 detectada pero NO es expiración de sesión: $locationUrl',
-    );
-    return false;
+    return response;
   }
 
   bool _evaluateSignOutRedirection(String locationUrl) {
@@ -317,14 +240,12 @@ class SessionLifecycleServiceImpl implements SessionLifecycleService {
 
     if (statusCode == 302) {
       throw SessionException.authenticationError(
-        message: 'Proceso pendiente en SIGA web: $locationHeaderValue',
         originalError:
             'Status code: $statusCode, Location: $locationHeaderValue',
       );
     }
 
     throw SessionException.authenticationError(
-      message: 'Ocurrió un error inesperado',
       originalError: 'Status code: $statusCode, Location: $locationHeaderValue',
     );
   }

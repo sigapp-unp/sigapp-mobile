@@ -43,9 +43,16 @@ class SignOutUseCase {
     await _progressIndicatorService.show();
 
     // Obtener el mensaje amigable y si debería tratarse como alerta de error
-    final _LogoutMessageInfo messageInfo = _get_LogoutMessageInfo(
-      technicalReason,
-    );
+    final userMessage = technicalReason?.message ?? 'Has cerrado sesión';
+    final shouldDisplayAsError = switch (technicalReason) {
+      null => false,
+      // NetworkSessionException() => true,
+      RefreshSessionException() => false,
+      AuthenticationSessionException() => true,
+      StudentInfoSessionException() => true,
+      PendingSurveySessionException() => false,
+      UnknownSessionException() => true,
+    };
 
     try {
       // required for refreshing navigation
@@ -76,63 +83,9 @@ class SignOutUseCase {
 
     // Refresh navigation and show message
     _navigationService.refreshNavigation();
-    _toastService.show(
-      messageInfo.userMessage,
-      isError: messageInfo.shouldDisplayAsError,
-    );
+    _toastService.show(userMessage, isError: shouldDisplayAsError);
 
     // clear
     _sessionInfoService.clearSessionInfo();
   }
-
-  /// Convierte excepciones tipadas en mensajes amigables para el usuario
-  /// y determina si deben mostrarse como errores
-  _LogoutMessageInfo _get_LogoutMessageInfo(SessionException? technicalReason) {
-    return switch (technicalReason) {
-      null => _LogoutMessageInfo("Has cerrado sesión", false),
-
-      // Errores de red - Mostrar como error ya que no es esperado
-      NetworkSessionException() => _LogoutMessageInfo(
-        "Se cerró tu sesión debido a problemas de conexión. Por favor, verifica tu conexión a internet y vuelve a intentarlo.",
-        true,
-      ),
-
-      // Errores de refresco de sesión - No es crítico, informativo
-      RefreshSessionException() => _LogoutMessageInfo(
-        "Tu sesión ha expirado. Esto puede ocurrir por inactividad o problemas en el servidor. Por favor, inicia sesión nuevamente.",
-        false,
-      ),
-
-      // Errores de autenticación - Puede ser crítico (seguridad)
-      AuthenticationSessionException() => _LogoutMessageInfo(
-        "Se ha cerrado tu sesión por motivos de seguridad. Por favor, inicia sesión nuevamente.",
-        true,
-      ),
-
-      // Errores de información académica - Mostrar como error
-      StudentInfoSessionException() => _LogoutMessageInfo(
-        "No se pudo verificar tu información académica. Por favor, intenta nuevamente más tarde.",
-        true,
-      ),
-
-      // Errores de encuestas pendientes - Es un proceso normal, no un error técnico
-      PendingSurveySessionException() => _LogoutMessageInfo(
-        "Tienes encuestas pendientes que deben ser completadas en la versión web de SIGA. Por favor, inicia sesión en la plataforma web para completarlas.",
-        false,
-      ),
-
-      // Errores desconocidos - Siempre mostrar como error
-      UnknownSessionException() => _LogoutMessageInfo(
-        "Se cerró tu sesión por un error desconocido. Por favor, inicia sesión nuevamente.",
-        true,
-      ),
-    };
-  }
-}
-
-class _LogoutMessageInfo {
-  final String userMessage;
-  final bool shouldDisplayAsError;
-
-  _LogoutMessageInfo(this.userMessage, this.shouldDisplayAsError);
 }

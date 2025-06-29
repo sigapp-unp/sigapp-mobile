@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -75,11 +76,13 @@ class LoginCubit extends Cubit<LoginState> {
       emit(state.copyWith(status: const LoginStatus.success()));
     } catch (e, s) {
       _logger.e('[UI] Login failed: $e', error: e, stackTrace: s);
-      if (e is SessionException) {
-        emit(state.copyWith(status: LoginStatus.error(e.message)));
-        return;
+      var message = '';
+      if (e is DioException && e.error is SessionException) {
+        message = (e.error as SessionException).message;
+      } else {
+        message = e.toString();
       }
-      emit(state.copyWith(status: LoginStatus.error(e.toString())));
+      emit(state.copyWith(status: LoginStatus.error(message)));
     }
   }
 }
