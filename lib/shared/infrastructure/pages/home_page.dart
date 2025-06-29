@@ -38,22 +38,7 @@ class HomePageWidgetState extends State<HomePageWidget>
             // onPageChanged: (index) {
             //   cubit.changeTab(index);
             // },
-            children: <Widget>[
-              BlocProvider(
-                create: (_) => getIt<EnrolledCoursesPageCubit>(),
-                child: EnrolledCoursesPageWidget(
-                  // appBarTrailing: UserAvatarButtonWidget(),
-                ),
-              ),
-              BlocProvider<CareerPageCubit>(
-                create: (_) => getIt<CareerPageCubit>(),
-                child: CareerPageView(),
-              ),
-              BlocProvider<StudentPageViewCubit>(
-                create: (_) => getIt<StudentPageViewCubit>(),
-                child: StudentPageView(),
-              ),
-            ],
+            children: <Widget>[_Tab1(), _Tab2(), _Tab3()],
           ),
           bottomNavigationBar: NavigationBar(
             destinations: const <Widget>[
@@ -100,6 +85,71 @@ class HomePageWidgetState extends State<HomePageWidget>
           );
         }
       },
+    );
+  }
+}
+
+class _Tab1 extends StatefulWidget {
+  const _Tab1();
+
+  @override
+  State<_Tab1> createState() => _Tab1State();
+}
+
+class _Tab1State extends State<_Tab1> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return BlocProvider(
+      create: (_) => getIt<EnrolledCoursesPageCubit>(),
+      child: EnrolledCoursesPageWidget(
+        // appBarTrailing: UserAvatarButtonWidget(),
+      ),
+    );
+  }
+}
+
+class _Tab2 extends StatefulWidget {
+  const _Tab2();
+
+  @override
+  State<_Tab2> createState() => _Tab2State();
+}
+
+class _Tab2State extends State<_Tab2> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return BlocProvider<CareerPageCubit>(
+      create: (_) => getIt<CareerPageCubit>(),
+      child: CareerPageView(),
+    );
+  }
+}
+
+class _Tab3 extends StatefulWidget {
+  const _Tab3();
+
+  @override
+  State<_Tab3> createState() => _Tab3State();
+}
+
+class _Tab3State extends State<_Tab3> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return BlocProvider<StudentPageViewCubit>(
+      create: (_) => getIt<StudentPageViewCubit>(),
+      child: StudentPageView(),
     );
   }
 }
