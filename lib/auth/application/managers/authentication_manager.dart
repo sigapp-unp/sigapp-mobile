@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:dio/dio.dart';
-import 'package:flutter/widgets.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/auth/application/managers/authentication_manager/app_lifecycle_manager.dart';
 import 'package:sigapp/auth/application/managers/authentication_manager/async_operation_guard.dart';
 import 'package:sigapp/auth/application/managers/authentication_manager/auth_token_refresh_manager.dart';
 import 'package:sigapp/auth/application/usecases/get_stored_credentials_usecase.dart';
 import 'package:sigapp/auth/application/usecases/keep_session_alive_usecase.dart';
-import 'package:sigapp/auth/application/usecases/direct_sign_in_usecase.dart';
-import 'package:sigapp/auth/application/usecases/sign_in_usecase.dart';
+import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
 import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
 import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
 import 'package:sigapp/auth/domain/services/toast_service.dart';
@@ -31,14 +27,13 @@ class AuthenticationManager {
   final GetStoredCredentialsUseCase _getStoredCredentialsUseCase;
   final SignOutUseCase _signOutUseCase;
   final KeepSessionAliveUsecase _keepSessionAliveUsecase;
-  final DirectSignInUsecase _signInUseCase;
+  final AuthenticateUsecase _signInUseCase;
   final ToastService _toastService;
   final Logger _logger;
 
   // Variables para manejo offline
   static const _offlineGracePeriod = Duration(hours: 12);
   DateTime? _lastSuccessfulRefresh;
-  DateTime _lastSuccessfulRefreshTime = DateTime.fromMillisecondsSinceEpoch(0);
   bool _isOfflineMode = false;
 
   // Clases de apoyo para separar responsabilidades
@@ -74,7 +69,8 @@ class AuthenticationManager {
   /// Determina si se necesita refrescar la sesión antes de una solicitud
   bool _shouldRefreshBeforeRequest() {
     // Verificar si nunca se ha refrescado o si han pasado más de 60 segundos
-    return DateTime.now().difference(_lastSuccessfulRefreshTime) >
+    if (_lastSuccessfulRefresh == null) return true;
+    return DateTime.now().difference(_lastSuccessfulRefresh!) >
         _sessionTimeoutDuration;
   }
 
@@ -125,7 +121,7 @@ class AuthenticationManager {
         await _handleRefreshResult(refreshResult, 'interceptor');
       } else {
         _logger.d(
-          '[DOMAIN] Refresco no necesario, último refresco hace ${DateTime.now().difference(_lastSuccessfulRefreshTime).inSeconds} segundos',
+          '[DOMAIN] Refresco no necesario, último refresco hace ${_lastSuccessfulRefresh != null ? DateTime.now().difference(_lastSuccessfulRefresh!).inSeconds : "nunca"} segundos',
         );
       }
     }, operationKey: _sessionRefreshKey);
@@ -159,7 +155,7 @@ class AuthenticationManager {
       '[DOMAIN] App volvió a primer plano después de ${backgroundDuration.inSeconds} segundos, refrescando sesión',
     );
 
-    _refreshOnResume();
+    await _refreshOnResume();
   }
 
   /// Maneja el evento cuando la app va a segundo plano
@@ -191,7 +187,6 @@ class AuthenticationManager {
     String refreshType,
   ) async {
     if (result.isSuccess) {
-      _lastSuccessfulRefreshTime = DateTime.now();
       _lastSuccessfulRefresh = DateTime.now();
       if (_isOfflineMode) {
         _isOfflineMode = false;
@@ -204,12 +199,11 @@ class AuthenticationManager {
         refreshType,
       );
     } else if (result.isUnknownError) {
-      // _handleRefreshError(
-      //   result.error!,
-      //   result.stackTrace ?? StackTrace.current,
-      //   refreshType,
-      // );
-      throw result.error!;
+      _handleRefreshUnknownError(
+        result.error!,
+        result.stackTrace ?? StackTrace.current,
+        refreshType,
+      );
     } else if (result.hasNoCredentials) {
       _logger.i('[DOMAIN] No hay credenciales para el refresco $refreshType');
     }
@@ -220,18 +214,6 @@ class AuthenticationManager {
     StackTrace stackTrace,
     String refreshType,
   ) {
-    // final isNetworkError = _isNetworkError(error);
-
-    // // Si no es error de red, solo registrar y salir
-    // if (!isNetworkError) {
-    //   _logger.e(
-    //     '[DOMAIN] Error en refresco $refreshType: $error',
-    //     error: error,
-    //     stackTrace: stackTrace,
-    //   );
-    //   return;
-    // }
-
     // Es error de red - activar modo offline si no está activo
     if (!_isOfflineMode) {
       _isOfflineMode = true;
@@ -261,6 +243,25 @@ class AuthenticationManager {
     _signOutUseCase.execute(
       SessionException.refreshError(
         originalError: 'Sin conexión por demasiado tiempo',
+      ),
+    );
+  }
+
+  void _handleRefreshUnknownError(
+    Object error,
+    StackTrace stackTrace,
+    String refreshType,
+  ) {
+    _logger.e(
+      '[DOMAIN] Error desconocido en refresco $refreshType: $error',
+      error: error,
+      stackTrace: stackTrace,
+    );
+
+    // Para errores desconocidos, cerrar la sesión inmediatamente
+    _signOutUseCase.execute(
+      SessionException.refreshError(
+        originalError: 'Error desconocido durante refresco: $error',
       ),
     );
   }

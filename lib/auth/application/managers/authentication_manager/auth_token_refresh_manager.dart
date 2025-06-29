@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:logger/logger.dart';
 import 'package:sigapp/auth/application/usecases/get_stored_credentials_usecase.dart';
 import 'package:sigapp/auth/application/usecases/keep_session_alive_usecase.dart';
-import 'package:sigapp/auth/application/usecases/direct_sign_in_usecase.dart';
+import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
 import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
 import 'package:sigapp/core/infrastructure/http/network_utils.dart';
 
@@ -11,7 +11,7 @@ class AuthTokenRefreshManager {
   static const int _maxRetries = 3;
 
   final KeepSessionAliveUsecase _keepSessionAliveUsecase;
-  final DirectSignInUsecase _signInUseCase;
+  final AuthenticateUsecase _signInUseCase;
   final GetStoredCredentialsUseCase _getStoredCredentialsUseCase;
   final Logger _logger;
 
@@ -56,7 +56,9 @@ class AuthTokenRefreshManager {
 
         _logger.i('[AUTH] Session refreshed successfully on attempt $attempt');
 
-        _refreshSessionCompleter!.complete();
+        if (!_refreshSessionCompleter!.isCompleted) {
+          _refreshSessionCompleter!.complete();
+        }
         _refreshSessionCompleter = null;
         return RefreshResult.success();
       } catch (e, s) {
@@ -69,10 +71,7 @@ class AuthTokenRefreshManager {
           stackTrace: s,
         );
 
-        // Solo reintentar si el error es específicamente un NetworkSessionException
-        // final isNetworkError_ =
-        //     e is NetworkSessionException ||
-        //     (e is DioException && e.error is NetworkSessionException);
+        // Solo reintentar si el error es específicamente un error de red
         if (isNetworkError(e)) {
           if (attempt < _maxRetries) {
             final waitTime = Duration(seconds: attempt * 2);
@@ -99,7 +98,9 @@ class AuthTokenRefreshManager {
       stackTrace: lastStack,
     );
 
-    _refreshSessionCompleter!.completeError(lastError);
+    if (!_refreshSessionCompleter!.isCompleted) {
+      _refreshSessionCompleter!.completeError(lastError);
+    }
     _refreshSessionCompleter = null;
 
     // Determinar el tipo de resultado basado en el error

@@ -1,37 +1,37 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/auth/application/services/api_gateway_auth_service.dart';
-import 'package:sigapp/auth/application/usecases/direct_sign_in_usecase.dart';
-import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
-import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
-import 'package:sigapp/auth/domain/repositories/auth_repository.dart';
+import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
+// import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
+// import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
+// import 'package:sigapp/auth/domain/repositories/auth_repository.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
 import 'package:sigapp/auth/domain/services/navigation_service.dart';
-import 'package:sigapp/auth/domain/services/session_lifecycle_service.dart';
+// import 'package:sigapp/auth/domain/services/session_lifecycle_service.dart';
 import 'package:sigapp/student/domain/services/academic_info_service.dart';
 import 'package:logger/logger.dart';
 
 @injectable
 class SignInUseCase {
-  final AuthRepository _authRepository;
+  // final AuthRepository _authRepository;
   final SharedPreferencesAuthRepository _sharedPreferencesAuthRepository;
   final ApiGatewayAuthService _supabaseAuthService;
   final NavigationService _navigationService;
   // TODO: Required refactor in order to impement cashing at the infrastructure layer
   // TODO: Required refactor in order to not call services from usecases
   final AcademicInfoService _academicInfoService;
-  final SessionLifecycleService _sessionLifecycleService;
+  // final SessionLifecycleService _sessionLifecycleService;
   final Logger _logger;
   // final SignOutUseCase _signOutUseCase;
-  final DirectSignInUsecase _directSignInUse;
+  final AuthenticateUsecase _directSignInUse;
 
   SignInUseCase(
-    this._authRepository,
+    // this._authRepository,
     this._sharedPreferencesAuthRepository,
     this._supabaseAuthService,
     this._navigationService,
     this._academicInfoService,
-    this._sessionLifecycleService,
+    // this._sessionLifecycleService,
     this._logger,
     this._directSignInUse,
     // this._signOutUseCase,
