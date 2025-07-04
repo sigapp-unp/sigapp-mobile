@@ -5,19 +5,19 @@ import 'package:sigapp/courses/domain/entities/academic_history_term.dart';
 import 'package:sigapp/courses/domain/repositories/program_curriculum_repository.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
 import 'package:sigapp/courses/domain/value-objects/program_curriculum_progress.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
+import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/value_objects/semester_context.dart';
 
 @lazySingleton
 class GetProgramCurriculumProgressUsecase {
   final ProgramCurriculumRepository _programCurriculumRepository;
-  final AcademicInfoService _academicInfoService;
+  final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   final GetEnrolledCoursesUsecase _getEnrolledCoursesUsecase;
   final Logger _logger;
 
   GetProgramCurriculumProgressUsecase(
     this._programCurriculumRepository,
-    this._academicInfoService,
+    this._getAcademicInfoUseCase,
     this._getEnrolledCoursesUsecase,
     this._logger,
   );
@@ -110,7 +110,7 @@ class GetProgramCurriculumProgressUsecase {
   Future<void> _setEnrolledCourses(
     List<ProgramCurriculumTerm> programCurriculum,
   ) async {
-    final semesterContext = await _academicInfoService.getSessionInfo().then(
+    final semesterContext = await _getAcademicInfoUseCase.execute().then(
       (v) => v.semesterContext,
     );
 

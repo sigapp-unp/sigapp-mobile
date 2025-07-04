@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
+import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
 
 part 'student_cubit.freezed.dart';
 
@@ -17,17 +17,17 @@ sealed class StudentPageViewState with _$StudentPageViewState {
 
 @injectable
 class StudentPageViewCubit extends Cubit<StudentPageViewState> {
-  final AcademicInfoService _sessionInfoService;
+  final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   final Logger _logger;
 
-  StudentPageViewCubit(this._sessionInfoService, this._logger)
+  StudentPageViewCubit(this._getAcademicInfoUseCase, this._logger)
     : super(const StudentPageViewState.loading());
 
   Future<void> setup() async {
     emit(const StudentPageViewState.loading());
     try {
-      final sessionInfo = await _sessionInfoService.getSessionInfo();
-      emit(StudentPageViewState.success(sessionInfo.academicReport));
+      final academicInfo = await _getAcademicInfoUseCase.execute();
+      emit(StudentPageViewState.success(academicInfo.academicReport));
     } catch (e, s) {
       _logger.e('[UI] Error setting up Student Page', error: e, stackTrace: s);
       emit(StudentPageViewState.error(e));

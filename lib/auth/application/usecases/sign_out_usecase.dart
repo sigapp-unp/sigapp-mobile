@@ -8,7 +8,7 @@ import 'package:sigapp/auth/domain/services/navigation_service.dart';
 import 'package:sigapp/auth/domain/services/toast_service.dart';
 import 'package:sigapp/shared/domain/service/progress_indicator_service.dart';
 import 'package:sigapp/courses/domain/repositories/regeva_repository.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
+// import 'package:sigapp/student/domain/services/academic_info_service.dart';
 
 @injectable
 class SignOutUseCase {
@@ -18,7 +18,7 @@ class SignOutUseCase {
   final AuthRepository _authRepository;
   final RegevaRepository _regevaRepository;
   final ProgressIndicatorService _progressIndicatorService;
-  final AcademicInfoService _sessionInfoService;
+  // final AcademicInfoService _sessionInfoService;
   final ApiGatewayAuthService _supabaseAuthService;
   final Logger _logger;
 
@@ -28,7 +28,7 @@ class SignOutUseCase {
     this._authRepository,
     this._regevaRepository,
     this._progressIndicatorService,
-    this._sessionInfoService,
+    // this._sessionInfoService,
     this._supabaseAuthService,
     this._toastService,
     this._logger,
@@ -86,6 +86,7 @@ class SignOutUseCase {
     _toastService.show(userMessage, isError: shouldDisplayAsError);
 
     // clear
-    _sessionInfoService.clearSessionInfo();
+    // TODO: handle cache clearing more gracefully
+    // _sessionInfoService.clearSessionInfo();
   }
 }

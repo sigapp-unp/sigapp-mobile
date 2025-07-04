@@ -1,20 +1,23 @@
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/courses/application/services/student_session_service.dart';
+import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+// import 'package:sigapp/courses/application/services/student_session_service.dart';
 import 'package:sigapp/courses/domain/repositories/regeva_repository.dart';
 import 'package:sigapp/courses/domain/value-objects/course_grade.dart';
 
 @lazySingleton
 class GetCourseGradeUsecase {
-  final StudentSessionService _studentSessionService;
+  final StudentSessionRepository _studentSessionRepository;
   final RegevaRepository _regevaRepository;
 
-  GetCourseGradeUsecase(this._studentSessionService, this._regevaRepository);
+  GetCourseGradeUsecase(this._studentSessionRepository, this._regevaRepository);
 
   Future<CourseGradeInfo> execute(
-    String scheduledCourseId, [
-    bool? refresh,
-  ]) async {
-    final credentials = await _studentSessionService.getInfo(refresh);
+    String scheduledCourseId, {
+    bool? forceRefresh,
+  }) async {
+    final credentials = await _studentSessionRepository.getStudentSessionInfo(
+      forceRefresh: forceRefresh,
+    );
     return CourseGradeInfo(
       grade: await _regevaRepository
           .getCourseGrade(

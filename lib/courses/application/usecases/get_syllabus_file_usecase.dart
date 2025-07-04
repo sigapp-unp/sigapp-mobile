@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/courses/application/exceptions/regeva_authentication_exception.dart';
-import 'package:sigapp/courses/application/services/student_session_service.dart';
+import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/local_syllabus_repository.dart';
 import 'package:sigapp/courses/domain/repositories/regeva_repository.dart';
 import 'package:sigapp/courses/domain/value-objects/syllabus_download_data.dart';
@@ -11,13 +11,13 @@ import 'package:sigapp/courses/domain/value-objects/syllabus_download_data.dart'
 @lazySingleton
 class GetSyllabusFileUsecase {
   final RegevaRepository _regevaRepository;
-  final StudentSessionService _studentSessionService;
+  final StudentSessionRepository _studentSessionRepository;
   final LocalSyllabusRepository _localSyllabusRepository;
   final Logger _logger;
 
   GetSyllabusFileUsecase(
     this._regevaRepository,
-    this._studentSessionService,
+    this._studentSessionRepository,
     this._localSyllabusRepository,
     this._logger,
   );
@@ -59,7 +59,7 @@ class GetSyllabusFileUsecase {
     }
 
     // If the user is not authenticated, authenticate and try again
-    final credentials = await _studentSessionService.getInfo();
+    final credentials = await _studentSessionRepository.getStudentSessionInfo();
     await _regevaRepository.authenticate(
       sigaToken1: credentials.regevaToken1,
       sigaToken2: credentials.regevaToken2,

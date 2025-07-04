@@ -8,7 +8,7 @@ import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
 import 'package:sigapp/auth/domain/services/navigation_service.dart';
 // import 'package:sigapp/auth/domain/services/session_lifecycle_service.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
+import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
 import 'package:logger/logger.dart';
 
 @injectable
@@ -17,9 +17,8 @@ class SignInUseCase {
   final SharedPreferencesAuthRepository _sharedPreferencesAuthRepository;
   final ApiGatewayAuthService _supabaseAuthService;
   final NavigationService _navigationService;
-  // TODO: Required refactor in order to impement cashing at the infrastructure layer
   // TODO: Required refactor in order to not call services from usecases
-  final AcademicInfoService _academicInfoService;
+  final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   // final SessionLifecycleService _sessionLifecycleService;
   final Logger _logger;
   // final SignOutUseCase _signOutUseCase;
@@ -30,7 +29,7 @@ class SignInUseCase {
     this._sharedPreferencesAuthRepository,
     this._supabaseAuthService,
     this._navigationService,
-    this._academicInfoService,
+    this._getAcademicInfoUseCase,
     // this._sessionLifecycleService,
     this._logger,
     this._directSignInUse,
@@ -51,7 +50,7 @@ class SignInUseCase {
     // Validate if student user is ready to use the app
     // This could throw an exception if the student is newly registered
     try {
-      await _academicInfoService.getSessionInfo();
+      await _getAcademicInfoUseCase.execute(forceRefresh: true);
     } on DioException catch (e) {
       // Si es una encuesta pendiente, la propagamos sin modificar (no es un error real)
       // switch (e.error) {

@@ -132,7 +132,7 @@ class CourseDetailCubit extends Cubit<CourseDetailState> {
     try {
       final courseGradeInfo = await _getCourseGradeUsecase.execute(
         regevaScheduledCourseId,
-        forceDownload,
+        forceRefresh: forceDownload,
       );
       emit(
         (state as CourseDetailReadyState).copyWith(

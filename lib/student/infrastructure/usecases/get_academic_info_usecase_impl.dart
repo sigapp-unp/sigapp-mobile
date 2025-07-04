@@ -1,55 +1,50 @@
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/courses/application/services/student_session_service.dart';
+import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/application/usecases/get_enrolled_courses_usecase.dart';
 import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
+import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 import 'package:sigapp/student/domain/value_objects/semester_context.dart';
 import 'package:sigapp/student/application/usecases/get_academic_report_usecase.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
 
-@Singleton(as: AcademicInfoService)
-class AcademicInfoServiceImpl extends AcademicInfoService {
-  AcademicInfoData? _data;
-
+@Named('getAcademicInfoUseCaseImpl')
+@Singleton()
+class GetAcademicInfoUseCaseImpl implements GetAcademicInfoUseCase {
   final GetAcademicReportUsecase _getAcademicReportUsecase;
-  final StudentSessionService _studentSessionService;
+  final StudentSessionRepository _studentSessionRepository;
   final GetEnrolledCoursesUsecase _getEnrolledCoursesUsecase;
 
-  AcademicInfoServiceImpl(
+  GetAcademicInfoUseCaseImpl(
     this._getAcademicReportUsecase,
     this._getEnrolledCoursesUsecase,
-    this._studentSessionService,
+    this._studentSessionRepository,
   );
 
   @override
-  Future<AcademicInfoData> getSessionInfo() async {
-    if (_data != null) {
-      return _data!;
-    }
+  Future<AcademicInfoData> execute({bool? forceRefresh}) async {
+    final academicReport = await _getAcademicReportUsecase.execute(
+      forceRefresh: forceRefresh,
+    );
+    final semesterContext = await _calculateSemesterContext(
+      academicReport,
+      forceRefresh,
+    );
 
-    final academicReport = await _getAcademicReportUsecase.execute();
-    final semesterContext = await _calculateSemesterContext(academicReport);
-
-    _data = AcademicInfoData(
+    return AcademicInfoData(
       academicReport: academicReport,
       semesterContext: semesterContext,
       faculty: FacultyIdentifier.identifyFaculty(academicReport.faculty),
     );
-
-    return _data!;
-  }
-
-  @override
-  void clearSessionInfo() {
-    _data = null;
   }
 
   Future<SemesterContext> _calculateSemesterContext(
     AcademicReport academicReport,
+    bool? forceRefresh,
   ) async {
     final firstSemester = academicReport.enrollmentSemester;
-    final studentSessionInfo = await _studentSessionService.getInfo();
+    final studentSessionInfo = await _studentSessionRepository
+        .getStudentSessionInfo(forceRefresh: forceRefresh);
 
     // Case 1: Estudiante actualmente matriculado
     final currentSemesterEnrolledCourses = await _getEnrolledCoursesUsecase

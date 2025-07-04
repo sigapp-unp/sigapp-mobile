@@ -99,28 +99,37 @@ class FacultyIdentifier {
 
     // Try to match with each faculty
     if (_matchAgronomy(normalizedName)) return Faculty.agronomy;
-    if (_matchArchitectureUrban(normalizedName))
+    if (_matchArchitectureUrban(normalizedName)) {
       return Faculty.architectureUrban;
-    if (_matchAdministrativeSciences(normalizedName))
+    }
+    if (_matchAdministrativeSciences(normalizedName)) {
       return Faculty.administrativeSciences;
-    if (_matchAccountingFinancial(normalizedName))
+    }
+    if (_matchAccountingFinancial(normalizedName)) {
       return Faculty.accountingFinancial;
+    }
     if (_matchSciences(normalizedName)) return Faculty.sciences;
     if (_matchHealthSciences(normalizedName)) return Faculty.healthSciences;
-    if (_matchSocialSciencesEducation(normalizedName))
+    if (_matchSocialSciencesEducation(normalizedName)) {
       return Faculty.socialSciencesEducation;
-    if (_matchLawPoliticalSciences(normalizedName))
+    }
+    if (_matchLawPoliticalSciences(normalizedName)) {
       return Faculty.lawPoliticalSciences;
+    }
     if (_matchEconomics(normalizedName)) return Faculty.economics;
     if (_matchCivilEngineering(normalizedName)) return Faculty.civilEngineering;
-    if (_matchIndustrialEngineering(normalizedName))
+    if (_matchIndustrialEngineering(normalizedName)) {
       return Faculty.industrialEngineering;
-    if (_matchMiningEngineering(normalizedName))
+    }
+    if (_matchMiningEngineering(normalizedName)) {
       return Faculty.miningEngineering;
-    if (_matchFishingEngineering(normalizedName))
+    }
+    if (_matchFishingEngineering(normalizedName)) {
       return Faculty.fishingEngineering;
-    if (_matchZootechnicsEngineering(normalizedName))
+    }
+    if (_matchZootechnicsEngineering(normalizedName)) {
       return Faculty.zootechnicsEngineering;
+    }
 
     // If no match was found, return null
     return null;

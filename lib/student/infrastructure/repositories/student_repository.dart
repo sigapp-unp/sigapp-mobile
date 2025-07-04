@@ -7,6 +7,7 @@ import 'package:sigapp/student/infrastructure/models/get_academic_report.dart';
 @LazySingleton(as: StudentRepository)
 class StudentRepositoryImpl implements StudentRepository {
   final SigaClient _sigaClient;
+  RawAcademicReport? _cachedAcademicReport;
 
   StudentRepositoryImpl(this._sigaClient);
 
@@ -30,7 +31,11 @@ class StudentRepositoryImpl implements StudentRepository {
   // }
 
   @override
-  Future<RawAcademicReport> getAcademicReport() async {
+  Future<RawAcademicReport> getAcademicReport({bool? forceRefresh}) async {
+    if (_cachedAcademicReport != null && forceRefresh != true) {
+      return _cachedAcademicReport!;
+    }
+
     // {"results":{"Facultad":"INGENIERIA INDUSTRIAL","NomAlumno":"0512017039 - CALLE BRICEÑO, JOSE DANIEL","Promocion":"2017","SemestreIngreso":"20171 ","SemestrePlan":"20181 ","UltSemestre":"20212 ","PPA":14.47,"PPAAprob":14.47,"UPPS":15.48,"TotalCredAprob":243,"CredObligPlan":220,"CredElectPlan":15,"CredObligAprob":220,"CredElectAprob":16}}
     final response = await _sigaClient.http.post(
       '/Academico/ListarParametrosInforme',

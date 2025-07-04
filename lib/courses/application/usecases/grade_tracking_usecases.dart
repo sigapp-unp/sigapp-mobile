@@ -1,14 +1,14 @@
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/courses/application/services/student_session_service.dart';
+import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 import 'package:sigapp/courses/domain/repositories/grade_tracking_repository.dart';
 
 @lazySingleton
 class GradeTrackingUseCases {
   final GradeTrackingRepository _repository;
-  final StudentSessionService _studentSessionService;
+  final StudentSessionRepository _studentSessionRepository;
 
-  GradeTrackingUseCases(this._repository, this._studentSessionService);
+  GradeTrackingUseCases(this._repository, this._studentSessionRepository);
 
   Future<CourseTracking?> getCourseByCourseCode({
     required String courseCode,
@@ -136,7 +136,7 @@ class GradeTrackingUseCases {
 
   // Helper method to get student code
   Future<String> _getStudentCode() async {
-    final info = await _studentSessionService.getInfo();
+    final info = await _studentSessionRepository.getStudentSessionInfo();
     return info.studentCode;
   }
 }

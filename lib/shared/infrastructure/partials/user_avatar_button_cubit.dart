@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
+import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 
 part 'user_avatar_button_cubit.freezed.dart';
@@ -22,12 +22,12 @@ sealed class UserAvatarButtonState with _$UserAvatarButtonState {
 
 @injectable
 class UserAvatarButtonCubit extends Cubit<UserAvatarButtonState> {
-  final AcademicInfoService _sessionInfoService;
+  final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   final SignOutUseCase _signOutUseCase;
   final Logger _logger;
 
   UserAvatarButtonCubit(
-    this._sessionInfoService,
+    this._getAcademicInfoUseCase,
     this._signOutUseCase,
     this._logger,
   ) : super(UserAvatarButtonState.initial());
@@ -37,7 +37,7 @@ class UserAvatarButtonCubit extends Cubit<UserAvatarButtonState> {
       return;
     }
     try {
-      final result = await _sessionInfoService.getSessionInfo();
+      final result = await _getAcademicInfoUseCase.execute();
       emit(UserAvatarButtonState.success(data: result));
     } catch (e, s) {
       _logger.e('[UI] Error loading user avatar info', error: e, stackTrace: s);

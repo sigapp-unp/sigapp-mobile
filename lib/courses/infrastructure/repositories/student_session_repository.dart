@@ -8,11 +8,16 @@ import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
 @LazySingleton(as: StudentSessionRepository)
 class StudentSessionRepositoryImpl implements StudentSessionRepository {
   final SigaClient _sigaClient;
+  StudentSessionInfo? _cachedStudentSessionInfo;
 
   StudentSessionRepositoryImpl(this._sigaClient);
 
   @override
-  Future<StudentSessionInfo> getStudentSessionInfo() async {
+  Future<StudentSessionInfo> getStudentSessionInfo({bool? forceRefresh}) async {
+    if (_cachedStudentSessionInfo != null && forceRefresh != true) {
+      return _cachedStudentSessionInfo!;
+    }
+
     final response1 = await _sigaClient.http.get('/Academico/Boletin');
     final pageSource = response1.data as String;
 

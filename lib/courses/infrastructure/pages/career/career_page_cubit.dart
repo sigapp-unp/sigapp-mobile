@@ -5,7 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:sigapp/courses/application/usecases/get_program_curriculum_progress_usecase.dart';
 import 'package:sigapp/courses/domain/value-objects/program_curriculum_progress.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
+import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
 
 part 'career_page_cubit.freezed.dart';
 
@@ -23,19 +23,19 @@ sealed class CareerPageState with _$CareerPageState {
 class CareerPageCubit extends Cubit<CareerPageState> {
   final GetProgramCurriculumProgressUsecase
   _getProgramCurriculumProgressUsecase;
-  final AcademicInfoService _sessionInfoService;
+  final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   final Logger _logger;
 
   CareerPageCubit(
     this._getProgramCurriculumProgressUsecase,
-    this._sessionInfoService,
+    this._getAcademicInfoUseCase,
     this._logger,
   ) : super(CareerPageState.loading());
 
   Future<void> fetch() async {
     emit(CareerPageState.loading());
     try {
-      final academicReport = await _sessionInfoService.getSessionInfo().then(
+      final academicReport = await _getAcademicInfoUseCase.execute().then(
         (v) => v.academicReport,
       );
       final programCurriculumProgress =

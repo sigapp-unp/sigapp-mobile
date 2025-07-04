@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/courses/application/services/student_session_service.dart';
+import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
 import 'package:sigapp/student/domain/repositories/student_repository.dart';
@@ -7,16 +7,16 @@ import 'package:sigapp/student/domain/repositories/student_repository.dart';
 @lazySingleton
 class GetAcademicReportUsecase {
   final StudentRepository _studentRepository;
-  final StudentSessionService _studentSessionService;
+  final StudentSessionRepository _studentSessionRepository;
 
   GetAcademicReportUsecase(
     this._studentRepository,
-    this._studentSessionService,
+    this._studentSessionRepository,
   );
 
-  Future<AcademicReport> execute() async {
+  Future<AcademicReport> execute({bool? forceRefresh}) async {
     final academicReportModel = await _studentRepository
-        .getAcademicReport()
+        .getAcademicReport(forceRefresh: forceRefresh)
         .then(
           (value) => value.copyWith(
             lastSemesterId: value.lastSemesterId?.trim(),
@@ -24,7 +24,8 @@ class GetAcademicReportUsecase {
             enrollmentSemesterId: value.enrollmentSemesterId.trim(),
           ),
         );
-    final studentSessionInfo = await _studentSessionService.getInfo();
+    final studentSessionInfo = await _studentSessionRepository
+        .getStudentSessionInfo(forceRefresh: forceRefresh);
 
     final studentInfoParts = academicReportModel.studentName.split(' - ');
     studentInfoParts.replaceRange(1, 2, studentInfoParts[1].split(', '));

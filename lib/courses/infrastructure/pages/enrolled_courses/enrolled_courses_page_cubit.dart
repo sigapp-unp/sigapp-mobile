@@ -6,7 +6,7 @@ import 'package:sigapp/courses/application/usecases/get_enrolled_courses_usecase
 import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
 import 'package:sigapp/student/domain/value_objects/semester_context.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/domain/services/academic_info_service.dart';
+import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
 
 part 'enrolled_courses_page_cubit.freezed.dart';
@@ -36,25 +36,25 @@ sealed class EnrolledCoursesPageState with _$EnrolledCoursesPageState {
 
 @injectable
 class EnrolledCoursesPageCubit extends Cubit<EnrolledCoursesPageState> {
-  final AcademicInfoService _sessionInfoService;
+  final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   final GetEnrolledCoursesUsecase _getEnrolledCoursesUsecase;
   final Logger _logger;
 
   EnrolledCoursesPageCubit(
     this._getEnrolledCoursesUsecase,
-    this._sessionInfoService,
+    this._getAcademicInfoUseCase,
     this._logger,
   ) : super(EnrolledCoursesPageState.loading());
 
   Future<void> init() async {
     emit(EnrolledCoursesPageState.loading());
     try {
-      final sessionInfo = await _sessionInfoService.getSessionInfo();
+      final academicInfo = await _getAcademicInfoUseCase.execute();
       final nextState =
           EnrolledCoursesPageState.success(
-                academicReport: sessionInfo.academicReport,
-                semesterContext: sessionInfo.semesterContext,
-                selectedSemester: sessionInfo.semesterContext.defaultSemester,
+                academicReport: academicInfo.academicReport,
+                semesterContext: academicInfo.semesterContext,
+                selectedSemester: academicInfo.semesterContext.defaultSemester,
                 enrolledCourses: const EnrolledCoursesState.loading(),
               )
               as CoursesPageSuccessState;
