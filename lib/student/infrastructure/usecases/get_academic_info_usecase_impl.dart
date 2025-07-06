@@ -8,8 +8,8 @@ import 'package:sigapp/student/domain/value_objects/semester_context.dart';
 import 'package:sigapp/student/application/usecases/get_academic_report_usecase.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
 
+@Singleton(as: GetAcademicInfoUseCase)
 @Named('getAcademicInfoUseCaseImpl')
-@Singleton()
 class GetAcademicInfoUseCaseImpl implements GetAcademicInfoUseCase {
   final GetAcademicReportUsecase _getAcademicReportUsecase;
   final StudentSessionRepository _studentSessionRepository;

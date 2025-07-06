@@ -183,13 +183,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i382.MailUtils>(
       () => _i382.MailUtils(gh<_i974.Logger>()),
     );
-    gh.lazySingleton<_i97.GetAcademicInfoUseCase>(
-      () => _i866.CachedGetAcademicInfoUseCase(
-        gh<_i97.GetAcademicInfoUseCase>(
-          instanceName: 'getAcademicInfoUseCaseImpl',
-        ),
-      ),
-    );
     gh.singleton<_i986.RegevaClient>(
       () =>
           _i986.RegevaClient(gh<_i460.SharedPreferences>(), gh<_i974.Logger>()),
@@ -223,12 +216,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i259.GradeTrackingRepository>(
       () => _i4.GradeTrackingRepositoryImpl(
         gh<_i200.ApiGatewayClient>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i151.StudentPageViewCubit>(
-      () => _i151.StudentPageViewCubit(
-        gh<_i97.GetAcademicInfoUseCase>(),
         gh<_i974.Logger>(),
       ),
     );
@@ -315,7 +302,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i679.SessionLifecycleService>(),
       ),
     );
-    gh.singleton<_i248.GetAcademicInfoUseCaseImpl>(
+    gh.singleton<_i97.GetAcademicInfoUseCase>(
       () => _i248.GetAcademicInfoUseCaseImpl(
         gh<_i771.GetAcademicReportUsecase>(),
         gh<_i650.GetEnrolledCoursesUsecase>(),
@@ -332,6 +319,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.singleton<_i528.NavigationService>(
       () => _i561.NavigationServiceImpl(gh<_i583.GoRouter>()),
+    );
+    gh.singleton<_i97.GetAcademicInfoUseCase>(
+      () => _i866.CachedGetAcademicInfoUseCase(
+        gh<_i97.GetAcademicInfoUseCase>(
+          instanceName: 'getAcademicInfoUseCaseImpl',
+        ),
+      ),
     );
     gh.factory<_i885.EnrolledCoursesPageCubit>(
       () => _i885.EnrolledCoursesPageCubit(
@@ -378,6 +372,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
       dispose: (i) => i.dispose(),
+    );
+    gh.factory<_i151.StudentPageViewCubit>(
+      () => _i151.StudentPageViewCubit(
+        gh<_i97.GetAcademicInfoUseCase>(),
+        gh<_i974.Logger>(),
+      ),
     );
     gh.factory<_i722.HomePageCubit>(
       () => _i722.HomePageCubit(gh<_i48.SignOutUseCase>(), gh<_i974.Logger>()),
