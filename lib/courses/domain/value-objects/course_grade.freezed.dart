@@ -46,11 +46,10 @@ $CourseGradePreviewCopyWith(CourseGradePreview _, $Res Function(CourseGradePrevi
 
 
 class CourseGradePreviewLoaded implements CourseGradePreview {
-   CourseGradePreviewLoaded({required this.value, required this.isPartial});
+   CourseGradePreviewLoaded(this.value);
   
 
- final  double value;
- final  bool isPartial;
+ final  CourseGradeValue value;
 
 /// Create a copy of CourseGradePreview
 /// with the given fields replaced by the non-null parameter values.
@@ -62,16 +61,16 @@ $CourseGradePreviewLoadedCopyWith<CourseGradePreviewLoaded> get copyWith => _$Co
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CourseGradePreviewLoaded&&(identical(other.value, value) || other.value == value)&&(identical(other.isPartial, isPartial) || other.isPartial == isPartial));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CourseGradePreviewLoaded&&(identical(other.value, value) || other.value == value));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,value,isPartial);
+int get hashCode => Object.hash(runtimeType,value);
 
 @override
 String toString() {
-  return 'CourseGradePreview.loaded(value: $value, isPartial: $isPartial)';
+  return 'CourseGradePreview.loaded(value: $value)';
 }
 
 
@@ -82,7 +81,7 @@ abstract mixin class $CourseGradePreviewLoadedCopyWith<$Res> implements $CourseG
   factory $CourseGradePreviewLoadedCopyWith(CourseGradePreviewLoaded value, $Res Function(CourseGradePreviewLoaded) _then) = _$CourseGradePreviewLoadedCopyWithImpl;
 @useResult
 $Res call({
- double value, bool isPartial
+ CourseGradeValue value
 });
 
 
@@ -99,11 +98,10 @@ class _$CourseGradePreviewLoadedCopyWithImpl<$Res>
 
 /// Create a copy of CourseGradePreview
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? value = null,Object? isPartial = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? value = null,}) {
   return _then(CourseGradePreviewLoaded(
-value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
-as double,isPartial: null == isPartial ? _self.isPartial : isPartial // ignore: cast_nullable_to_non_nullable
-as bool,
+null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
+as CourseGradeValue,
   ));
 }
 

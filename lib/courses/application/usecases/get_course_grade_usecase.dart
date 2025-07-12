@@ -37,10 +37,7 @@ class GetCourseGradeUsecase {
       if (courseGrade == null) {
         grade = CourseGradePreview.empty();
       } else {
-        grade = CourseGradePreview.loaded(
-          value: courseGrade.value,
-          isPartial: courseGrade.isPartial,
-        );
+        grade = CourseGradePreview.loaded(courseGrade);
       }
     } catch (error, stackTrace) {
       _logger.e(

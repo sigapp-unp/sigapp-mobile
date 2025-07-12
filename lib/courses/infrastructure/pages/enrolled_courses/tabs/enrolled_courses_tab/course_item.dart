@@ -92,13 +92,13 @@ class CourseItemWidget extends StatelessWidget {
                                     ) =>
                                       switch (value.grade) {
                                         CourseGradePreviewLoaded(
-                                          :final value,
-                                          :final isPartial,
+                                          value: final grade,
                                         ) =>
                                           CourseSubtitleWidgetItem(
-                                            text: value.toStringAsFixed(2),
+                                            text:
+                                                '${grade.isPartial ? 'Nota parcial' : 'Nota final'}: ${grade.value.toStringAsFixed(2)}',
                                             icon:
-                                                isPartial
+                                                grade.isPartial
                                                     ? MdiIcons
                                                         .clipboardCheckOutline
                                                     : MdiIcons.clipboardCheck,

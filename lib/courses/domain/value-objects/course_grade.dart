@@ -3,9 +3,14 @@ part 'course_grade.freezed.dart';
 
 class CourseGradeValue {
   final double value;
+  final String label;
   final bool isPartial;
 
-  CourseGradeValue({required this.value, required this.isPartial});
+  CourseGradeValue({
+    required this.value,
+    required this.label,
+    required this.isPartial,
+  });
 }
 
 class CourseGradeInfo {
@@ -17,10 +22,8 @@ class CourseGradeInfo {
 
 @freezed
 sealed class CourseGradePreview with _$CourseGradePreview {
-  factory CourseGradePreview.loaded({
-    required double value,
-    required bool isPartial,
-  }) = CourseGradePreviewLoaded;
+  factory CourseGradePreview.loaded(CourseGradeValue value) =
+      CourseGradePreviewLoaded;
   factory CourseGradePreview.empty() = CourseGradePreviewEmpty;
   factory CourseGradePreview.error(dynamic error) = CourseGradePreviewError;
 }

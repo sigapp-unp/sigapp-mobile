@@ -189,11 +189,13 @@ class RegevaRepositoryImpl implements RegevaRepository {
     if (container == null) return null;
     final text = container.text.trim();
     final gradeText = RegExp(r'(\d+(\.\d+)?)').firstMatch(text)?.group(1);
+    final message = text.split(':').first;
     if (gradeText == null) return null;
     final isFinal = text.toLowerCase().contains('nota final');
 
     return CourseGradeValue(
       value: double.parse(gradeText),
+      label: message,
       isPartial: !isFinal,
     );
   }

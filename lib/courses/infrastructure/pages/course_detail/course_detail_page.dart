@@ -159,15 +159,9 @@ class _CourseDetailPageWidgetState extends State<CourseDetailPageWidget> {
               CourseDetailGradesStateLoading() => Text('Cargando'),
               CourseDetailGradesStateLoaded(value: final gradeInfo) =>
                 switch (gradeInfo.grade) {
-                  CourseGradePreviewLoaded(
-                    value: final value,
-                    isPartial: final isPartial,
-                  ) =>
-                    Text(
-                      isPartial
-                          ? 'Nota parcial: ${value.toStringAsFixed(2)}'
-                          : 'Nota final: ${value.toStringAsFixed(2)}',
-                    ),
+                  CourseGradePreviewLoaded(value: final grade) => Text(
+                    '${grade.isPartial ? 'Nota parcial' : 'Nota final'}: ${grade.value.toStringAsFixed(2)}',
+                  ),
                   CourseGradePreviewEmpty() => Text('No disponibles'),
                   _ => Text('No disponibles'),
                 },
