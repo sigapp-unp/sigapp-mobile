@@ -42,7 +42,8 @@ class StudentSessionRepositoryImpl implements StudentSessionRepository {
     final currentSemesterName = parts[3];
     final schoolName = parts[1];
 
-    return StudentSessionInfo(
+    // Cache el resultado para evitar peticiones repetidas
+    _cachedStudentSessionInfo = StudentSessionInfo(
       studentCode: studentCode,
       schoolName: schoolName,
       currentSemester: ScheduledTermIdentifier.buildFromName(
@@ -51,5 +52,7 @@ class StudentSessionRepositoryImpl implements StudentSessionRepository {
       regevaToken1: regevaToken1,
       regevaToken2: regevaToken2,
     );
+
+    return _cachedStudentSessionInfo!;
   }
 }
