@@ -135,16 +135,41 @@ class RegevaRepositoryImpl implements RegevaRepository {
     required String sigaToken1,
     required String sigaToken2,
   }) async {
-    // Get
-    final response = await _regevaClient.http.get(
+    // Get initial response with followRedirects disabled
+    var response = await _regevaClient.http.get(
       buildGradesUrl(
         scheduledCourseId: scheduledCourseId,
         token1: sigaToken1,
         token2: sigaToken2,
         studentCode: studentCode,
       ),
-      options: Options(maxRedirects: 1),
+      options: Options(
+        followRedirects: false,
+        validateStatus: (status) => true,
+      ),
     );
+
+    // Handle manual redirection (only 1 redirection allowed)
+    if (response.statusCode == 302) {
+      final locationHeaders = response.headers['location'];
+      if (locationHeaders != null && locationHeaders.isNotEmpty) {
+        final redirectUrl = locationHeaders.first;
+
+        // Follow the redirect manually
+        response = await _regevaClient.http.get(
+          redirectUrl,
+          options: Options(
+            followRedirects: false,
+            validateStatus: (status) => true,
+          ),
+        );
+      }
+    }
+
+    // Ensure we have a successful response
+    if (response.statusCode != 200) {
+      return null;
+    }
 
     // Build
     final html = htmlParser.parse(response.data as String);
@@ -165,7 +190,7 @@ class RegevaRepositoryImpl implements RegevaRepository {
     final text = container.text.trim();
     final gradeText = RegExp(r'(\d+(\.\d+)?)').firstMatch(text)?.group(1);
     if (gradeText == null) return null;
-    final isFinal = text.toLowerCase().contains('final');
+    final isFinal = text.toLowerCase().contains('nota final');
 
     return CourseGradeValue(
       value: double.parse(gradeText),

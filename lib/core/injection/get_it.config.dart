@@ -278,6 +278,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i6.StudentSessionRepository>(),
       ),
     );
+    gh.lazySingleton<_i504.GetCourseGradeUsecase>(
+      () => _i504.GetCourseGradeUsecase(
+        gh<_i6.StudentSessionRepository>(),
+        gh<_i348.RegevaRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.factory<_i1059.GradeTrackerSectionCubit>(
       () => _i1059.GradeTrackerSectionCubit(
         gh<_i947.GradeTrackingUseCases>(),
@@ -288,12 +295,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i650.GetEnrolledCoursesUsecase(
         gh<_i986.CoursesRepository>(),
         gh<_i315.GetClassScheduleUsecase>(),
-      ),
-    );
-    gh.lazySingleton<_i504.GetCourseGradeUsecase>(
-      () => _i504.GetCourseGradeUsecase(
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i348.RegevaRepository>(),
       ),
     );
     gh.factory<_i738.AuthenticateUsecase>(
