@@ -146,6 +146,7 @@ class _Tab1State extends State<_Tab1> with AutomaticKeepAliveClientMixin {
     return CareerPageProgramCurriculumWidget(
       programCurriculum:
           widget.state.programCurriculumProgress.programCurriculum,
+      academicReport: widget.state.academicReport,
     );
   }
 }

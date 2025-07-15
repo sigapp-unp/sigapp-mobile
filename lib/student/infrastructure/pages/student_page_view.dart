@@ -49,9 +49,9 @@ class _StudentPageViewState extends State<StudentPageView> {
               if (state is SuccessState && state.data.faculty != null)
                 Positioned(
                   top: -size.height * 0.0,
-                  left: -size.height * 0.0,
+                  right: -size.height * 0.0,
                   child: Opacity(
-                    opacity: 0.085,
+                    opacity: 0.08,
                     child: ColorFiltered(
                       colorFilter: ColorFilter.mode(
                         isDarkTheme ? Colors.white : Colors.black,

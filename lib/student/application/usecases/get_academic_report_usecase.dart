@@ -30,7 +30,7 @@ class GetAcademicReportUsecase {
     final studentInfoParts = academicReportModel.studentName.split(' - ');
     studentInfoParts.replaceRange(1, 2, studentInfoParts[1].split(', '));
     return AcademicReport(
-      faculty: academicReportModel.faculty,
+      faculty: academicReportModel.faculty, // TODO: BECOME Faculty
       school: studentSessionInfo.schoolName,
       firstName: studentInfoParts[2],
       lastName: studentInfoParts[1],

@@ -4,14 +4,19 @@ import 'package:sigapp/courses/domain/entities/course_type.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
 import 'package:sigapp/courses/infrastructure/pages/career/widgets/course_subtitle.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/course_prerequisite_chain_page.dart';
+import 'package:sigapp/shared/infrastructure/utils/logo_file_utils.dart';
+import 'package:sigapp/student/domain/entities/student_academic_report.dart';
+import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 
 class CareerPageProgramCurriculumWidget extends StatefulWidget {
   const CareerPageProgramCurriculumWidget({
     super.key,
     required this.programCurriculum,
+    required this.academicReport,
   });
 
   final List<ProgramCurriculumTerm> programCurriculum;
+  final AcademicReport academicReport;
 
   @override
   State<CareerPageProgramCurriculumWidget> createState() =>
@@ -63,50 +68,80 @@ class _CareerPageProgramCurriculumWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      controller: _scrollController,
-      children:
-          widget.programCurriculum
-              .asMap()
-              .map((index, term) {
-                return MapEntry(
-                  index,
-                  ExpansionTile(
-                    initiallyExpanded: index == _lastEnrolledTermIndex,
-                    title: Row(
-                      children: [
-                        Icon(Icons.book),
-                        SizedBox(width: 8),
-                        Text(
-                          'Ciclo ${term.termRomanNumeral}',
-                          style: Theme.of(context).textTheme.titleMedium,
+    final size = MediaQuery.of(context).size;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final faculty = FacultyIdentifier.identifyFaculty(
+      widget.academicReport.faculty,
+    );
+
+    return Stack(
+      children: [
+        if (faculty != null)
+          Positioned(
+            bottom: -size.height * 0.0,
+            left: -size.height * 0.0,
+            child: Opacity(
+              opacity: 0.08,
+              child: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  isDarkTheme ? Colors.white : Colors.black,
+                  BlendMode.srcIn,
+                ),
+                child: Image.asset(
+                  getFacultyImagePath(faculty),
+                  fit: BoxFit.cover,
+                  height: size.height * 0.85,
+                ),
+              ),
+            ),
+          ),
+        ListView(
+          controller: _scrollController,
+          children:
+              widget.programCurriculum
+                  .asMap()
+                  .map((index, term) {
+                    return MapEntry(
+                      index,
+                      ExpansionTile(
+                        initiallyExpanded: index == _lastEnrolledTermIndex,
+                        title: Row(
+                          children: [
+                            Icon(Icons.book),
+                            SizedBox(width: 8),
+                            Text(
+                              'Ciclo ${term.termRomanNumeral}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    children:
-                        term.courses.map((course) {
-                          return _buildItem(
-                            context,
-                            course: course,
-                            onSeePrerequisites: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => CoursePrerequisiteChainPage(
-                                        course: course,
-                                        programCurriculum:
-                                            widget.programCurriculum,
-                                      ),
-                                ),
+                        children:
+                            term.courses.map((course) {
+                              return _buildItem(
+                                context,
+                                course: course,
+                                onSeePrerequisites: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              CoursePrerequisiteChainPage(
+                                                course: course,
+                                                programCurriculum:
+                                                    widget.programCurriculum,
+                                              ),
+                                    ),
+                                  );
+                                },
                               );
-                            },
-                          );
-                        }).toList(),
-                  ),
-                );
-              })
-              .values
-              .toList(),
+                            }).toList(),
+                      ),
+                    );
+                  })
+                  .values
+                  .toList(),
+        ),
+      ],
     );
   }
 

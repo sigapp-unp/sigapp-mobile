@@ -34,7 +34,9 @@ class GetAcademicInfoUseCaseImpl implements GetAcademicInfoUseCase {
     return AcademicInfoData(
       academicReport: academicReport,
       semesterContext: semesterContext,
-      faculty: FacultyIdentifier.identifyFaculty(academicReport.faculty),
+      faculty: FacultyIdentifier.identifyFaculty(
+        academicReport.faculty,
+      ), // TODO: include in academicReport
     );
   }
 
