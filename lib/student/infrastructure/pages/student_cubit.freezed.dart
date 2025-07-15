@@ -78,10 +78,10 @@ String toString() {
 
 
 class SuccessState implements StudentPageViewState {
-  const SuccessState(this.academicReport);
+  const SuccessState(this.data);
   
 
- final  AcademicReport academicReport;
+ final  AcademicInfoData data;
 
 /// Create a copy of StudentPageViewState
 /// with the given fields replaced by the non-null parameter values.
@@ -93,16 +93,16 @@ $SuccessStateCopyWith<SuccessState> get copyWith => _$SuccessStateCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SuccessState&&(identical(other.academicReport, academicReport) || other.academicReport == academicReport));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SuccessState&&(identical(other.data, data) || other.data == data));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,academicReport);
+int get hashCode => Object.hash(runtimeType,data);
 
 @override
 String toString() {
-  return 'StudentPageViewState.success(academicReport: $academicReport)';
+  return 'StudentPageViewState.success(data: $data)';
 }
 
 
@@ -113,11 +113,11 @@ abstract mixin class $SuccessStateCopyWith<$Res> implements $StudentPageViewStat
   factory $SuccessStateCopyWith(SuccessState value, $Res Function(SuccessState) _then) = _$SuccessStateCopyWithImpl;
 @useResult
 $Res call({
- AcademicReport academicReport
+ AcademicInfoData data
 });
 
 
-$AcademicReportCopyWith<$Res> get academicReport;
+
 
 }
 /// @nodoc
@@ -130,23 +130,14 @@ class _$SuccessStateCopyWithImpl<$Res>
 
 /// Create a copy of StudentPageViewState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? academicReport = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? data = null,}) {
   return _then(SuccessState(
-null == academicReport ? _self.academicReport : academicReport // ignore: cast_nullable_to_non_nullable
-as AcademicReport,
+null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as AcademicInfoData,
   ));
 }
 
-/// Create a copy of StudentPageViewState
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$AcademicReportCopyWith<$Res> get academicReport {
-  
-  return $AcademicReportCopyWith<$Res>(_self.academicReport, (value) {
-    return _then(_self.copyWith(academicReport: value));
-  });
-}
+
 }
 
 /// @nodoc

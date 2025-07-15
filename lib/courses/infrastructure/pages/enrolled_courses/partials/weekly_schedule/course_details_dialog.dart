@@ -34,11 +34,13 @@ class CourseDetailsDialog extends StatelessWidget {
                   state.hiddenEvents[event.eventId] ?? isHidden;
               return ListTile(
                 contentPadding: EdgeInsets.all(0),
-                title: Text('Marcar como no programado'),
+                title: Text(
+                  isEventHidden ? 'No programado' : 'Marcar como no programado',
+                ),
                 subtitle:
                     isEventHidden
                         ? const Text(
-                          'Este curso se mostrará en gris en el horario',
+                          'Este evento se opacará',
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
                             color: Colors.grey,

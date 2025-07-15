@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sigapp/core/infrastructure/ui/widgets/error_state.dart';
 import 'package:sigapp/core/infrastructure/ui/widgets/loading_state.dart';
 import 'package:sigapp/shared/infrastructure/partials/user_avatar_button.dart';
+import 'package:sigapp/shared/infrastructure/utils/logo_file_utils.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
 import 'package:sigapp/student/infrastructure/pages/components/generic_pie_chart.dart';
 import 'package:sigapp/student/infrastructure/pages/student_cubit.dart';
@@ -33,6 +34,9 @@ class _StudentPageViewState extends State<StudentPageView> {
   Widget build(BuildContext context) {
     return BlocConsumer<StudentPageViewCubit, StudentPageViewState>(
       builder: (context, state) {
+        final size = MediaQuery.of(context).size;
+        final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -40,14 +44,37 @@ class _StudentPageViewState extends State<StudentPageView> {
               children: [Text('Estudiante'), UserAvatarButtonWidget()],
             ),
           ),
-          body: switch (state) {
-            LoadingState() => const LoadingStateWidget(),
-            SuccessState() => _buildSuccessState(context, state),
-            ErrorState() => ErrorStateWidget.from(
-              state.error,
-              onRetry: () => _cubit.setup(),
-            ),
-          },
+          body: Stack(
+            children: [
+              if (state is SuccessState && state.data.faculty != null)
+                Positioned(
+                  top: -size.height * 0.0,
+                  left: -size.height * 0.0,
+                  child: Opacity(
+                    opacity: 0.085,
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        isDarkTheme ? Colors.white : Colors.black,
+                        BlendMode.srcIn,
+                      ),
+                      child: Image.asset(
+                        getFacultyImagePath(state.data.faculty!),
+                        fit: BoxFit.cover,
+                        height: size.height * 0.85,
+                      ),
+                    ),
+                  ),
+                ),
+              switch (state) {
+                LoadingState() => const LoadingStateWidget(),
+                SuccessState() => _buildSuccessState(context, state),
+                ErrorState() => ErrorStateWidget.from(
+                  state.error,
+                  onRetry: () => _cubit.setup(),
+                ),
+              },
+            ],
+          ),
         );
       },
       listener: (context, state) {
@@ -61,19 +88,30 @@ class _StudentPageViewState extends State<StudentPageView> {
   }
 
   Widget _buildSuccessState(BuildContext context, SuccessState state) {
-    final info = state.academicReport;
+    final info = state.data.academicReport;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return ListView(
-      padding: const EdgeInsets.all(16.0),
-      children: [
-        _buildStudentInfoSection(info),
-        const SizedBox(height: 16),
-        _buildStatsSection(info),
-        const SizedBox(height: 16),
-        _buildCreditsSection(context, info),
-        // const SizedBox(height: 16),
-        // _buildMoreInfoSection(context, info),
-      ],
+    return Theme(
+      data: Theme.of(context).copyWith(
+        cardTheme: CardThemeData(
+          color: colorScheme.surfaceContainerLow.withValues(alpha: 0.6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildStudentInfoSection(info),
+          const SizedBox(height: 16),
+          _buildStatsSection(info),
+          const SizedBox(height: 16),
+          _buildCreditsSection(context, info),
+          // const SizedBox(height: 16),
+          // _buildMoreInfoSection(context, info),
+        ],
+      ),
     );
   }
 
@@ -158,7 +196,6 @@ class _StudentPageViewState extends State<StudentPageView> {
             .toList();
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -203,6 +240,7 @@ class _StudentPageViewState extends State<StudentPageView> {
   }
 
   Column _buildStatsSection(AcademicReport info) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Row(
@@ -211,13 +249,13 @@ class _StudentPageViewState extends State<StudentPageView> {
               title: 'PPA (Aprobado)',
               value: info.cumulativeWeightedAverageOfPassedCourses
                   .toStringAsFixed(2),
-              color: Colors.blue,
+              color: colorScheme.primary,
             ),
             const SizedBox(width: 8),
             _buildStatCard(
               title: 'Créditos Aprobados',
               value: '${info.totalCreditsOfPassedCourses}',
-              color: Colors.green,
+              color: colorScheme.secondary,
             ),
           ],
         ),
@@ -227,13 +265,13 @@ class _StudentPageViewState extends State<StudentPageView> {
             _buildStatCard(
               title: 'Último PPA',
               value: info.lastCumulativeWeightedAverage.toStringAsFixed(2),
-              color: Colors.blue,
+              color: colorScheme.primary,
             ),
             const SizedBox(width: 8),
             _buildStatCard(
               title: 'PPA (Acumulado)',
               value: info.cumulativeWeightedAverage.toStringAsFixed(2),
-              color: Colors.blue,
+              color: colorScheme.primary,
             ),
           ],
         ),
@@ -245,7 +283,6 @@ class _StudentPageViewState extends State<StudentPageView> {
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -322,14 +359,11 @@ class _StudentPageViewState extends State<StudentPageView> {
   Widget _buildStatCard({
     required String title,
     required String value,
-    required MaterialColor color,
+    required Color color,
   }) {
     final textTheme = Theme.of(context).textTheme;
     return Expanded(
       child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
           child: Column(
@@ -337,7 +371,7 @@ class _StudentPageViewState extends State<StudentPageView> {
               Text(
                 title,
                 style: textTheme.bodyMedium?.copyWith(
-                  color: color.shade700,
+                  color: color,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -345,7 +379,7 @@ class _StudentPageViewState extends State<StudentPageView> {
               Text(
                 value,
                 style: textTheme.titleLarge?.copyWith(
-                  color: color.shade900,
+                  color: color,
                   fontWeight: FontWeight.w700,
                 ),
               ),
