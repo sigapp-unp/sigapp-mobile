@@ -54,6 +54,8 @@ import 'package:sigapp/core/infrastructure/http/api_gateway_client.dart'
     as _i200;
 import 'package:sigapp/core/infrastructure/http/regeva_client.dart' as _i986;
 import 'package:sigapp/core/infrastructure/http/siga_client.dart' as _i857;
+import 'package:sigapp/core/infrastructure/services/update_service.dart'
+    as _i897;
 import 'package:sigapp/core/infrastructure/ui/not_used_pages/schedule_page/partials/export_to_calendar_cubit.dart'
     as _i893;
 import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart' as _i382;
@@ -176,6 +178,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.singleton<_i200.ApiGatewayClient>(
       () => _i200.ApiGatewayClient(gh<_i974.Logger>()),
+    );
+    gh.singleton<_i897.UpdateService>(
+      () => _i897.UpdateService(gh<_i974.Logger>()),
     );
     gh.lazySingleton<_i465.AsyncOperationGuard>(
       () => _i465.AsyncOperationGuard(gh<_i974.Logger>()),

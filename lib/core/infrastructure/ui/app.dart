@@ -5,10 +5,25 @@ import 'package:sigapp/core/injection/get_it.dart';
 import 'package:sigapp/shared/infrastructure/overlays/progress_indicator_bloc.dart';
 import 'package:sigapp/shared/infrastructure/overlays/progress_indicator_overlay.dart';
 import 'package:sigapp/core/infrastructure/ui/theme/brand_theme.dart';
+import 'package:sigapp/core/infrastructure/services/update_service.dart';
 import 'package:toastification/toastification.dart';
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Check for app updates when the app starts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getIt<UpdateService>().checkForUpdate();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
