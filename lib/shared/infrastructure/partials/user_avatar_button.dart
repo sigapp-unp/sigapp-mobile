@@ -39,7 +39,7 @@ class UserAvatarButtonWidget extends StatelessWidget {
 
   Widget _build(BuildContext context, UserAvatarButtonState state) {
     final faculty = switch (state) {
-      UserAvatarButtonSuccessState(:final data) => data.faculty,
+      UserAvatarButtonSuccessState(:final data) => data.academicReport.faculty,
       _ => null,
     };
 

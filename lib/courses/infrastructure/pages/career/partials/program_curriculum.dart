@@ -70,9 +70,7 @@ class _CareerPageProgramCurriculumWidgetState
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final faculty = FacultyIdentifier.identifyFaculty(
-      widget.academicReport.faculty,
-    );
+    final faculty = widget.academicReport.faculty;
 
     return Stack(
       children: [

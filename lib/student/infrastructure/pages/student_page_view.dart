@@ -46,7 +46,8 @@ class _StudentPageViewState extends State<StudentPageView> {
           ),
           body: Stack(
             children: [
-              if (state is SuccessState && state.data.faculty != null)
+              if (state is SuccessState &&
+                  state.data.academicReport.faculty != null)
                 Positioned(
                   top: -size.height * 0.0,
                   right: -size.height * 0.0,
@@ -58,7 +59,7 @@ class _StudentPageViewState extends State<StudentPageView> {
                         BlendMode.srcIn,
                       ),
                       child: Image.asset(
-                        getFacultyImagePath(state.data.faculty!),
+                        getFacultyImagePath(state.data.academicReport.faculty!),
                         fit: BoxFit.cover,
                         height: size.height * 0.85,
                       ),
@@ -309,7 +310,7 @@ class _StudentPageViewState extends State<StudentPageView> {
                   (() {
                     final data = [
                       ['Código', info.code],
-                      ['Facultad', info.faculty],
+                      ['Facultad', info.facultyName],
                       ['Escuela', info.school],
                       ['Promoción', info.cohort],
                     ];

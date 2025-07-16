@@ -4,12 +4,10 @@ import 'package:sigapp/student/domain/value_objects/semester_context.dart';
 class AcademicInfoData {
   final AcademicReport academicReport;
   final SemesterContext semesterContext;
-  final Faculty? faculty;
 
   AcademicInfoData({
     required this.academicReport,
     required this.semesterContext,
-    required this.faculty,
   });
 }
 

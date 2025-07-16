@@ -3,6 +3,7 @@ import 'package:sigapp/courses/application/repositories/student_session_reposito
 import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
 import 'package:sigapp/student/domain/repositories/student_repository.dart';
+import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 
 @lazySingleton
 class GetAcademicReportUsecase {
@@ -30,7 +31,8 @@ class GetAcademicReportUsecase {
     final studentInfoParts = academicReportModel.studentName.split(' - ');
     studentInfoParts.replaceRange(1, 2, studentInfoParts[1].split(', '));
     return AcademicReport(
-      faculty: academicReportModel.faculty, // TODO: BECOME Faculty
+      facultyName: academicReportModel.faculty,
+      faculty: FacultyIdentifier.identifyFaculty(academicReportModel.faculty),
       school: studentSessionInfo.schoolName,
       firstName: studentInfoParts[2],
       lastName: studentInfoParts[1],

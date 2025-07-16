@@ -1,12 +1,15 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
+import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 
 part 'student_academic_report.freezed.dart';
 
 @freezed
 abstract class AcademicReport with _$AcademicReport {
   factory AcademicReport({
-    required String faculty,
+    // required String faculty,
+    required String facultyName,
+    required Faculty? faculty,
     required String school,
     required String firstName,
     required String lastName,
