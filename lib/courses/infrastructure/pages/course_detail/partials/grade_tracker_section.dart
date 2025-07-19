@@ -72,8 +72,17 @@ class _GradeTrackerSectionWidgetState extends State<GradeTrackerSectionWidget> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      HelpButtonWidget(),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          HelpButtonWidget(),
+                          // Solo mostrar el menú cuando hay datos
+                          if (state is GradeTrackerSectionReadyState) ...[
+                            const SizedBox(width: 8),
+                            _buildTrackingOptionsMenu(context, _cubit),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ],
@@ -110,6 +119,65 @@ class _GradeTrackerSectionWidgetState extends State<GradeTrackerSectionWidget> {
         GradeTrackerSectionErrorState(error: final error) =>
           ErrorStateWidget.from(error, onRetry: () => _cubit.retry()),
       },
+    );
+  }
+
+  Widget _buildTrackingOptionsMenu(
+    BuildContext context,
+    GradeTrackerSectionCubit cubit,
+  ) {
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.more_vert,
+        size: 20,
+        color: Theme.of(context).textTheme.bodyMedium?.color,
+      ),
+      onSelected: (value) {
+        if (value == 'delete') {
+          _showDeleteTrackingDialog(context, cubit);
+        }
+      },
+      itemBuilder:
+          (context) => [
+            const PopupMenuItem<String>(
+              value: 'delete',
+              child: ListTile(
+                leading: Icon(Icons.delete_outline, color: Colors.red),
+                title: Text('Eliminar seguimiento'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
+    );
+  }
+
+  void _showDeleteTrackingDialog(
+    BuildContext context,
+    GradeTrackerSectionCubit cubit,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Eliminar seguimiento'),
+            content: const Text(
+              '¿Estás seguro que deseas eliminar todo el seguimiento de notas de este curso? Esta acción no se puede deshacer.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  cubit.deleteCourseTracking();
+                },
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Eliminar'),
+              ),
+            ],
+          ),
     );
   }
 }

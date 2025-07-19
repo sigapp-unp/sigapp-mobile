@@ -625,4 +625,36 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       throw Exception('Failed to toggle grade enabled state: $e');
     }
   }
+
+  @override
+  Future<void> deleteCourseTracking({
+    required String studentCode,
+    required String courseCode,
+  }) async {
+    try {
+      _logger.d(
+        '[INFRASTRUCTURE] Deleting course tracking for student: $studentCode, course: $courseCode',
+      );
+
+      final queryParams = {
+        'student_code': 'eq.$studentCode',
+        'course_code': 'eq.$courseCode',
+      };
+
+      await _workerClient.http.delete(
+        '/rest/v1/gt_course_tracking',
+        queryParameters: queryParams,
+        options: Options(headers: {'X-Upstream': 'supabase'}),
+      );
+
+      _logger.d('[INFRASTRUCTURE] Course tracking deleted successfully');
+    } catch (e, s) {
+      _logger.e(
+        '[INFRASTRUCTURE] Error in deleteCourseTracking',
+        error: e,
+        stackTrace: s,
+      );
+      throw Exception('Failed to delete course tracking: $e');
+    }
+  }
 }

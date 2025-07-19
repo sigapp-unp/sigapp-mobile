@@ -57,4 +57,9 @@ abstract class GradeTrackingRepository {
     required String gradeId,
     required bool enabled,
   });
+
+  Future<void> deleteCourseTracking({
+    required String studentCode,
+    required String courseCode,
+  });
 }

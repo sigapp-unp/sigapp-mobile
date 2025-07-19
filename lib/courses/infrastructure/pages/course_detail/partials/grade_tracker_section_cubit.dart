@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/courses/application/usecases/create_grade_tracking_usecase.dart';
+import 'package:sigapp/courses/application/usecases/delete_grade_tracking_usecase.dart';
 import 'package:sigapp/courses/application/usecases/get_grade_tracking_usecase.dart';
 import 'package:sigapp/courses/application/usecases/manage_grade_tracking_categories_usecase.dart';
 import 'package:sigapp/courses/application/usecases/manage_grade_tracking_grades_usecase.dart';
@@ -32,6 +33,7 @@ sealed class GradeTrackerSectionState with _$GradeTrackerSectionState {
 class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   final GetGradeTrackingUseCase _getGradeTrackingUseCase;
   final CreateGradeTrackingUseCase _createGradeTrackingUseCase;
+  final DeleteGradeTrackingUseCase _deleteGradeTrackingUseCase;
   final ManageGradeTrackingCategoriesUseCase
   _manageGradeTrackingCategoriesUseCase;
   final ManageGradeTrackingGradesUseCase _manageGradeTrackingGradesUseCase;
@@ -41,6 +43,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   GradeTrackerSectionCubit(
     this._getGradeTrackingUseCase,
     this._createGradeTrackingUseCase,
+    this._deleteGradeTrackingUseCase,
     this._manageGradeTrackingCategoriesUseCase,
     this._manageGradeTrackingGradesUseCase,
     this._logger,
@@ -346,6 +349,27 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
           ),
         );
 
+        emit(GradeTrackerSectionState.error(e));
+      }
+    }
+  }
+
+  Future<void> deleteCourseTracking() async {
+    final currentState = state;
+    if (currentState is GradeTrackerSectionReadyState) {
+      try {
+        emit(const GradeTrackerSectionState.loading());
+
+        await _deleteGradeTrackingUseCase(courseCode: _courseCode!);
+
+        // Después de eliminar, volvemos al estado empty
+        emit(const GradeTrackerSectionState.empty());
+      } catch (e, s) {
+        _logger.e(
+          '[UI] Error deleting course tracking',
+          error: e,
+          stackTrace: s,
+        );
         emit(GradeTrackerSectionState.error(e));
       }
     }

@@ -62,8 +62,12 @@ import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart' as _i382;
 import 'package:sigapp/core/injection/register_module.dart' as _i799;
 import 'package:sigapp/courses/application/repositories/student_session_repository.dart'
     as _i6;
+import 'package:sigapp/courses/application/usecases/create_course_tracking_usecase.dart'
+    as _i283;
 import 'package:sigapp/courses/application/usecases/create_grade_tracking_usecase.dart'
     as _i733;
+import 'package:sigapp/courses/application/usecases/delete_grade_tracking_usecase.dart'
+    as _i362;
 import 'package:sigapp/courses/application/usecases/get_class_schedule_usecase.dart'
     as _i315;
 import 'package:sigapp/courses/application/usecases/get_course_grade_usecase.dart'
@@ -82,10 +86,14 @@ import 'package:sigapp/courses/application/usecases/get_syllabus_file_usecase.da
     as _i445;
 import 'package:sigapp/courses/application/usecases/grade_tracking_usecases.dart'
     as _i947;
+import 'package:sigapp/courses/application/usecases/manage_categories_usecase.dart'
+    as _i892;
 import 'package:sigapp/courses/application/usecases/manage_grade_tracking_categories_usecase.dart'
     as _i1033;
 import 'package:sigapp/courses/application/usecases/manage_grade_tracking_grades_usecase.dart'
     as _i811;
+import 'package:sigapp/courses/application/usecases/manage_grades_usecase.dart'
+    as _i787;
 import 'package:sigapp/courses/domain/repositories/courses_repository.dart'
     as _i986;
 import 'package:sigapp/courses/domain/repositories/grade_tracking_repository.dart'
@@ -282,6 +290,30 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i6.StudentSessionRepository>(),
       ),
     );
+    gh.factory<_i283.CreateCourseTrackingUseCase>(
+      () => _i283.CreateCourseTrackingUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i892.ManageCategoriesUseCase>(
+      () => _i892.ManageCategoriesUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i787.ManageGradesUseCase>(
+      () => _i787.ManageGradesUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i362.DeleteGradeTrackingUseCase>(
+      () => _i362.DeleteGradeTrackingUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
     gh.lazySingleton<_i594.StudentRepository>(
       () => _i528.StudentRepositoryImpl(gh<_i857.SigaClient>()),
     );
@@ -354,6 +386,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i1059.GradeTrackerSectionCubit(
         gh<_i409.GetGradeTrackingUseCase>(),
         gh<_i733.CreateGradeTrackingUseCase>(),
+        gh<_i362.DeleteGradeTrackingUseCase>(),
         gh<_i1033.ManageGradeTrackingCategoriesUseCase>(),
         gh<_i811.ManageGradeTrackingGradesUseCase>(),
         gh<_i974.Logger>(),
