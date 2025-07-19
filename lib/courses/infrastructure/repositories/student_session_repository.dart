@@ -13,8 +13,8 @@ class StudentSessionRepositoryImpl implements StudentSessionRepository {
   StudentSessionRepositoryImpl(this._sigaClient);
 
   @override
-  Future<StudentSessionInfo> getStudentSessionInfo({bool? forceRefresh}) async {
-    if (_cachedStudentSessionInfo != null && forceRefresh != true) {
+  Future<StudentSessionInfo> getStudentSessionInfo() async {
+    if (_cachedStudentSessionInfo != null) {
       return _cachedStudentSessionInfo!;
     }
 
@@ -54,5 +54,10 @@ class StudentSessionRepositoryImpl implements StudentSessionRepository {
     );
 
     return _cachedStudentSessionInfo!;
+  }
+
+  @override
+  void clearCache() {
+    _cachedStudentSessionInfo = null;
   }
 }

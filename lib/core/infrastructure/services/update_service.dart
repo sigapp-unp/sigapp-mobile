@@ -5,7 +5,6 @@ import 'package:logger/logger.dart';
 /// Service to handle in-app updates for Android using Google Play Core API
 @singleton
 class UpdateService {
-  // static final _logger = Logger();
   final Logger _logger;
 
   UpdateService(this._logger);
@@ -44,7 +43,18 @@ class UpdateService {
           }
         } else {
           _logger.w('Update available but no flow allowed.');
-          _debugPreconditions(info);
+          if (!info.immediateUpdateAllowed &&
+              info.immediateAllowedPreconditions != null) {
+            _logger.d(
+              'Immediate preconditions blocking: ${info.immediateAllowedPreconditions}',
+            );
+          }
+          if (!info.flexibleUpdateAllowed &&
+              info.flexibleAllowedPreconditions != null) {
+            _logger.d(
+              'Flexible preconditions blocking: ${info.flexibleAllowedPreconditions}',
+            );
+          }
         }
       } else {
         _logger.i('No update available');
@@ -54,44 +64,6 @@ class UpdateService {
         'Error checking for updates: $e',
         error: e,
         stackTrace: stackTrace,
-      );
-    }
-  }
-
-  /// Checks if a flexible update is ready to be installed
-  Future<bool> isFlexibleUpdateReady() async {
-    try {
-      final info = await InAppUpdate.checkForUpdate();
-      return info.updateAvailability ==
-          UpdateAvailability.developerTriggeredUpdateInProgress;
-    } catch (e) {
-      _logger.e('Error checking flexible update status: $e');
-      return false;
-    }
-  }
-
-  /// Completes a flexible update that has been downloaded
-  Future<void> completeFlexibleUpdate() async {
-    try {
-      _logger.i('Completing flexible update...');
-      await InAppUpdate.completeFlexibleUpdate();
-    } catch (e) {
-      _logger.e('Error completing flexible update: $e');
-    }
-  }
-
-  /// Debug method to log why update preconditions are not met
-  void _debugPreconditions(AppUpdateInfo info) {
-    if (!info.immediateUpdateAllowed &&
-        info.immediateAllowedPreconditions != null) {
-      _logger.d(
-        'Immediate preconditions blocking: ${info.immediateAllowedPreconditions}',
-      );
-    }
-    if (!info.flexibleUpdateAllowed &&
-        info.flexibleAllowedPreconditions != null) {
-      _logger.d(
-        'Flexible preconditions blocking: ${info.flexibleAllowedPreconditions}',
       );
     }
   }

@@ -12,13 +12,18 @@ class CachedGetAcademicInfoUseCase implements GetAcademicInfoUseCase {
   );
 
   @override
-  Future<AcademicInfoData> execute({bool? forceRefresh}) async {
-    if (_cache != null && forceRefresh != true) {
+  Future<AcademicInfoData> execute() async {
+    if (_cache != null) {
       return _cache!;
     }
 
-    final result = await _inner.execute(forceRefresh: forceRefresh);
+    final result = await _inner.execute();
     _cache = result;
     return result;
+  }
+
+  @override
+  void clearCache() {
+    _cache = null;
   }
 }

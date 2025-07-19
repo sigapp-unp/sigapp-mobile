@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
-// import 'package:sigapp/courses/application/services/student_session_service.dart';
+import 'package:sigapp/courses/application/value-objects/student_session_info.dart';
 import 'package:sigapp/courses/domain/repositories/regeva_repository.dart';
 import 'package:sigapp/courses/domain/value-objects/course_grade.dart';
 
@@ -17,21 +17,17 @@ class GetCourseGradeUsecase {
     this._logger,
   );
 
-  Future<CourseGradeInfo> execute(
-    String scheduledCourseId, {
-    bool? forceRefresh,
-  }) async {
-    final credentials = await _studentSessionRepository.getStudentSessionInfo(
-      forceRefresh: forceRefresh,
-    );
+  Future<CourseGradeInfo> execute(String scheduledCourseId) async {
+    final StudentSessionInfo(:studentCode, :regevaToken1, :regevaToken2) =
+        await _studentSessionRepository.getStudentSessionInfo();
 
     CourseGradePreview grade;
     try {
       final courseGrade = await _regevaRepository.getCourseGrade(
         scheduledCourseId: scheduledCourseId,
-        studentCode: credentials.studentCode,
-        sigaToken1: credentials.regevaToken1,
-        sigaToken2: credentials.regevaToken2,
+        studentCode: studentCode,
+        sigaToken1: regevaToken1,
+        sigaToken2: regevaToken2,
       );
 
       if (courseGrade == null) {
@@ -52,9 +48,9 @@ class GetCourseGradeUsecase {
       grade: grade,
       url: _regevaRepository.buildGradesUrl(
         scheduledCourseId: scheduledCourseId,
-        studentCode: credentials.studentCode,
-        token1: credentials.regevaToken1,
-        token2: credentials.regevaToken2,
+        studentCode: studentCode,
+        token1: regevaToken1,
+        token2: regevaToken2,
       ),
     );
   }

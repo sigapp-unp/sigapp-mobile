@@ -182,7 +182,7 @@ class _CourseDetailPageWidgetState extends State<CourseDetailPageWidget> {
                   );
                   switch (gradeInfo.grade) {
                     case CourseGradePreviewEmpty():
-                      cubit.fetchGrades(forceDownload: true);
+                      cubit.fetchGrades();
                     default:
                       break;
                   }
@@ -190,7 +190,7 @@ class _CourseDetailPageWidgetState extends State<CourseDetailPageWidget> {
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text('Reintentando')));
-                  cubit.fetchGrades(forceDownload: true);
+                  cubit.fetchGrades();
                 default:
                   break;
               }

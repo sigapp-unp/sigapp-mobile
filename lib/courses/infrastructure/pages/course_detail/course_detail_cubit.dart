@@ -118,7 +118,7 @@ class CourseDetailCubit extends Cubit<CourseDetailState> {
     }
   }
 
-  Future<void> fetchGrades({bool? forceDownload}) async {
+  Future<void> fetchGrades() async {
     if (state is! CourseDetailReadyState) return;
 
     emit(
@@ -132,7 +132,6 @@ class CourseDetailCubit extends Cubit<CourseDetailState> {
     try {
       final courseGradeInfo = await _getCourseGradeUsecase.execute(
         regevaScheduledCourseId,
-        forceRefresh: forceDownload,
       );
       emit(
         (state as CourseDetailReadyState).copyWith(

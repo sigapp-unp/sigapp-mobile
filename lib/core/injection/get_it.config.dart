@@ -357,6 +357,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i151.ProgressIndicatorService>(),
         gh<_i391.ApiGatewayAuthService>(),
         gh<_i873.ToastService>(),
+        gh<_i6.StudentSessionRepository>(),
+        gh<_i594.StudentRepository>(),
         gh<_i974.Logger>(),
       ),
     );
@@ -401,6 +403,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i391.ApiGatewayAuthService>(),
         gh<_i528.NavigationService>(),
         gh<_i97.GetAcademicInfoUseCase>(),
+        gh<_i6.StudentSessionRepository>(),
         gh<_i974.Logger>(),
         gh<_i738.AuthenticateUsecase>(),
       ),

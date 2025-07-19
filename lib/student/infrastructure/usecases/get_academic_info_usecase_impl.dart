@@ -22,14 +22,9 @@ class GetAcademicInfoUseCaseImpl implements GetAcademicInfoUseCase {
   );
 
   @override
-  Future<AcademicInfoData> execute({bool? forceRefresh}) async {
-    final academicReport = await _getAcademicReportUsecase.execute(
-      forceRefresh: forceRefresh,
-    );
-    final semesterContext = await _calculateSemesterContext(
-      academicReport,
-      forceRefresh,
-    );
+  Future<AcademicInfoData> execute() async {
+    final academicReport = await _getAcademicReportUsecase.execute();
+    final semesterContext = await _calculateSemesterContext(academicReport);
 
     return AcademicInfoData(
       academicReport: academicReport,
@@ -39,11 +34,10 @@ class GetAcademicInfoUseCaseImpl implements GetAcademicInfoUseCase {
 
   Future<SemesterContext> _calculateSemesterContext(
     AcademicReport academicReport,
-    bool? forceRefresh,
   ) async {
     final firstSemester = academicReport.enrollmentSemester;
-    final studentSessionInfo = await _studentSessionRepository
-        .getStudentSessionInfo(forceRefresh: forceRefresh);
+    final studentSessionInfo =
+        await _studentSessionRepository.getStudentSessionInfo();
 
     // Case 1: Estudiante actualmente matriculado
     final currentSemesterEnrolledCourses = await _getEnrolledCoursesUsecase
@@ -100,5 +94,12 @@ class GetAcademicInfoUseCaseImpl implements GetAcademicInfoUseCase {
       }
     }
     return semesters;
+  }
+
+  @override
+  void clearCache() {
+    // This implementation doesn't have its own cache,
+    // but it uses repositories that do have caches
+    // Those will be cleared directly by the SignIn/SignOut use cases
   }
 }

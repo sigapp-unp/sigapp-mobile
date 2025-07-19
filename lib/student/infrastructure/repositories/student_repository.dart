@@ -31,8 +31,8 @@ class StudentRepositoryImpl implements StudentRepository {
   // }
 
   @override
-  Future<RawAcademicReport> getAcademicReport({bool? forceRefresh}) async {
-    if (_cachedAcademicReport != null && forceRefresh != true) {
+  Future<RawAcademicReport> getAcademicReport() async {
+    if (_cachedAcademicReport != null) {
       return _cachedAcademicReport!;
     }
 
@@ -41,7 +41,7 @@ class StudentRepositoryImpl implements StudentRepository {
       '/Academico/ListarParametrosInforme',
     );
     final model = GetAcademicReportModel.fromJson(response.data['results']);
-    return RawAcademicReport(
+    final academicReport = RawAcademicReport(
       faculty: model.Facultad,
       studentName: model.NomAlumno,
       cohort: model.Promocion,
@@ -57,5 +57,13 @@ class StudentRepositoryImpl implements StudentRepository {
       mandatoryCreditsOfPassedCourses: model.CredObligAprob,
       electiveCreditsOfPassedCourses: model.CredElectAprob,
     );
+
+    _cachedAcademicReport = academicReport;
+    return academicReport;
+  }
+
+  @override
+  void clearCache() {
+    _cachedAcademicReport = null;
   }
 }

@@ -8,7 +8,8 @@ import 'package:sigapp/auth/domain/services/navigation_service.dart';
 import 'package:sigapp/auth/domain/services/toast_service.dart';
 import 'package:sigapp/shared/domain/service/progress_indicator_service.dart';
 import 'package:sigapp/courses/domain/repositories/regeva_repository.dart';
-// import 'package:sigapp/student/domain/services/academic_info_service.dart';
+import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+import 'package:sigapp/student/domain/repositories/student_repository.dart';
 
 @injectable
 class SignOutUseCase {
@@ -18,8 +19,9 @@ class SignOutUseCase {
   final AuthRepository _authRepository;
   final RegevaRepository _regevaRepository;
   final ProgressIndicatorService _progressIndicatorService;
-  // final AcademicInfoService _sessionInfoService;
-  final ApiGatewayAuthService _supabaseAuthService;
+  final ApiGatewayAuthService _apiGatewayAuthService;
+  final StudentSessionRepository _studentSessionRepository;
+  final StudentRepository _studentRepository;
   final Logger _logger;
 
   SignOutUseCase(
@@ -28,9 +30,10 @@ class SignOutUseCase {
     this._authRepository,
     this._regevaRepository,
     this._progressIndicatorService,
-    // this._sessionInfoService,
-    this._supabaseAuthService,
+    this._apiGatewayAuthService,
     this._toastService,
+    this._studentSessionRepository,
+    this._studentRepository,
     this._logger,
   );
 
@@ -46,7 +49,6 @@ class SignOutUseCase {
     final userMessage = technicalReason?.message ?? 'Has cerrado sesión';
     final shouldDisplayAsError = switch (technicalReason) {
       null => false,
-      // NetworkSessionException() => true,
       RefreshSessionException() => false,
       AuthenticationSessionException() => true,
       StudentInfoSessionException() => true,
@@ -69,7 +71,7 @@ class SignOutUseCase {
     }
 
     try {
-      await _supabaseAuthService.logoutUser();
+      await _apiGatewayAuthService.logoutUser();
     } catch (e, s) {
       _logger.w(
         '[AUTH] Error logging out from Supabase: $e (continuing anyway)',
@@ -85,8 +87,9 @@ class SignOutUseCase {
     _navigationService.refreshNavigation();
     _toastService.show(userMessage, isError: shouldDisplayAsError);
 
-    // clear
-    // TODO: handle cache clearing more gracefully
-    // _sessionInfoService.clearSessionInfo();
+    // Clear ALL session-related caches to prevent data leakage between users
+    _logger.d('[AUTH] Clearing all user-related caches');
+    _studentSessionRepository.clearCache();
+    _studentRepository.clearCache();
   }
 }

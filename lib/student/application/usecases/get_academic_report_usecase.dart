@@ -15,9 +15,9 @@ class GetAcademicReportUsecase {
     this._studentSessionRepository,
   );
 
-  Future<AcademicReport> execute({bool? forceRefresh}) async {
+  Future<AcademicReport> execute() async {
     final academicReportModel = await _studentRepository
-        .getAcademicReport(forceRefresh: forceRefresh)
+        .getAcademicReport()
         .then(
           (value) => value.copyWith(
             lastSemesterId: value.lastSemesterId?.trim(),
@@ -25,8 +25,8 @@ class GetAcademicReportUsecase {
             enrollmentSemesterId: value.enrollmentSemesterId.trim(),
           ),
         );
-    final studentSessionInfo = await _studentSessionRepository
-        .getStudentSessionInfo(forceRefresh: forceRefresh);
+    final studentSessionInfo =
+        await _studentSessionRepository.getStudentSessionInfo();
 
     final studentInfoParts = academicReportModel.studentName.split(' - ');
     studentInfoParts.replaceRange(1, 2, studentInfoParts[1].split(', '));
