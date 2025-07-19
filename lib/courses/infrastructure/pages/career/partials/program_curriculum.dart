@@ -6,7 +6,6 @@ import 'package:sigapp/courses/infrastructure/pages/career/widgets/course_subtit
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/course_prerequisite_chain_page.dart';
 import 'package:sigapp/shared/infrastructure/utils/logo_file_utils.dart';
 import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 
 class CareerPageProgramCurriculumWidget extends StatefulWidget {
   const CareerPageProgramCurriculumWidget({

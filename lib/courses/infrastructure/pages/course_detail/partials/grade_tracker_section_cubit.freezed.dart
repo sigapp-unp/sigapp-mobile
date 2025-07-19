@@ -128,10 +128,24 @@ String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
 
 
 class GradeTrackerSectionReadyState with DiagnosticableTreeMixin implements GradeTrackerSectionState {
-  const GradeTrackerSectionReadyState({required this.courseTracking});
+  const GradeTrackerSectionReadyState({required this.courseTracking, final  Set<String> processingGradeIds = const {}, final  Set<String> processingCategoryIds = const {}}): _processingGradeIds = processingGradeIds,_processingCategoryIds = processingCategoryIds;
   
 
  final  CourseTracking courseTracking;
+ final  Set<String> _processingGradeIds;
+@JsonKey() Set<String> get processingGradeIds {
+  if (_processingGradeIds is EqualUnmodifiableSetView) return _processingGradeIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableSetView(_processingGradeIds);
+}
+
+ final  Set<String> _processingCategoryIds;
+@JsonKey() Set<String> get processingCategoryIds {
+  if (_processingCategoryIds is EqualUnmodifiableSetView) return _processingCategoryIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableSetView(_processingCategoryIds);
+}
+
 
 /// Create a copy of GradeTrackerSectionState
 /// with the given fields replaced by the non-null parameter values.
@@ -144,21 +158,21 @@ $GradeTrackerSectionReadyStateCopyWith<GradeTrackerSectionReadyState> get copyWi
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'GradeTrackerSectionState.ready'))
-    ..add(DiagnosticsProperty('courseTracking', courseTracking));
+    ..add(DiagnosticsProperty('courseTracking', courseTracking))..add(DiagnosticsProperty('processingGradeIds', processingGradeIds))..add(DiagnosticsProperty('processingCategoryIds', processingCategoryIds));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GradeTrackerSectionReadyState&&(identical(other.courseTracking, courseTracking) || other.courseTracking == courseTracking));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GradeTrackerSectionReadyState&&(identical(other.courseTracking, courseTracking) || other.courseTracking == courseTracking)&&const DeepCollectionEquality().equals(other._processingGradeIds, _processingGradeIds)&&const DeepCollectionEquality().equals(other._processingCategoryIds, _processingCategoryIds));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,courseTracking);
+int get hashCode => Object.hash(runtimeType,courseTracking,const DeepCollectionEquality().hash(_processingGradeIds),const DeepCollectionEquality().hash(_processingCategoryIds));
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'GradeTrackerSectionState.ready(courseTracking: $courseTracking)';
+  return 'GradeTrackerSectionState.ready(courseTracking: $courseTracking, processingGradeIds: $processingGradeIds, processingCategoryIds: $processingCategoryIds)';
 }
 
 
@@ -169,7 +183,7 @@ abstract mixin class $GradeTrackerSectionReadyStateCopyWith<$Res> implements $Gr
   factory $GradeTrackerSectionReadyStateCopyWith(GradeTrackerSectionReadyState value, $Res Function(GradeTrackerSectionReadyState) _then) = _$GradeTrackerSectionReadyStateCopyWithImpl;
 @useResult
 $Res call({
- CourseTracking courseTracking
+ CourseTracking courseTracking, Set<String> processingGradeIds, Set<String> processingCategoryIds
 });
 
 
@@ -186,10 +200,12 @@ class _$GradeTrackerSectionReadyStateCopyWithImpl<$Res>
 
 /// Create a copy of GradeTrackerSectionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? courseTracking = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? courseTracking = null,Object? processingGradeIds = null,Object? processingCategoryIds = null,}) {
   return _then(GradeTrackerSectionReadyState(
 courseTracking: null == courseTracking ? _self.courseTracking : courseTracking // ignore: cast_nullable_to_non_nullable
-as CourseTracking,
+as CourseTracking,processingGradeIds: null == processingGradeIds ? _self._processingGradeIds : processingGradeIds // ignore: cast_nullable_to_non_nullable
+as Set<String>,processingCategoryIds: null == processingCategoryIds ? _self._processingCategoryIds : processingCategoryIds // ignore: cast_nullable_to_non_nullable
+as Set<String>,
   ));
 }
 

@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/courses/application/usecases/grade_tracking_usecases.dart';
+import 'package:sigapp/courses/application/usecases/create_grade_tracking_usecase.dart';
+import 'package:sigapp/courses/application/usecases/get_grade_tracking_usecase.dart';
+import 'package:sigapp/courses/application/usecases/manage_grade_tracking_categories_usecase.dart';
+import 'package:sigapp/courses/application/usecases/manage_grade_tracking_grades_usecase.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 
 part 'grade_tracker_section_cubit.freezed.dart';
@@ -18,6 +21,8 @@ sealed class GradeTrackerSectionState with _$GradeTrackerSectionState {
 
   const factory GradeTrackerSectionState.ready({
     required CourseTracking courseTracking,
+    @Default({}) Set<String> processingGradeIds,
+    @Default({}) Set<String> processingCategoryIds,
   }) = GradeTrackerSectionReadyState;
   const factory GradeTrackerSectionState.error(Object error) =
       GradeTrackerSectionErrorState;
@@ -25,12 +30,21 @@ sealed class GradeTrackerSectionState with _$GradeTrackerSectionState {
 
 @injectable
 class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
-  final GradeTrackingUseCases _gradeTrackingUseCases;
+  final GetGradeTrackingUseCase _getGradeTrackingUseCase;
+  final CreateGradeTrackingUseCase _createGradeTrackingUseCase;
+  final ManageGradeTrackingCategoriesUseCase
+  _manageGradeTrackingCategoriesUseCase;
+  final ManageGradeTrackingGradesUseCase _manageGradeTrackingGradesUseCase;
   final Logger _logger;
   String? _courseCode;
 
-  GradeTrackerSectionCubit(this._gradeTrackingUseCases, this._logger)
-    : super(const GradeTrackerSectionState.empty());
+  GradeTrackerSectionCubit(
+    this._getGradeTrackingUseCase,
+    this._createGradeTrackingUseCase,
+    this._manageGradeTrackingCategoriesUseCase,
+    this._manageGradeTrackingGradesUseCase,
+    this._logger,
+  ) : super(const GradeTrackerSectionState.empty());
 
   Future<void> init({required String courseId}) async {
     _courseCode = courseId;
@@ -46,9 +60,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
       CourseTracking? tracking;
 
       if (_courseCode != null) {
-        tracking = await _gradeTrackingUseCases.getCourseByCourseCode(
-          courseCode: _courseCode!,
-        );
+        tracking = await _getGradeTrackingUseCase(courseCode: _courseCode!);
       }
 
       if (tracking != null) {
@@ -90,11 +102,10 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
         return;
       }
 
-      final tracking = await _gradeTrackingUseCases
-          .createCourseTrackingWithDefaults(
-            courseCode: _courseCode!,
-            courseName: courseName,
-          );
+      final tracking = await _createGradeTrackingUseCase(
+        courseCode: _courseCode!,
+        courseName: courseName,
+      );
 
       emit(GradeTrackerSectionState.ready(courseTracking: tracking));
     } catch (e, s) {
@@ -112,11 +123,12 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     if (currentState is GradeTrackerSectionReadyState) {
       try {
         final courseId = currentState.courseTracking.courseCode;
-        final updatedTracking = await _gradeTrackingUseCases.addCategory(
-          courseCode: courseId,
-          categoryName: name,
-          weight: weight,
-        );
+        final updatedTracking = await _manageGradeTrackingCategoriesUseCase
+            .addCategory(
+              courseCode: courseId,
+              categoryName: name,
+              weight: weight,
+            );
         emit(GradeTrackerSectionState.ready(courseTracking: updatedTracking));
       } catch (e, s) {
         _logger.e('[UI] Error adding category', error: e, stackTrace: s);
@@ -134,12 +146,13 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     if (currentState is GradeTrackerSectionReadyState) {
       try {
         final courseId = currentState.courseTracking.courseCode;
-        final updatedTracking = await _gradeTrackingUseCases.updateCategory(
-          courseCode: courseId,
-          categoryId: categoryId,
-          newName: newName,
-          newWeight: newWeight,
-        );
+        final updatedTracking = await _manageGradeTrackingCategoriesUseCase
+            .updateCategory(
+              courseCode: courseId,
+              categoryId: categoryId,
+              newName: newName,
+              newWeight: newWeight,
+            );
         emit(GradeTrackerSectionState.ready(courseTracking: updatedTracking));
       } catch (e, s) {
         _logger.e('[UI] Error updating category', error: e, stackTrace: s);
@@ -153,10 +166,8 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     if (currentState is GradeTrackerSectionReadyState) {
       try {
         final courseId = currentState.courseTracking.courseCode;
-        final updatedTracking = await _gradeTrackingUseCases.removeCategory(
-          courseCode: courseId,
-          categoryId: categoryId,
-        );
+        final updatedTracking = await _manageGradeTrackingCategoriesUseCase
+            .removeCategory(courseCode: courseId, categoryId: categoryId);
         emit(GradeTrackerSectionState.ready(courseTracking: updatedTracking));
       } catch (e, s) {
         _logger.e('[UI] Error deleting category', error: e, stackTrace: s);
@@ -175,12 +186,13 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     if (currentState is GradeTrackerSectionReadyState) {
       try {
         final courseId = currentState.courseTracking.courseCode;
-        final updatedTracking = await _gradeTrackingUseCases.addGrade(
-          courseCode: courseId,
-          categoryId: categoryId,
-          gradeName: name,
-          score: score,
-        );
+        final updatedTracking = await _manageGradeTrackingGradesUseCase
+            .addGrade(
+              courseCode: courseId,
+              categoryId: categoryId,
+              gradeName: name,
+              score: score,
+            );
         emit(GradeTrackerSectionState.ready(courseTracking: updatedTracking));
       } catch (e, s) {
         _logger.e('[UI] Error adding grade', error: e, stackTrace: s);
@@ -198,17 +210,44 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     final currentState = state;
     if (currentState is GradeTrackerSectionReadyState) {
       try {
-        final courseId = currentState.courseTracking.courseCode;
-        final updatedTracking = await _gradeTrackingUseCases.updateGrade(
-          courseCode: courseId,
-          categoryId: categoryId,
-          gradeId: gradeId,
-          newName: newName,
-          newScore: newScore,
+        // ✅ GRANULAR: Marcar solo esta nota como procesando
+        emit(
+          currentState.copyWith(
+            processingGradeIds: {...currentState.processingGradeIds, gradeId},
+          ),
         );
-        emit(GradeTrackerSectionState.ready(courseTracking: updatedTracking));
+
+        final courseId = currentState.courseTracking.courseCode;
+        final updatedTracking = await _manageGradeTrackingGradesUseCase
+            .updateGrade(
+              courseCode: courseId,
+              categoryId: categoryId,
+              gradeId: gradeId,
+              newName: newName,
+              newScore: newScore,
+            );
+
+        // ✅ GRANULAR: Quitar de procesando y actualizar datos
+        emit(
+          currentState.copyWith(
+            courseTracking: updatedTracking,
+            processingGradeIds: currentState.processingGradeIds.difference({
+              gradeId,
+            }),
+          ),
+        );
       } catch (e, s) {
         _logger.e('[UI] Error updating grade', error: e, stackTrace: s);
+
+        // ✅ GRANULAR: Quitar de procesando en caso de error
+        emit(
+          currentState.copyWith(
+            processingGradeIds: currentState.processingGradeIds.difference({
+              gradeId,
+            }),
+          ),
+        );
+
         emit(GradeTrackerSectionState.error(e));
       }
     }
@@ -222,16 +261,43 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     final currentState = state;
     if (currentState is GradeTrackerSectionReadyState) {
       try {
-        final courseId = currentState.courseTracking.courseCode;
-        final updatedTracking = await _gradeTrackingUseCases.toggleGradeEnabled(
-          courseCode: courseId,
-          categoryId: categoryId,
-          gradeId: gradeId,
-          enabled: enabled,
+        // ✅ GRANULAR: Marcar solo esta nota como procesando
+        emit(
+          currentState.copyWith(
+            processingGradeIds: {...currentState.processingGradeIds, gradeId},
+          ),
         );
-        emit(GradeTrackerSectionState.ready(courseTracking: updatedTracking));
+
+        final courseId = currentState.courseTracking.courseCode;
+        final updatedTracking = await _manageGradeTrackingGradesUseCase
+            .toggleGradeEnabled(
+              courseCode: courseId,
+              categoryId: categoryId,
+              gradeId: gradeId,
+              enabled: enabled,
+            );
+
+        // ✅ GRANULAR: Quitar de procesando y actualizar datos
+        emit(
+          currentState.copyWith(
+            courseTracking: updatedTracking,
+            processingGradeIds: currentState.processingGradeIds.difference({
+              gradeId,
+            }),
+          ),
+        );
       } catch (e, s) {
         _logger.e('[UI] Error toggling grade enabled', error: e, stackTrace: s);
+
+        // ✅ GRANULAR: Quitar de procesando en caso de error
+        emit(
+          currentState.copyWith(
+            processingGradeIds: currentState.processingGradeIds.difference({
+              gradeId,
+            }),
+          ),
+        );
+
         emit(GradeTrackerSectionState.error(e));
       }
     }
@@ -244,15 +310,42 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     final currentState = state;
     if (currentState is GradeTrackerSectionReadyState) {
       try {
-        final courseId = currentState.courseTracking.courseCode;
-        final updatedTracking = await _gradeTrackingUseCases.removeGrade(
-          courseCode: courseId,
-          categoryId: categoryId,
-          gradeId: gradeId,
+        // ✅ GRANULAR: Marcar solo esta nota como procesando
+        emit(
+          currentState.copyWith(
+            processingGradeIds: {...currentState.processingGradeIds, gradeId},
+          ),
         );
-        emit(GradeTrackerSectionState.ready(courseTracking: updatedTracking));
+
+        final courseId = currentState.courseTracking.courseCode;
+        final updatedTracking = await _manageGradeTrackingGradesUseCase
+            .removeGrade(
+              courseCode: courseId,
+              categoryId: categoryId,
+              gradeId: gradeId,
+            );
+
+        // ✅ GRANULAR: Actualizar datos (la nota ya no existe, no necesitamos quitarla de processing)
+        emit(
+          currentState.copyWith(
+            courseTracking: updatedTracking,
+            processingGradeIds: currentState.processingGradeIds.difference({
+              gradeId,
+            }),
+          ),
+        );
       } catch (e, s) {
         _logger.e('[UI] Error deleting grade', error: e, stackTrace: s);
+
+        // ✅ GRANULAR: Quitar de procesando en caso de error
+        emit(
+          currentState.copyWith(
+            processingGradeIds: currentState.processingGradeIds.difference({
+              gradeId,
+            }),
+          ),
+        );
+
         emit(GradeTrackerSectionState.error(e));
       }
     }

@@ -3,6 +3,13 @@ import 'package:sigapp/courses/application/repositories/student_session_reposito
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 import 'package:sigapp/courses/domain/repositories/grade_tracking_repository.dart';
 
+/// DEPRECATED: Este mega use case viola el principio de responsabilidad única.
+/// Use los use cases específicos en su lugar:
+/// - GetCourseTrackingUseCase
+/// - CreateCourseTrackingUseCase
+/// - ManageCategoriesUseCase
+/// - ManageGradesUseCase
+@Deprecated('Use specific use cases instead')
 @lazySingleton
 class GradeTrackingUseCases {
   final GradeTrackingRepository _repository;

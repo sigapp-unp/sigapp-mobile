@@ -62,12 +62,18 @@ import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart' as _i382;
 import 'package:sigapp/core/injection/register_module.dart' as _i799;
 import 'package:sigapp/courses/application/repositories/student_session_repository.dart'
     as _i6;
+import 'package:sigapp/courses/application/usecases/create_grade_tracking_usecase.dart'
+    as _i733;
 import 'package:sigapp/courses/application/usecases/get_class_schedule_usecase.dart'
     as _i315;
 import 'package:sigapp/courses/application/usecases/get_course_grade_usecase.dart'
     as _i504;
+import 'package:sigapp/courses/application/usecases/get_course_tracking_usecase.dart'
+    as _i290;
 import 'package:sigapp/courses/application/usecases/get_enrolled_courses_usecase.dart'
     as _i650;
+import 'package:sigapp/courses/application/usecases/get_grade_tracking_usecase.dart'
+    as _i409;
 import 'package:sigapp/courses/application/usecases/get_program_curriculum_progress_usecase.dart'
     as _i504;
 import 'package:sigapp/courses/application/usecases/get_scheduled_courses_usecase.dart'
@@ -76,6 +82,10 @@ import 'package:sigapp/courses/application/usecases/get_syllabus_file_usecase.da
     as _i445;
 import 'package:sigapp/courses/application/usecases/grade_tracking_usecases.dart'
     as _i947;
+import 'package:sigapp/courses/application/usecases/manage_grade_tracking_categories_usecase.dart'
+    as _i1033;
+import 'package:sigapp/courses/application/usecases/manage_grade_tracking_grades_usecase.dart'
+    as _i811;
 import 'package:sigapp/courses/domain/repositories/courses_repository.dart'
     as _i986;
 import 'package:sigapp/courses/domain/repositories/grade_tracking_repository.dart'
@@ -242,6 +252,36 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i315.GetClassScheduleUsecase>(
       () => _i315.GetClassScheduleUsecase(gh<_i974.ScheduleRepository>()),
     );
+    gh.factory<_i290.GetCourseTrackingUseCase>(
+      () => _i290.GetCourseTrackingUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i409.GetGradeTrackingUseCase>(
+      () => _i409.GetGradeTrackingUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i733.CreateGradeTrackingUseCase>(
+      () => _i733.CreateGradeTrackingUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i1033.ManageGradeTrackingCategoriesUseCase>(
+      () => _i1033.ManageGradeTrackingCategoriesUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i811.ManageGradeTrackingGradesUseCase>(
+      () => _i811.ManageGradeTrackingGradesUseCase(
+        gh<_i259.GradeTrackingRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+      ),
+    );
     gh.lazySingleton<_i594.StudentRepository>(
       () => _i528.StudentRepositoryImpl(gh<_i857.SigaClient>()),
     );
@@ -290,12 +330,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i1059.GradeTrackerSectionCubit>(
-      () => _i1059.GradeTrackerSectionCubit(
-        gh<_i947.GradeTrackingUseCases>(),
-        gh<_i974.Logger>(),
-      ),
-    );
     gh.lazySingleton<_i650.GetEnrolledCoursesUsecase>(
       () => _i650.GetEnrolledCoursesUsecase(
         gh<_i986.CoursesRepository>(),
@@ -315,6 +349,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i6.StudentSessionRepository>(),
       ),
       instanceName: 'getAcademicInfoUseCaseImpl',
+    );
+    gh.factory<_i1059.GradeTrackerSectionCubit>(
+      () => _i1059.GradeTrackerSectionCubit(
+        gh<_i409.GetGradeTrackingUseCase>(),
+        gh<_i733.CreateGradeTrackingUseCase>(),
+        gh<_i1033.ManageGradeTrackingCategoriesUseCase>(),
+        gh<_i811.ManageGradeTrackingGradesUseCase>(),
+        gh<_i974.Logger>(),
+      ),
     );
     gh.factory<_i215.CourseDetailCubit>(
       () => _i215.CourseDetailCubit(

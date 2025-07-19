@@ -88,17 +88,29 @@ class _GradeTrackerSectionWidgetState extends State<GradeTrackerSectionWidget> {
   }
 
   Widget _buildContent(BuildContext context, GradeTrackerSectionState state) {
-    return switch (state) {
-      GradeTrackerSectionEmptyState() => _EmptyStateView(
-        enrolledCourse: widget.enrolledCourse,
-        cubit: _cubit,
-      ),
-      GradeTrackerSectionLoadingState() => const LoadingStateWidget(),
-      GradeTrackerSectionReadyState(courseTracking: final tracking) =>
-        _ReadyStateView(tracking: tracking, cubit: _cubit),
-      GradeTrackerSectionErrorState(error: final error) =>
-        ErrorStateWidget.from(error, onRetry: () => _cubit.retry()),
-    };
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: switch (state) {
+        GradeTrackerSectionEmptyState() => _EmptyStateView(
+          enrolledCourse: widget.enrolledCourse,
+          cubit: _cubit,
+        ),
+        GradeTrackerSectionLoadingState() => const LoadingStateWidget(),
+        GradeTrackerSectionReadyState(
+          courseTracking: final tracking,
+          processingGradeIds: final processingGradeIds,
+          processingCategoryIds: final processingCategoryIds,
+        ) =>
+          _ReadyStateView(
+            tracking: tracking,
+            cubit: _cubit,
+            processingGradeIds: processingGradeIds,
+            processingCategoryIds: processingCategoryIds,
+          ),
+        GradeTrackerSectionErrorState(error: final error) =>
+          ErrorStateWidget.from(error, onRetry: () => _cubit.retry()),
+      },
+    );
   }
 }
 
@@ -140,10 +152,17 @@ class _EmptyStateView extends StatelessWidget {
 }
 
 class _ReadyStateView extends StatelessWidget {
-  const _ReadyStateView({required this.tracking, required this.cubit});
+  const _ReadyStateView({
+    required this.tracking,
+    required this.cubit,
+    this.processingGradeIds = const {},
+    this.processingCategoryIds = const {},
+  });
 
   final CourseTracking tracking;
   final GradeTrackerSectionCubit cubit;
+  final Set<String> processingGradeIds;
+  final Set<String> processingCategoryIds;
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +172,11 @@ class _ReadyStateView extends StatelessWidget {
         FinalGradeCardWidget(tracking: tracking),
         const SizedBox(height: 8),
         ...tracking.categories.map((category) {
-          return CategoryCardWidget(category: category, cubit: cubit);
+          return CategoryCardWidget(
+            category: category,
+            cubit: cubit,
+            processingGradeIds: processingGradeIds,
+          );
         }),
         // const SizedBox(height: 12),
         // Container(

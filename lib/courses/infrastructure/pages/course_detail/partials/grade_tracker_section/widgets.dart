@@ -53,10 +53,12 @@ class CategoryCardWidget extends StatelessWidget {
     super.key,
     required this.category,
     required this.cubit,
+    this.processingGradeIds = const {},
   });
 
   final GradeCategory category;
   final GradeTrackerSectionCubit cubit;
+  final Set<String> processingGradeIds;
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +97,7 @@ class CategoryCardWidget extends StatelessWidget {
                   categoryId: category.id!,
                   grade: grade,
                   cubit: cubit,
+                  processingGradeIds: processingGradeIds,
                 );
               }),
             const SizedBox(height: 8),
@@ -136,67 +139,97 @@ class _GradeItemWidget extends StatelessWidget {
     required this.categoryId,
     required this.grade,
     required this.cubit,
+    this.processingGradeIds = const {},
   });
 
   final String categoryId;
   final Grade grade;
   final GradeTrackerSectionCubit cubit;
+  final Set<String> processingGradeIds;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final isProcessing = processingGradeIds.contains(grade.id);
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(grade.name, style: textTheme.bodyLarge),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            grade.score.toStringAsFixed(2),
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color:
-                  grade.enabled ? _getColorForGrade(grade.score) : Colors.grey,
-            ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          grade.name,
+          style: textTheme.bodyLarge?.copyWith(
+            color: isProcessing ? Colors.grey.shade600 : null,
           ),
-          const SizedBox(height: 8),
-          if (!grade.enabled)
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
-              'No considerar',
-              style: textTheme.bodyMedium?.copyWith(
-                fontStyle: FontStyle.italic,
-                color: Colors.grey[600],
+              grade.score.toStringAsFixed(2),
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color:
+                    isProcessing
+                        ? Colors.grey.shade400
+                        : (grade.enabled
+                            ? _getColorForGrade(grade.score)
+                            : Colors.grey),
               ),
             ),
-        ],
-      ),
-      leading: Switch(
-        value: grade.enabled,
-        onChanged: (value) {
-          cubit.toggleGradeEnabled(
-            categoryId: categoryId,
-            gradeId: grade.id!,
-            enabled: value,
-          );
-        },
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            onPressed: () {
-              showEditGradeDialog(context, categoryId, grade, cubit);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, size: 20),
-            onPressed: () {
-              showDeleteGradeDialog(context, categoryId, grade, cubit);
-            },
-          ),
-        ],
+            const SizedBox(height: 8),
+            if (!grade.enabled)
+              Text(
+                'No considerar',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey[600],
+                ),
+              ),
+          ],
+        ),
+        leading: Switch(
+          value: grade.enabled,
+          onChanged:
+              isProcessing
+                  ? null
+                  : (value) {
+                    cubit.toggleGradeEnabled(
+                      categoryId: categoryId,
+                      gradeId: grade.id!,
+                      enabled: value,
+                    );
+                  },
+        ),
+        trailing:
+            isProcessing
+                ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, size: 20),
+                      onPressed: () {
+                        showEditGradeDialog(context, categoryId, grade, cubit);
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, size: 20),
+                      onPressed: () {
+                        showDeleteGradeDialog(
+                          context,
+                          categoryId,
+                          grade,
+                          cubit,
+                        );
+                      },
+                    ),
+                  ],
+                ),
       ),
     );
   }
