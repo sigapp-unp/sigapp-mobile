@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sigapp/courses/application/usecases/get_all_hidden_courses_preferences_usecase.dart';
+import 'package:sigapp/courses/application/usecases/set_course_visibility_preferences_usecase.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule.dart';
-import 'package:sigapp/courses/infrastructure/services/course_visibility_preferences.dart';
 
 part 'course_visibility_cubit.freezed.dart';
 
@@ -13,8 +15,15 @@ abstract class CourseVisibilityState with _$CourseVisibilityState {
   }) = _CourseVisibilityState;
 }
 
+@injectable
 class CourseVisibilityCubit extends Cubit<CourseVisibilityState> {
-  CourseVisibilityCubit() : super(const CourseVisibilityState());
+  final GetAllHiddenCoursesPreferencesUseCase _getAllHiddenCoursesUseCase;
+  final SetCourseVisibilityPreferencesUseCase _setCourseVisibilityUseCase;
+
+  CourseVisibilityCubit(
+    this._getAllHiddenCoursesUseCase,
+    this._setCourseVisibilityUseCase,
+  ) : super(const CourseVisibilityState());
 
   Future<void> loadHiddenEvents(List<WeeklyScheduleWidgetItem> events) async {
     if (events.isEmpty) {
@@ -24,9 +33,8 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState> {
 
     final hiddenStatusMap = <String, bool>{};
 
-    // Optimización: cargar todos los IDs de eventos ocultos de una vez
-    final hiddenEventIds =
-        await CourseVisibilityPreferences.getAllHiddenEventIds();
+    // Use the use case to get all hidden event IDs
+    final hiddenEventIds = await _getAllHiddenCoursesUseCase();
 
     for (var event in events) {
       final eventId = event.eventId;
@@ -42,8 +50,8 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState> {
     WeeklyScheduleWidgetItem event,
     bool isHidden,
   ) async {
-    // Actualizar en SharedPreferences
-    await CourseVisibilityPreferences.setEventHidden(event.eventId, isHidden);
+    // Use the use case to update visibility (note: isVisible = !isHidden)
+    await _setCourseVisibilityUseCase(event.eventId, !isHidden);
 
     // Actualizar el estado local
     event.isHidden = isHidden;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/course_prerequisite_chain_page.dart';
+import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
 
 class ViewOptionsButton extends StatelessWidget {
-  final CoursePrerequisiteChainViewMode viewMode;
+  final CourseViewMode viewMode;
   final bool highlightCriticalPath;
   final VoidCallback onPressed;
 
@@ -24,7 +24,7 @@ class ViewOptionsButton extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Icon(
-            viewMode == CoursePrerequisiteChainViewMode.tree
+            viewMode == CourseViewMode.tree
                 ? Icons.account_tree
                 : Icons.view_list,
             size: 24,

@@ -125,7 +125,7 @@ class _ScheduleShareButtonWidgetState extends State<ScheduleShareButtonWidget> {
             child: BlocProvider(
               create:
                   (context) =>
-                      CourseVisibilityCubit()
+                      getIt<CourseVisibilityCubit>()
                         ..loadHiddenEvents(weeklyScheduleWidget.events),
               child: Container(
                 color: Theme.of(context).colorScheme.surface,

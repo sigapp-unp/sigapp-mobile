@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
-import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/course_prerequisite_chain_page.dart';
+import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
 
 class ViewOptionsSheetWidget extends StatelessWidget {
-  final CoursePrerequisiteChainViewMode viewMode;
+  final CourseViewMode viewMode;
   final bool highlightCriticalPath;
   final CourseTreeNode? currentTree;
   final VoidCallback onTree;
@@ -160,7 +160,7 @@ class ViewOptionsSheetWidget extends StatelessWidget {
                   icon: Icons.account_tree,
                   title: 'Vista árbol',
                   subtitle: 'Estructura jerárquica con conexiones',
-                  isSelected: viewMode == CoursePrerequisiteChainViewMode.tree,
+                  isSelected: viewMode == CourseViewMode.tree,
                   onTap: onTree,
                   badge: maxLevels > 0 ? '$maxLevels niveles' : null,
                 ),
@@ -168,7 +168,7 @@ class ViewOptionsSheetWidget extends StatelessWidget {
                   icon: Icons.view_list,
                   title: 'Vista lista',
                   subtitle: 'Lista plana agrupada por ciclos',
-                  isSelected: viewMode == CoursePrerequisiteChainViewMode.list,
+                  isSelected: viewMode == CourseViewMode.list,
                   onTap: onList,
                   badge: totalCourses > 0 ? '$totalCourses cursos' : null,
                 ),

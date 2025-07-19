@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sigapp/courses/domain/entities/course_type.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
-import 'package:sigapp/courses/infrastructure/services/course_chain_preferences.dart';
+import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
+import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/course_chain_preferences_cubit.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/partials/view_options_sheet.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/partials/view_options_button.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/partials/tab_section.dart';
+import 'package:sigapp/core/injection/get_it.dart';
 
-enum CoursePrerequisiteChainViewMode { tree, list }
-
-class CoursePrerequisiteChainPage extends StatefulWidget {
+class CoursePrerequisiteChainPage extends StatelessWidget {
   const CoursePrerequisiteChainPage({
     super.key,
     required this.programCurriculum,
@@ -19,20 +20,36 @@ class CoursePrerequisiteChainPage extends StatefulWidget {
   final List<ProgramCurriculumTerm> programCurriculum;
 
   @override
-  State<CoursePrerequisiteChainPage> createState() =>
-      _CoursePrerequisiteChainPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => getIt<CourseChainPreferencesCubit>(),
+      child: _CoursePrerequisiteChainPageContent(
+        course: course,
+        programCurriculum: programCurriculum,
+      ),
+    );
+  }
 }
 
-class _CoursePrerequisiteChainPageState
-    extends State<CoursePrerequisiteChainPage>
+class _CoursePrerequisiteChainPageContent extends StatefulWidget {
+  const _CoursePrerequisiteChainPageContent({
+    required this.programCurriculum,
+    required this.course,
+  });
+
+  final ProgramCurriculumCourse course;
+  final List<ProgramCurriculumTerm> programCurriculum;
+
+  @override
+  State<_CoursePrerequisiteChainPageContent> createState() =>
+      _CoursePrerequisiteChainPageContentState();
+}
+
+class _CoursePrerequisiteChainPageContentState
+    extends State<_CoursePrerequisiteChainPageContent>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  bool _highlightCriticalPath = false;
-  Set<String> _criticalPathIds = {};
-  CoursePrerequisiteChainViewMode _viewMode =
-      CoursePrerequisiteChainViewMode.tree;
-  bool _loadingPrefs = true;
   // Filter state for prerequisites tab
   bool _showMandatoryReq = true;
   bool _showElectiveReq = true;
@@ -42,12 +59,22 @@ class _CoursePrerequisiteChainPageState
   bool _showMandatoryDep = true;
   bool _showElectiveDep = true;
   String _approvalFilterDep = 'todos';
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadPreferences();
     _setupInitialTabIfNeeded();
+
+    // Load preferences using the cubit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentTree = widget.course.getPrerequisiteCoursesTree(
+        programCurriculum: widget.programCurriculum,
+      );
+      BlocProvider.of<CourseChainPreferencesCubit>(
+        context,
+      ).loadPreferences(currentTree: currentTree);
+    });
   }
 
   void _setupInitialTabIfNeeded() {
@@ -62,57 +89,15 @@ class _CoursePrerequisiteChainPageState
     });
   }
 
-  Future<void> _loadPreferences() async {
-    final highlight = await CourseChainPreferences.getHighlightCriticalPath();
-    final viewMode = await CourseChainPreferences.getViewMode();
-
-    if (highlight) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final currentTree = widget.course.getPrerequisiteCoursesTree(
-          programCurriculum: widget.programCurriculum,
-        );
-        final path = _findCriticalPath(currentTree);
-        setState(() {
-          _highlightCriticalPath = true;
-          _criticalPathIds = path.map((n) => n.course.info.courseCode).toSet();
-          _viewMode = _parseViewMode(viewMode);
-          _loadingPrefs = false;
-        });
-      });
-    } else {
-      setState(() {
-        _highlightCriticalPath = false;
-        _criticalPathIds = {};
-        _viewMode = _parseViewMode(viewMode);
-        _loadingPrefs = false;
-      });
-    }
-  }
-
-  CoursePrerequisiteChainViewMode _parseViewMode(String viewMode) {
-    return viewMode == 'list'
-        ? CoursePrerequisiteChainViewMode.list
-        : CoursePrerequisiteChainViewMode.tree;
-  } // --- Ruta crítica ---
+  // --- Ruta crítica ---
 
   void _toggleCriticalPath(CourseTreeNode? root) async {
-    if (!_highlightCriticalPath) {
-      // Only activate if the critical path would be useful
-      if (!_isCriticalPathUseful(root)) return;
-
-      final path = _findCriticalPath(root);
-      setState(() {
-        _highlightCriticalPath = true;
-        _criticalPathIds = path.map((n) => n.course.info.courseCode).toSet();
-      });
-      await CourseChainPreferences.setHighlightCriticalPath(true);
-    } else {
-      setState(() {
-        _highlightCriticalPath = false;
-        _criticalPathIds = {};
-      });
-      await CourseChainPreferences.setHighlightCriticalPath(false);
-    }
+    await BlocProvider.of<CourseChainPreferencesCubit>(
+      context,
+    ).toggleCriticalPath(
+      currentTree: root,
+      isCriticalPathUseful: _isCriticalPathUseful,
+    );
   }
 
   bool _isCriticalPathUseful(CourseTreeNode? root) {
@@ -184,6 +169,7 @@ class _CoursePrerequisiteChainPageState
     TabController tabController,
     CourseTreeNode? prerequisiteCoursesTree,
     CourseTreeNode? dependentCoursesTree,
+    CourseChainPreferencesState preferencesState,
   ) {
     return Scaffold(
       appBar: _buildAppBar(tabController),
@@ -208,9 +194,9 @@ class _CoursePrerequisiteChainPageState
               _checkCriticalPathAfterFilterChange();
             },
             onResetFilters: () => _resetFilters(isRequirements: true),
-            isTreeView: _viewMode == CoursePrerequisiteChainViewMode.tree,
-            highlightCriticalPath: _highlightCriticalPath,
-            criticalPathIds: _criticalPathIds,
+            isTreeView: preferencesState.viewMode == CourseViewMode.tree,
+            highlightCriticalPath: preferencesState.highlightCriticalPath,
+            criticalPathIds: preferencesState.criticalPathIds,
           ),
           TabSectionWidget(
             tree: dependentCoursesTree,
@@ -230,62 +216,77 @@ class _CoursePrerequisiteChainPageState
               _checkCriticalPathAfterFilterChange();
             },
             onResetFilters: () => _resetFilters(isRequirements: false),
-            isTreeView: _viewMode == CoursePrerequisiteChainViewMode.tree,
-            highlightCriticalPath: _highlightCriticalPath,
-            criticalPathIds: _criticalPathIds,
+            isTreeView: preferencesState.viewMode == CourseViewMode.tree,
+            highlightCriticalPath: preferencesState.highlightCriticalPath,
+            criticalPathIds: preferencesState.criticalPathIds,
           ),
         ],
       ),
-      floatingActionButton: _buildFab(context),
+      floatingActionButton: _buildFab(context, preferencesState),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loadingPrefs) return _buildLoading();
+    return BlocBuilder<
+      CourseChainPreferencesCubit,
+      CourseChainPreferencesState
+    >(
+      builder: (context, preferencesState) {
+        if (preferencesState.isLoading) return _buildLoading();
 
-    final prerequisiteCoursesTree = widget.course.getPrerequisiteCoursesTree(
-      programCurriculum: widget.programCurriculum,
-    );
-    final dependentCoursesTree = widget.course.getDependentCoursesTree(
-      programCurriculum: widget.programCurriculum,
-    );
+        final prerequisiteCoursesTree = widget.course
+            .getPrerequisiteCoursesTree(
+              programCurriculum: widget.programCurriculum,
+            );
+        final dependentCoursesTree = widget.course.getDependentCoursesTree(
+          programCurriculum: widget.programCurriculum,
+        );
 
-    return _buildMainScaffold(
-      context,
-      _tabController,
-      prerequisiteCoursesTree,
-      dependentCoursesTree,
+        return _buildMainScaffold(
+          context,
+          _tabController,
+          prerequisiteCoursesTree,
+          dependentCoursesTree,
+          preferencesState,
+        );
+      },
     );
   }
 
-  Widget _buildFab(BuildContext context) {
+  Widget _buildFab(
+    BuildContext context,
+    CourseChainPreferencesState preferencesState,
+  ) {
     return ViewOptionsButton(
-      viewMode: _viewMode,
-      highlightCriticalPath: _highlightCriticalPath,
-      onPressed: () => _showViewOptionsSheet(context),
+      viewMode: preferencesState.viewMode,
+      highlightCriticalPath: preferencesState.highlightCriticalPath,
+      onPressed: () => _showViewOptionsSheet(context, preferencesState),
     );
   }
 
-  Future<void> _showViewOptionsSheet(BuildContext context) async {
+  Future<void> _showViewOptionsSheet(
+    BuildContext context,
+    CourseChainPreferencesState preferencesState,
+  ) async {
     final selected = await showModalBottomSheet<String>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => _buildViewOptionsSheet(),
+      builder: (context) => _buildViewOptionsSheet(preferencesState),
     );
 
     await _handleViewOptionSelection(selected);
   }
 
-  Widget _buildViewOptionsSheet() {
+  Widget _buildViewOptionsSheet(CourseChainPreferencesState preferencesState) {
     final currentTree = _getCurrentTabTree();
     final filteredTree = _getFilteredTree(currentTree);
 
     return ViewOptionsSheetWidget(
-      viewMode: _viewMode,
-      highlightCriticalPath: _highlightCriticalPath,
+      viewMode: preferencesState.viewMode,
+      highlightCriticalPath: preferencesState.highlightCriticalPath,
       currentTree: filteredTree,
       onTree: () => Navigator.pop(context, 'tree'),
       onList: () => Navigator.pop(context, 'list'),
@@ -306,12 +307,14 @@ class _CoursePrerequisiteChainPageState
   Future<void> _handleViewOptionSelection(String? selected) async {
     switch (selected) {
       case 'tree':
-        setState(() => _viewMode = CoursePrerequisiteChainViewMode.tree);
-        await CourseChainPreferences.setViewMode('tree');
+        await BlocProvider.of<CourseChainPreferencesCubit>(
+          context,
+        ).setViewMode(CourseViewMode.tree);
         break;
       case 'list':
-        setState(() => _viewMode = CoursePrerequisiteChainViewMode.list);
-        await CourseChainPreferences.setViewMode('list');
+        await BlocProvider.of<CourseChainPreferencesCubit>(
+          context,
+        ).setViewMode(CourseViewMode.list);
         break;
       case 'critical':
         final currentTree = _getCurrentTabTree();
@@ -338,25 +341,13 @@ class _CoursePrerequisiteChainPageState
   }
 
   void _checkCriticalPathAfterFilterChange() {
-    if (!_highlightCriticalPath) return;
-
     final currentTree = _getCurrentTabTree();
     final filteredTree = _getFilteredTree(currentTree);
 
-    if (!_isCriticalPathUseful(filteredTree)) {
-      // Disable critical path if no longer useful
-      setState(() {
-        _highlightCriticalPath = false;
-        _criticalPathIds = {};
-      });
-      CourseChainPreferences.setHighlightCriticalPath(false);
-    } else {
-      // Recalculate critical path with filtered tree
-      final path = _findCriticalPath(filteredTree);
-      setState(() {
-        _criticalPathIds = path.map((n) => n.course.info.courseCode).toSet();
-      });
-    }
+    BlocProvider.of<CourseChainPreferencesCubit>(context).updateCriticalPath(
+      currentTree: filteredTree,
+      isCriticalPathUseful: _isCriticalPathUseful,
+    );
   }
 
   // --- Tree Filtering ---
