@@ -32,6 +32,7 @@ class CourseDetailsDialog extends StatelessWidget {
             builder: (context, state) {
               final isEventHidden =
                   state.hiddenEvents[event.eventId] ?? isHidden;
+
               return ListTile(
                 contentPadding: EdgeInsets.all(0),
                 title: Text(

@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
+import 'package:sigapp/auth/domain/services/toast_service.dart';
 import 'package:sigapp/courses/application/usecases/get_course_view_mode_preferences_usecase.dart';
 import 'package:sigapp/courses/application/usecases/set_course_view_mode_preferences_usecase.dart';
 import 'package:sigapp/courses/application/usecases/get_highlight_critical_path_preferences_usecase.dart';
 import 'package:sigapp/courses/application/usecases/set_highlight_critical_path_preferences_usecase.dart';
 import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
+import 'package:sigapp/courses/infrastructure/utils/debounce_manager.dart';
 
 part 'course_chain_preferences_cubit.freezed.dart';
 
@@ -22,11 +25,13 @@ abstract class CourseChainPreferencesState with _$CourseChainPreferencesState {
 }
 
 @injectable
-class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState> {
+class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState>
+    with DebounceMixin {
   final GetCourseViewModeUseCase _getViewModeUseCase;
   final SetCourseViewModePreferencesUseCase _setViewModeUseCase;
   final GetHighlightCriticalPathUseCase _getHighlightUseCase;
   final SetHighlightCriticalPathPreferencesUseCase _setHighlightUseCase;
+  final ToastService _toastService;
   final Logger _logger;
 
   CourseChainPreferencesCubit(
@@ -34,8 +39,12 @@ class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState> {
     this._setViewModeUseCase,
     this._getHighlightUseCase,
     this._setHighlightUseCase,
+    this._toastService,
     this._logger,
-  ) : super(const CourseChainPreferencesState());
+  ) : super(const CourseChainPreferencesState()) {
+    // Initialize debounce functionality
+    initDebounce(toastService: _toastService, logger: _logger);
+  }
 
   /// Loads user preferences for course chain display
   Future<void> loadPreferences({CourseTreeNode? currentTree}) async {
@@ -76,71 +85,60 @@ class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState> {
     }
   }
 
-  /// Sets the view mode preference
+  /// Sets the view mode preference with debounced persistence
   Future<void> setViewMode(CourseViewMode newMode) async {
-    try {
-      emit(state.copyWith(viewMode: newMode));
-      await _setViewModeUseCase(newMode);
+    // 1. Update UI immediately
+    emit(state.copyWith(viewMode: newMode));
+    _logger.d('[CUBIT] View mode updated immediately to: ${newMode.value}');
 
-      _logger.d('[CUBIT] View mode updated to: ${newMode.value}');
-    } catch (e, s) {
-      _logger.e(
-        '[CUBIT] Error setting view mode preference',
-        error: e,
-        stackTrace: s,
-      );
-      // Revert state on error
-      emit(state.copyWith(viewMode: state.viewMode));
-      rethrow;
-    }
+    // 2. Schedule debounced persistence
+    debouncedSave(
+      key: 'viewMode',
+      operation: () => _setViewModeUseCase(newMode),
+      errorMessage:
+          'Error guardando modo de vista. El cambio se mantiene localmente.',
+    );
   }
 
-  /// Toggles critical path highlighting
+  /// Toggles critical path highlighting with debounced persistence
   Future<void> toggleCriticalPath({
     required CourseTreeNode? currentTree,
     required bool Function(CourseTreeNode?) isCriticalPathUseful,
   }) async {
-    try {
-      final newHighlightValue = !state.highlightCriticalPath;
+    final newHighlightValue = !state.highlightCriticalPath;
 
-      if (newHighlightValue) {
-        // Activating critical path
-        if (currentTree == null || !isCriticalPathUseful(currentTree)) {
-          _logger.d(
-            '[CUBIT] Critical path not activated - not useful for current tree',
-          );
-          return;
-        }
-
-        final path = _findCriticalPath(currentTree);
-        final criticalPathIds =
-            path.map((n) => n.course.info.courseCode).toSet();
-
-        emit(
-          state.copyWith(
-            highlightCriticalPath: true,
-            criticalPathIds: criticalPathIds,
-          ),
+    Set<String> newCriticalPathIds = {};
+    if (newHighlightValue) {
+      // Activating critical path
+      if (currentTree == null || !isCriticalPathUseful(currentTree)) {
+        _logger.d(
+          '[CUBIT] Critical path not activated - not useful for current tree',
         );
-      } else {
-        // Deactivating critical path
-        emit(state.copyWith(highlightCriticalPath: false, criticalPathIds: {}));
+        return;
       }
 
-      await _setHighlightUseCase(newHighlightValue);
-      _logger.d(
-        '[CUBIT] Critical path highlight toggled to: $newHighlightValue',
-      );
-    } catch (e, s) {
-      _logger.e(
-        '[CUBIT] Error toggling critical path preference',
-        error: e,
-        stackTrace: s,
-      );
-      // Revert state on error
-      emit(state.copyWith(highlightCriticalPath: !state.highlightCriticalPath));
-      rethrow;
+      final path = _findCriticalPath(currentTree);
+      newCriticalPathIds = path.map((n) => n.course.info.courseCode).toSet();
     }
+
+    // 1. Update UI immediately
+    emit(
+      state.copyWith(
+        highlightCriticalPath: newHighlightValue,
+        criticalPathIds: newCriticalPathIds,
+      ),
+    );
+    _logger.d(
+      '[CUBIT] Critical path toggled immediately to: $newHighlightValue',
+    );
+
+    // 2. Schedule debounced persistence
+    debouncedSave(
+      key: 'criticalPath',
+      operation: () => _setHighlightUseCase(newHighlightValue),
+      errorMessage:
+          'Error guardando configuración de ruta crítica. El cambio se mantiene localmente.',
+    );
   }
 
   /// Updates critical path IDs when tree changes (e.g., after filtering)
@@ -181,5 +179,11 @@ class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState> {
       if (path.length > longest.length) longest = path;
     }
     return [node, ...longest];
+  }
+
+  @override
+  Future<void> close() {
+    disposeDebounce();
+    return super.close();
   }
 }

@@ -17,37 +17,37 @@ class ViewOptionsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return FloatingActionButton(
-      onPressed: onPressed,
-      tooltip: 'Opciones de visualización',
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(
-            viewMode == CourseViewMode.tree
-                ? Icons.account_tree
-                : Icons.view_list,
-            size: 24,
+    return Stack(
+      children: [
+        FloatingActionButton(
+          onPressed: onPressed,
+          tooltip: 'Opciones de visualización',
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                viewMode == CourseViewMode.tree
+                    ? Icons.account_tree
+                    : Icons.view_list,
+                size: 24,
+              ),
+            ],
           ),
-          if (highlightCriticalPath)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: theme.colorScheme.surface,
-                    width: 1,
-                  ),
-                ),
+        ),
+        if (highlightCriticalPath)
+          Positioned(
+            top: 14,
+            right: 14,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                shape: BoxShape.circle,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

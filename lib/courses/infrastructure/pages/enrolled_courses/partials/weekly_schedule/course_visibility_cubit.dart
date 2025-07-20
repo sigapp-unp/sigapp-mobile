@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:logger/logger.dart';
+import 'package:sigapp/auth/domain/services/toast_service.dart';
 import 'package:sigapp/courses/application/usecases/get_all_hidden_courses_preferences_usecase.dart';
 import 'package:sigapp/courses/application/usecases/set_course_visibility_preferences_usecase.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule.dart';
+import 'package:sigapp/courses/infrastructure/utils/debounce_manager.dart';
 
 part 'course_visibility_cubit.freezed.dart';
 
@@ -16,14 +20,22 @@ abstract class CourseVisibilityState with _$CourseVisibilityState {
 }
 
 @injectable
-class CourseVisibilityCubit extends Cubit<CourseVisibilityState> {
+class CourseVisibilityCubit extends Cubit<CourseVisibilityState>
+    with DebounceMixin {
   final GetAllHiddenCoursesPreferencesUseCase _getAllHiddenCoursesUseCase;
   final SetCourseVisibilityPreferencesUseCase _setCourseVisibilityUseCase;
+  final ToastService _toastService;
+  final Logger _logger;
 
   CourseVisibilityCubit(
     this._getAllHiddenCoursesUseCase,
     this._setCourseVisibilityUseCase,
-  ) : super(const CourseVisibilityState());
+    this._toastService,
+    this._logger,
+  ) : super(const CourseVisibilityState()) {
+    // Initialize debounce functionality
+    initDebounce(toastService: _toastService, logger: _logger);
+  }
 
   Future<void> loadHiddenEvents(List<WeeklyScheduleWidgetItem> events) async {
     if (events.isEmpty) {
@@ -50,16 +62,25 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState> {
     WeeklyScheduleWidgetItem event,
     bool isHidden,
   ) async {
-    // Use the use case to update visibility (note: isVisible = !isHidden)
-    await _setCourseVisibilityUseCase(event.eventId, !isHidden);
-
-    // Actualizar el estado local
+    // 1. Update UI immediately
     event.isHidden = isHidden;
-
-    // Actualizar el estado del Cubit
     final updatedHiddenEvents = Map<String, bool>.from(state.hiddenEvents);
     updatedHiddenEvents[event.eventId] = isHidden;
 
     emit(state.copyWith(hiddenEvents: updatedHiddenEvents));
+
+    // 2. Schedule debounced persistence
+    debouncedSave(
+      key: 'visibility_${event.eventId}',
+      operation: () => _setCourseVisibilityUseCase(event.eventId, !isHidden),
+      errorMessage:
+          'Error guardando visibilidad del curso. El cambio se mantiene localmente.',
+    );
+  }
+
+  @override
+  Future<void> close() {
+    disposeDebounce();
+    return super.close();
   }
 }

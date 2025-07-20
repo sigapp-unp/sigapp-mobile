@@ -393,6 +393,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
+    gh.factory<_i55.CourseVisibilityCubit>(
+      () => _i55.CourseVisibilityCubit(
+        gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
+        gh<_i733.SetCourseVisibilityPreferencesUseCase>(),
+        gh<_i873.ToastService>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.factory<_i908.KeepSessionAliveUsecase>(
       () => _i908.KeepSessionAliveUsecase(gh<_i10.AuthRepository>()),
     );
@@ -450,12 +458,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i679.SessionLifecycleService>(),
       ),
     );
-    gh.factory<_i55.CourseVisibilityCubit>(
-      () => _i55.CourseVisibilityCubit(
-        gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
-        gh<_i733.SetCourseVisibilityPreferencesUseCase>(),
-      ),
-    );
     gh.singleton<_i97.GetAcademicInfoUseCase>(
       () => _i248.GetAcademicInfoUseCaseImpl(
         gh<_i771.GetAcademicReportUsecase>(),
@@ -484,20 +486,21 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i528.NavigationService>(
       () => _i561.NavigationServiceImpl(gh<_i583.GoRouter>()),
     );
-    gh.singleton<_i97.GetAcademicInfoUseCase>(
-      () => _i866.CachedGetAcademicInfoUseCase(
-        gh<_i97.GetAcademicInfoUseCase>(
-          instanceName: 'getAcademicInfoUseCaseImpl',
-        ),
-      ),
-    );
     gh.factory<_i293.CourseChainPreferencesCubit>(
       () => _i293.CourseChainPreferencesCubit(
         gh<_i186.GetCourseViewModeUseCase>(),
         gh<_i857.SetCourseViewModePreferencesUseCase>(),
         gh<_i127.GetHighlightCriticalPathUseCase>(),
         gh<_i131.SetHighlightCriticalPathPreferencesUseCase>(),
+        gh<_i873.ToastService>(),
         gh<_i974.Logger>(),
+      ),
+    );
+    gh.singleton<_i97.GetAcademicInfoUseCase>(
+      () => _i866.CachedGetAcademicInfoUseCase(
+        gh<_i97.GetAcademicInfoUseCase>(
+          instanceName: 'getAcademicInfoUseCaseImpl',
+        ),
       ),
     );
     gh.factory<_i885.EnrolledCoursesPageCubit>(
