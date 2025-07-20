@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 import 'package:sigapp/core/injection/get_it.dart';
 import 'package:sigapp/shared/infrastructure/partials/user_avatar_button/general_alert_dialog.dart';
 import 'package:sigapp/shared/infrastructure/partials/user_avatar_button_cubit.dart';
@@ -74,16 +75,32 @@ class UserAvatarButtonWidget extends StatelessWidget {
 
     switch (state) {
       case UserAvatarButtonSuccessState():
+        id = state.data.academicReport.code;
+        errorMessage = state.errorMessage;
+
+        final firstName = state.data.academicReport.firstName;
+        final lastName = state.data.academicReport.lastName;
+        fullName = '$firstName $lastName';
+
+        if (firstName.trim().isEmpty || lastName.trim().isEmpty) {
+          getIt<Logger>().d(
+            'Student with empty name - firstName: "$firstName", lastName: "$lastName", code: ${state.data.academicReport.code}',
+          );
+        }
+
         initials =
-            state.data.academicReport.firstName
+            fullName
                 .split(' ')
+                .map((w) => w.trim())
+                .where((w) => w.isNotEmpty)
                 .map((w) => w.characters.first.toUpperCase())
                 .take(2)
                 .join();
-        fullName =
-            '${state.data.academicReport.firstName} ${state.data.academicReport.lastName}';
-        id = state.data.academicReport.code;
-        errorMessage = state.errorMessage;
+
+        // Fallback if no valid initials found
+        if (initials.isEmpty) {
+          initials = '?';
+        }
         break;
       case UserAvatarButtonErrorState():
         if (state.error != null) {

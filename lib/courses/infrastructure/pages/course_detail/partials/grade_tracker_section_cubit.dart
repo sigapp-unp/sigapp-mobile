@@ -40,6 +40,9 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   final Logger _logger;
   String? _courseCode;
 
+  // Track current async operation to prevent race conditions
+  Future<void>? _currentLoadOperation;
+
   GradeTrackerSectionCubit(
     this._getGradeTrackingUseCase,
     this._createGradeTrackingUseCase,
@@ -52,14 +55,28 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   Future<void> init({required String courseId}) async {
     _courseCode = courseId;
 
-    await _loadData();
+    _currentLoadOperation = _loadData();
+    await _currentLoadOperation;
+  }
+
+  @override
+  Future<void> close() async {
+    // Wait for current operation to complete before closing to prevent
+    // "Cannot emit new states after calling close" error
+    await _currentLoadOperation;
+    return super.close();
   }
 
   Future<void> _loadData() async {
+    // Prevent multiple simultaneous loads
+    if (_currentLoadOperation != null && _currentLoadOperation != _loadData()) {
+      await _currentLoadOperation;
+      return;
+    }
+
     try {
       emit(const GradeTrackerSectionState.loading());
 
-      // Intentamos obtener el seguimiento existente
       CourseTracking? tracking;
 
       if (_courseCode != null) {
@@ -68,11 +85,14 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
         );
       }
 
-      if (tracking != null) {
-        emit(GradeTrackerSectionState.ready(courseTracking: tracking));
-      } else {
-        // Si no existe, mantenemos el estado vacío
-        emit(const GradeTrackerSectionState.empty());
+      // Only emit if we're still the current operation and cubit hasn't been closed
+      // This prevents: "Cannot emit new states after calling close"
+      if (_currentLoadOperation == _loadData() && !isClosed) {
+        if (tracking != null) {
+          emit(GradeTrackerSectionState.ready(courseTracking: tracking));
+        } else {
+          emit(const GradeTrackerSectionState.empty());
+        }
       }
     } catch (e, s) {
       _logger.e(
@@ -80,16 +100,19 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
         error: e,
         stackTrace: s,
       );
-      emit(
-        GradeTrackerSectionState.error(
-          "Error al cargar el seguimiento de notas: ${e.toString()}",
-        ),
-      );
+      if (_currentLoadOperation == _loadData() && !isClosed) {
+        emit(
+          GradeTrackerSectionState.error(
+            "Error al cargar el seguimiento de notas: ${e.toString()}",
+          ),
+        );
+      }
     }
   }
 
   Future<void> retry() async {
-    await _loadData();
+    _currentLoadOperation = _loadData();
+    await _currentLoadOperation;
   }
 
   Future<void> createCourseTracking({required String courseName}) async {
@@ -215,7 +238,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     final currentState = state;
     if (currentState is GradeTrackerSectionReadyState) {
       try {
-        // ✅ GRANULAR: Marcar solo esta nota como procesando
+        // Mark this specific grade as processing for UI feedback
         emit(
           currentState.copyWith(
             processingGradeIds: {...currentState.processingGradeIds, gradeId},
@@ -232,7 +255,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
               newScore: newScore,
             );
 
-        // ✅ GRANULAR: Quitar de procesando y actualizar datos
+        // Update data and remove from processing
         emit(
           currentState.copyWith(
             courseTracking: updatedTracking,
@@ -244,7 +267,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
       } catch (e, s) {
         _logger.e('[UI] Error updating grade', error: e, stackTrace: s);
 
-        // ✅ GRANULAR: Quitar de procesando en caso de error
+        // Remove from processing state on error
         emit(
           currentState.copyWith(
             processingGradeIds: currentState.processingGradeIds.difference({
@@ -266,7 +289,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     final currentState = state;
     if (currentState is GradeTrackerSectionReadyState) {
       try {
-        // ✅ GRANULAR: Marcar solo esta nota como procesando
         emit(
           currentState.copyWith(
             processingGradeIds: {...currentState.processingGradeIds, gradeId},
@@ -282,7 +304,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
               enabled: enabled,
             );
 
-        // ✅ GRANULAR: Quitar de procesando y actualizar datos
         emit(
           currentState.copyWith(
             courseTracking: updatedTracking,
@@ -294,7 +315,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
       } catch (e, s) {
         _logger.e('[UI] Error toggling grade enabled', error: e, stackTrace: s);
 
-        // ✅ GRANULAR: Quitar de procesando en caso de error
         emit(
           currentState.copyWith(
             processingGradeIds: currentState.processingGradeIds.difference({
@@ -315,7 +335,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
     final currentState = state;
     if (currentState is GradeTrackerSectionReadyState) {
       try {
-        // ✅ GRANULAR: Marcar solo esta nota como procesando
         emit(
           currentState.copyWith(
             processingGradeIds: {...currentState.processingGradeIds, gradeId},
@@ -330,7 +349,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
               gradeId: gradeId,
             );
 
-        // ✅ GRANULAR: Actualizar datos (la nota ya no existe, no necesitamos quitarla de processing)
         emit(
           currentState.copyWith(
             courseTracking: updatedTracking,
@@ -342,7 +360,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
       } catch (e, s) {
         _logger.e('[UI] Error deleting grade', error: e, stackTrace: s);
 
-        // ✅ GRANULAR: Quitar de procesando en caso de error
         emit(
           currentState.copyWith(
             processingGradeIds: currentState.processingGradeIds.difference({
@@ -364,7 +381,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
 
         await _deleteGradeTrackingUseCase.execute(courseCode: _courseCode!);
 
-        // Después de eliminar, volvemos al estado empty
         emit(const GradeTrackerSectionState.empty());
       } catch (e, s) {
         _logger.e(
