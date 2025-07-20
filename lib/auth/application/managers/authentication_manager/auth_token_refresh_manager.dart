@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:logger/logger.dart';
 import 'package:sigapp/auth/application/usecases/get_stored_credentials_usecase.dart';
 import 'package:sigapp/auth/application/usecases/keep_session_alive_usecase.dart';
-import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
+import 'package:sigapp/auth/application/usecases/siga_authentication_usecase.dart';
 import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
 import 'package:sigapp/core/infrastructure/http/network_utils.dart';
 
@@ -11,7 +11,7 @@ class AuthTokenRefreshManager {
   static const int _maxRetries = 3;
 
   final KeepSessionAliveUsecase _keepSessionAliveUsecase;
-  final AuthenticateUsecase _signInUseCase;
+  final SigaAuthenticationUsecase _signInUseCase;
   final GetStoredCredentialsUseCase _getStoredCredentialsUseCase;
   final Logger _logger;
 
@@ -43,14 +43,16 @@ class AuthTokenRefreshManager {
 
         await _keepSessionAliveUsecase.execute();
 
-        final successfulSignIn = await _signInUseCase.execute(
+        final result = await _signInUseCase.execute(
           storedCredentials.username!,
           storedCredentials.password!,
         );
 
-        if (!successfulSignIn) {
+        if (!result.success) {
           throw SessionException.refreshError(
-            originalError: 'SignIn returned false',
+            originalError:
+                result.messageLevel1 ??
+                'Failed authentication using previous credentials',
           );
         }
 

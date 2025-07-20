@@ -9,5 +9,8 @@ abstract class ApiResponse with _$ApiResponse {
     required ApiPathAndMethod pathAndMethod,
     required int statusCode,
     required Map<String, List<String>> headers,
+    String? messageLevel1,
+    String? messageLevel2,
+    String? messageLevel3,
   }) = _ApiResponse;
 }

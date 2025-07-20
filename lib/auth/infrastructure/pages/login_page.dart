@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:sigapp/auth/domain/services/toast_service.dart';
 import 'package:sigapp/auth/infrastructure/pages/welcome_page.dart';
 import 'package:sigapp/core/infrastructure/ui/links.dart';
 import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart';
@@ -25,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
   String? _usernameErrorText;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -157,12 +159,25 @@ class _LoginPageState extends State<LoginPage> {
                                     TextField(
                                       controller: _passwordController,
                                       focusNode: _passwordFocusNode,
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'Contraseña',
                                         prefixIcon: Icon(Icons.lock),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscurePassword
+                                                ? Icons.visibility_off
+                                                : Icons.visibility,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscurePassword =
+                                                  !_obscurePassword;
+                                            });
+                                          },
+                                        ),
                                         border: OutlineInputBorder(),
                                       ),
-                                      obscureText: true,
+                                      obscureText: _obscurePassword,
                                       textInputAction: TextInputAction.done,
                                       onSubmitted: (_) {
                                         if (status is! LoginLoading) {
@@ -215,7 +230,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
-                                    status.message,
+                                    status.messageLevel1,
                                     style: const TextStyle(color: Colors.red),
                                     textAlign: TextAlign.center,
                                   ),
@@ -244,8 +259,27 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           final status = state.status;
-          if (status is LoginSuccess) {
-            getIt<GoRouter>().pushReplacement('/');
+
+          switch (status) {
+            // case LoginInitial:
+            //   break;
+            // case LoginLoading:
+            //   break;
+            case LoginSuccess():
+              getIt<GoRouter>().pushReplacement('/');
+              break;
+            case LoginError():
+              final LoginError(:messageLevel2, :messageLevel3) = status;
+              final toastService = getIt<ToastService>();
+              if (messageLevel3 != null) {
+                toastService.show(messageLevel3);
+              }
+              if (messageLevel2 != null) {
+                toastService.show(messageLevel2, isError: true);
+              }
+              break;
+            default:
+              break;
           }
         },
       ),
@@ -277,7 +311,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 8),
 
-                const Text('2. Si olvidaste tu contraseña, puedes cambiarla:'),
+                const Text('2. Si lo deseas, puedes cambiar tu contraseña:'),
                 const SizedBox(height: 4),
                 FilledButton.icon(
                   onPressed: () {
@@ -359,8 +393,8 @@ class _LoginPageState extends State<LoginPage> {
               getIt<MailUtils>().launchEmail(
                 context,
                 email: Links.contactEmail,
-                subject: 'Hola!',
-                body: 'Me comunico porque ',
+                subject: 'Hola! [asunto]',
+                body: 'Me comunico porque [agrega capturas de pantalla]',
               );
             },
             child: Row(

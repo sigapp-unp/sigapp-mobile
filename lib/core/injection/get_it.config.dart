@@ -20,12 +20,12 @@ import 'package:sigapp/auth/application/managers/authentication_manager/async_op
     as _i465;
 import 'package:sigapp/auth/application/services/api_gateway_auth_service.dart'
     as _i391;
-import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart'
-    as _i738;
 import 'package:sigapp/auth/application/usecases/get_stored_credentials_usecase.dart'
     as _i193;
 import 'package:sigapp/auth/application/usecases/keep_session_alive_usecase.dart'
     as _i908;
+import 'package:sigapp/auth/application/usecases/siga_authentication_usecase.dart'
+    as _i568;
 import 'package:sigapp/auth/application/usecases/sign_in_usecase.dart' as _i365;
 import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart' as _i48;
 import 'package:sigapp/auth/domain/repositories/auth_repository.dart' as _i10;
@@ -244,11 +244,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i974.ScheduleRepository>(
       () => _i637.ScheduleRepositoryImpl(gh<_i857.SigaClient>()),
     );
+    gh.singleton<_i10.AuthRepository>(
+      () =>
+          _i127.AuthRepositoryImpl(gh<_i857.SigaClient>(), gh<_i974.Logger>()),
+    );
     gh.lazySingleton<_i889.ProgramCurriculumRepository>(
       () => _i654.ProgramCurriculumRepositoryImpl(gh<_i857.SigaClient>()),
-    );
-    gh.singleton<_i10.AuthRepository>(
-      () => _i127.AuthRepositoryImpl(gh<_i857.SigaClient>()),
     );
     gh.lazySingleton<_i259.GradeTrackingRepository>(
       () => _i4.GradeTrackingRepositoryImpl(
@@ -420,8 +421,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i315.GetClassScheduleUsecase>(),
       ),
     );
-    gh.factory<_i738.AuthenticateUsecase>(
-      () => _i738.AuthenticateUsecase(
+    gh.factory<_i568.SigaAuthenticationUsecase>(
+      () => _i568.SigaAuthenticationUsecase(
         gh<_i10.AuthRepository>(),
         gh<_i679.SessionLifecycleService>(),
       ),
@@ -486,6 +487,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
+    gh.factory<_i365.SignInUseCase>(
+      () => _i365.SignInUseCase(
+        gh<_i1010.SharedPreferencesAuthRepository>(),
+        gh<_i391.ApiGatewayAuthService>(),
+        gh<_i528.NavigationService>(),
+        gh<_i97.GetAcademicInfoUseCase>(),
+        gh<_i6.StudentSessionRepository>(),
+        gh<_i594.StudentRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i568.SigaAuthenticationUsecase>(),
+      ),
+    );
     gh.factory<_i48.SignOutUseCase>(
       () => _i48.SignOutUseCase(
         gh<_i1010.SharedPreferencesAuthRepository>(),
@@ -507,29 +520,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i365.SignInUseCase>(
-      () => _i365.SignInUseCase(
-        gh<_i1010.SharedPreferencesAuthRepository>(),
-        gh<_i391.ApiGatewayAuthService>(),
-        gh<_i528.NavigationService>(),
-        gh<_i97.GetAcademicInfoUseCase>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i594.StudentRepository>(),
-        gh<_i974.Logger>(),
-        gh<_i738.AuthenticateUsecase>(),
-      ),
-    );
-    gh.singleton<_i767.AuthenticationManager>(
-      () => _i767.AuthenticationManager(
-        gh<_i679.SessionLifecycleService>(),
+    gh.factory<_i41.LoginCubit>(
+      () => _i41.LoginCubit(
         gh<_i193.GetStoredCredentialsUseCase>(),
-        gh<_i48.SignOutUseCase>(),
-        gh<_i908.KeepSessionAliveUsecase>(),
-        gh<_i738.AuthenticateUsecase>(),
-        gh<_i873.ToastService>(),
+        gh<_i365.SignInUseCase>(),
         gh<_i974.Logger>(),
       ),
-      dispose: (i) => i.dispose(),
     );
     gh.factory<_i151.StudentPageViewCubit>(
       () => _i151.StudentPageViewCubit(
@@ -547,12 +543,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i41.LoginCubit>(
-      () => _i41.LoginCubit(
+    gh.singleton<_i767.AuthenticationManager>(
+      () => _i767.AuthenticationManager(
+        gh<_i679.SessionLifecycleService>(),
         gh<_i193.GetStoredCredentialsUseCase>(),
-        gh<_i365.SignInUseCase>(),
+        gh<_i48.SignOutUseCase>(),
+        gh<_i908.KeepSessionAliveUsecase>(),
+        gh<_i568.SigaAuthenticationUsecase>(),
+        gh<_i873.ToastService>(),
         gh<_i974.Logger>(),
       ),
+      dispose: (i) => i.dispose(),
     );
     return this;
   }

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/auth/application/services/api_gateway_auth_service.dart';
-import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
+import 'package:sigapp/auth/application/usecases/siga_authentication_usecase.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
 import 'package:sigapp/auth/domain/services/navigation_service.dart';
 import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
@@ -18,7 +18,7 @@ class SignInUseCase {
   final StudentSessionRepository _studentSessionRepository;
   final StudentRepository _studentRepository;
   final Logger _logger;
-  final AuthenticateUsecase _directSignInUse;
+  final SigaAuthenticationUsecase _sigaAuthenticationUsecase;
 
   SignInUseCase(
     this._sharedPreferencesAuthRepository,
@@ -28,16 +28,19 @@ class SignInUseCase {
     this._studentSessionRepository,
     this._studentRepository,
     this._logger,
-    this._directSignInUse,
+    this._sigaAuthenticationUsecase,
   );
 
-  Future<bool> execute(String username, String password) async {
+  Future<AuthenticationResult> execute(String username, String password) async {
     // Clear cookies from authentication services uhmmmm...
     // await _authRepository.disposeCookies();
     // await _regevaRepository.disposeCookies();
 
-    final success = await _directSignInUse.execute(username, password);
-    if (!success) return false;
+    final sigaAuthenticationResult = await _sigaAuthenticationUsecase.execute(
+      username,
+      password,
+    );
+    if (!sigaAuthenticationResult.success) return sigaAuthenticationResult;
 
     await _sharedPreferencesAuthRepository.saveCredentials(username, password);
 
@@ -74,7 +77,7 @@ class SignInUseCase {
     await _supabaseSignInAndSignUp(username, password);
     _navigationService.refreshNavigation();
 
-    return true;
+    return sigaAuthenticationResult;
   }
 
   Future<void> _supabaseSignInAndSignUp(

@@ -8,11 +8,12 @@ class ToastServiceImpl implements ToastService {
   ToastServiceImpl();
 
   @override
-  void show(String message, {bool isError = false}) {
+  void show(String message, {String? title, bool isError = false}) {
     toastification.show(
-      title: Text(message),
+      title: title != null ? Text(title) : null,
       type: isError ? ToastificationType.error : ToastificationType.info,
       autoCloseDuration: const Duration(seconds: 8),
+      description: Text(message),
     );
   }
 }

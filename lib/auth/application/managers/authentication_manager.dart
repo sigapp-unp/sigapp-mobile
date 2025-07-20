@@ -5,7 +5,7 @@ import 'package:sigapp/auth/application/managers/authentication_manager/async_op
 import 'package:sigapp/auth/application/managers/authentication_manager/auth_token_refresh_manager.dart';
 import 'package:sigapp/auth/application/usecases/get_stored_credentials_usecase.dart';
 import 'package:sigapp/auth/application/usecases/keep_session_alive_usecase.dart';
-import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
+import 'package:sigapp/auth/application/usecases/siga_authentication_usecase.dart';
 import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
 import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
 import 'package:sigapp/auth/domain/services/toast_service.dart';
@@ -27,7 +27,7 @@ class AuthenticationManager {
   final GetStoredCredentialsUseCase _getStoredCredentialsUseCase;
   final SignOutUseCase _signOutUseCase;
   final KeepSessionAliveUsecase _keepSessionAliveUsecase;
-  final AuthenticateUsecase _signInUseCase;
+  final SigaAuthenticationUsecase _signInUseCase;
   final ToastService _toastService;
   final Logger _logger;
 

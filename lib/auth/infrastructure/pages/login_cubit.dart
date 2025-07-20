@@ -24,8 +24,11 @@ sealed class LoginStatus with _$LoginStatus {
   const factory LoginStatus.initial() = LoginInitial;
   const factory LoginStatus.loading() = LoginLoading;
   const factory LoginStatus.success() = LoginSuccess;
-  // TODO: must be `dynamic error`
-  const factory LoginStatus.error(String message) = LoginError;
+  const factory LoginStatus.error(
+    String messageLevel1, [
+    String? messageLevel2,
+    String? messageLevel3,
+  ]) = LoginError;
 }
 
 @injectable
@@ -62,13 +65,26 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<void> login(String username, String password) async {
-    emit(state.copyWith(status: const LoginStatus.loading()));
+    emit(
+      state.copyWith(
+        username: username,
+        password: password,
+        status: const LoginStatus.loading(),
+      ),
+    );
     try {
-      final successAuth = await _signInUseCase.execute(username, password);
-      if (!successAuth) {
+      final authenticationResult = await _signInUseCase.execute(
+        username,
+        password,
+      );
+      if (!authenticationResult.success) {
         emit(
           state.copyWith(
-            status: const LoginStatus.error('Credenciales inválidos'),
+            status: LoginStatus.error(
+              authenticationResult.messageLevel1 ?? 'No se pudo iniciar sesión',
+              authenticationResult.messageLevel2,
+              authenticationResult.messageLevel3,
+            ),
           ),
         );
         return;

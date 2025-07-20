@@ -293,10 +293,12 @@ String toString() {
 
 
 class LoginError implements LoginStatus {
-  const LoginError(this.message);
+  const LoginError(this.messageLevel1, [this.messageLevel2, this.messageLevel3]);
   
 
- final  String message;
+ final  String messageLevel1;
+ final  String? messageLevel2;
+ final  String? messageLevel3;
 
 /// Create a copy of LoginStatus
 /// with the given fields replaced by the non-null parameter values.
@@ -308,16 +310,16 @@ $LoginErrorCopyWith<LoginError> get copyWith => _$LoginErrorCopyWithImpl<LoginEr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LoginError&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LoginError&&(identical(other.messageLevel1, messageLevel1) || other.messageLevel1 == messageLevel1)&&(identical(other.messageLevel2, messageLevel2) || other.messageLevel2 == messageLevel2)&&(identical(other.messageLevel3, messageLevel3) || other.messageLevel3 == messageLevel3));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,message);
+int get hashCode => Object.hash(runtimeType,messageLevel1,messageLevel2,messageLevel3);
 
 @override
 String toString() {
-  return 'LoginStatus.error(message: $message)';
+  return 'LoginStatus.error(messageLevel1: $messageLevel1, messageLevel2: $messageLevel2, messageLevel3: $messageLevel3)';
 }
 
 
@@ -328,7 +330,7 @@ abstract mixin class $LoginErrorCopyWith<$Res> implements $LoginStatusCopyWith<$
   factory $LoginErrorCopyWith(LoginError value, $Res Function(LoginError) _then) = _$LoginErrorCopyWithImpl;
 @useResult
 $Res call({
- String message
+ String messageLevel1, String? messageLevel2, String? messageLevel3
 });
 
 
@@ -345,10 +347,12 @@ class _$LoginErrorCopyWithImpl<$Res>
 
 /// Create a copy of LoginStatus
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? messageLevel1 = null,Object? messageLevel2 = freezed,Object? messageLevel3 = freezed,}) {
   return _then(LoginError(
-null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,
+null == messageLevel1 ? _self.messageLevel1 : messageLevel1 // ignore: cast_nullable_to_non_nullable
+as String,freezed == messageLevel2 ? _self.messageLevel2 : messageLevel2 // ignore: cast_nullable_to_non_nullable
+as String?,freezed == messageLevel3 ? _self.messageLevel3 : messageLevel3 // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
