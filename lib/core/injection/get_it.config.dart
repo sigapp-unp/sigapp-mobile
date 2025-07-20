@@ -507,6 +507,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
+    gh.factory<_i365.SignInUseCase>(
+      () => _i365.SignInUseCase(
+        gh<_i1010.SharedPreferencesAuthRepository>(),
+        gh<_i391.ApiGatewayAuthService>(),
+        gh<_i528.NavigationService>(),
+        gh<_i97.GetAcademicInfoUseCase>(),
+        gh<_i6.StudentSessionRepository>(),
+        gh<_i594.StudentRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i738.AuthenticateUsecase>(),
+      ),
+    );
     gh.singleton<_i767.AuthenticationManager>(
       () => _i767.AuthenticationManager(
         gh<_i679.SessionLifecycleService>(),
@@ -533,17 +545,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i504.GetProgramCurriculumProgressUsecase>(),
         gh<_i97.GetAcademicInfoUseCase>(),
         gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i365.SignInUseCase>(
-      () => _i365.SignInUseCase(
-        gh<_i1010.SharedPreferencesAuthRepository>(),
-        gh<_i391.ApiGatewayAuthService>(),
-        gh<_i528.NavigationService>(),
-        gh<_i97.GetAcademicInfoUseCase>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-        gh<_i738.AuthenticateUsecase>(),
       ),
     );
     gh.factory<_i41.LoginCubit>(

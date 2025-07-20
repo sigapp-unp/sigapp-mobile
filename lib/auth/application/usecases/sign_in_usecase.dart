@@ -5,6 +5,7 @@ import 'package:sigapp/auth/application/usecases/authenticate_usecase.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
 import 'package:sigapp/auth/domain/services/navigation_service.dart';
 import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/student/domain/repositories/student_repository.dart';
 import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
 import 'package:logger/logger.dart';
 
@@ -15,6 +16,7 @@ class SignInUseCase {
   final NavigationService _navigationService;
   final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   final StudentSessionRepository _studentSessionRepository;
+  final StudentRepository _studentRepository;
   final Logger _logger;
   final AuthenticateUsecase _directSignInUse;
 
@@ -24,19 +26,29 @@ class SignInUseCase {
     this._navigationService,
     this._getAcademicInfoUseCase,
     this._studentSessionRepository,
+    this._studentRepository,
     this._logger,
     this._directSignInUse,
   );
 
   Future<bool> execute(String username, String password) async {
+    // Clear cookies from authentication services uhmmmm...
+    // await _authRepository.disposeCookies();
+    // await _regevaRepository.disposeCookies();
+
     final success = await _directSignInUse.execute(username, password);
     if (!success) return false;
 
     await _sharedPreferencesAuthRepository.saveCredentials(username, password);
 
     // Clear any cached info before validating new session to ensure fresh data
-    _logger.d('[AUTH] Clearing caches before validating new session');
+    _logger.d(
+      '[AUTH] Clearing all caches and cookies before validating new session',
+    );
+
+    // Clear repository caches
     _studentSessionRepository.clearCache();
+    _studentRepository.clearCache();
     _getAcademicInfoUseCase.clearCache();
 
     // Validate if student user is ready to use the app
