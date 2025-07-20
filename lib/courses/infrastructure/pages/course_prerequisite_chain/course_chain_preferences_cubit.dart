@@ -51,8 +51,8 @@ class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState>
     try {
       emit(state.copyWith(isLoading: true));
 
-      final viewMode = await _getViewModeUseCase();
-      final highlightCriticalPath = await _getHighlightUseCase();
+      final viewMode = await _getViewModeUseCase.execute();
+      final highlightCriticalPath = await _getHighlightUseCase.execute();
 
       Set<String> criticalPathIds = {};
       if (highlightCriticalPath && currentTree != null) {
@@ -94,7 +94,7 @@ class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState>
     // 2. Schedule debounced persistence
     debouncedSave(
       key: 'viewMode',
-      operation: () => _setViewModeUseCase(newMode),
+      operation: () => _setViewModeUseCase.execute(newMode),
       errorMessage:
           'Error guardando modo de vista. El cambio se mantiene localmente.',
     );
@@ -135,7 +135,7 @@ class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState>
     // 2. Schedule debounced persistence
     debouncedSave(
       key: 'criticalPath',
-      operation: () => _setHighlightUseCase(newHighlightValue),
+      operation: () => _setHighlightUseCase.execute(newHighlightValue),
       errorMessage:
           'Error guardando configuración de ruta crítica. El cambio se mantiene localmente.',
     );
@@ -152,7 +152,7 @@ class CourseChainPreferencesCubit extends Cubit<CourseChainPreferencesState>
       // Disable critical path if no longer useful
       emit(state.copyWith(highlightCriticalPath: false, criticalPathIds: {}));
       // Fire and forget - don't await in synchronous method
-      _setHighlightUseCase(false).catchError((e, s) {
+      _setHighlightUseCase.execute(false).catchError((e, s) {
         _logger.e(
           '[CUBIT] Error updating critical path preference',
           error: e,

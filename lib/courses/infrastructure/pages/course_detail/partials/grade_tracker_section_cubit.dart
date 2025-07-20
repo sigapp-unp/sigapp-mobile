@@ -63,7 +63,9 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
       CourseTracking? tracking;
 
       if (_courseCode != null) {
-        tracking = await _getGradeTrackingUseCase(courseCode: _courseCode!);
+        tracking = await _getGradeTrackingUseCase.execute(
+          courseCode: _courseCode!,
+        );
       }
 
       if (tracking != null) {
@@ -105,7 +107,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
         return;
       }
 
-      final tracking = await _createGradeTrackingUseCase(
+      final tracking = await _createGradeTrackingUseCase.execute(
         courseCode: _courseCode!,
         courseName: courseName,
       );
@@ -360,7 +362,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
       try {
         emit(const GradeTrackerSectionState.loading());
 
-        await _deleteGradeTrackingUseCase(courseCode: _courseCode!);
+        await _deleteGradeTrackingUseCase.execute(courseCode: _courseCode!);
 
         // Después de eliminar, volvemos al estado empty
         emit(const GradeTrackerSectionState.empty());

@@ -62,8 +62,6 @@ import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart' as _i382;
 import 'package:sigapp/core/injection/register_module.dart' as _i799;
 import 'package:sigapp/courses/application/repositories/student_session_repository.dart'
     as _i6;
-import 'package:sigapp/courses/application/usecases/create_course_tracking_usecase.dart'
-    as _i283;
 import 'package:sigapp/courses/application/usecases/create_grade_tracking_usecase.dart'
     as _i733;
 import 'package:sigapp/courses/application/usecases/delete_grade_tracking_usecase.dart'
@@ -74,12 +72,8 @@ import 'package:sigapp/courses/application/usecases/get_class_schedule_usecase.d
     as _i315;
 import 'package:sigapp/courses/application/usecases/get_course_grade_usecase.dart'
     as _i504;
-import 'package:sigapp/courses/application/usecases/get_course_tracking_usecase.dart'
-    as _i290;
 import 'package:sigapp/courses/application/usecases/get_course_view_mode_preferences_usecase.dart'
     as _i186;
-import 'package:sigapp/courses/application/usecases/get_course_visibility_preferences_usecase.dart'
-    as _i1029;
 import 'package:sigapp/courses/application/usecases/get_enrolled_courses_usecase.dart'
     as _i650;
 import 'package:sigapp/courses/application/usecases/get_grade_tracking_usecase.dart'
@@ -92,8 +86,6 @@ import 'package:sigapp/courses/application/usecases/get_scheduled_courses_usecas
     as _i154;
 import 'package:sigapp/courses/application/usecases/get_syllabus_file_usecase.dart'
     as _i445;
-import 'package:sigapp/courses/application/usecases/grade_tracking_usecases.dart'
-    as _i947;
 import 'package:sigapp/courses/application/usecases/manage_categories_usecase.dart'
     as _i892;
 import 'package:sigapp/courses/application/usecases/manage_grade_tracking_categories_usecase.dart'
@@ -288,12 +280,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i315.GetClassScheduleUsecase>(
       () => _i315.GetClassScheduleUsecase(gh<_i974.ScheduleRepository>()),
     );
-    gh.factory<_i290.GetCourseTrackingUseCase>(
-      () => _i290.GetCourseTrackingUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
     gh.factory<_i409.GetGradeTrackingUseCase>(
       () => _i409.GetGradeTrackingUseCase(
         gh<_i259.GradeTrackingRepository>(),
@@ -314,12 +300,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i811.ManageGradeTrackingGradesUseCase>(
       () => _i811.ManageGradeTrackingGradesUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.factory<_i283.CreateCourseTrackingUseCase>(
-      () => _i283.CreateCourseTrackingUseCase(
         gh<_i259.GradeTrackingRepository>(),
         gh<_i6.StudentSessionRepository>(),
       ),
@@ -421,21 +401,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i1029.GetCourseVisibilityPreferencesUseCase>(
-      () => _i1029.GetCourseVisibilityPreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
     gh.lazySingleton<_i771.GetAcademicReportUsecase>(
       () => _i771.GetAcademicReportUsecase(
         gh<_i594.StudentRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.lazySingleton<_i947.GradeTrackingUseCases>(
-      () => _i947.GradeTrackingUseCases(
-        gh<_i259.GradeTrackingRepository>(),
         gh<_i6.StudentSessionRepository>(),
       ),
     );

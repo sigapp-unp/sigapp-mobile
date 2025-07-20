@@ -18,7 +18,7 @@ class SetCourseViewModePreferencesUseCase {
   );
 
   /// Sets the view mode for course prerequisite chains
-  Future<void> call(CourseViewMode mode) async {
+  Future<void> execute(CourseViewMode mode) async {
     try {
       final studentCode = await _getStudentCode();
       await _preferencesRepository.setPreference(

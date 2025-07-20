@@ -18,7 +18,7 @@ class SetCourseVisibilityPreferencesUseCase {
 
   /// Sets the visibility state for a specific course event
   /// [isVisible] - true to show the course, false to hide it
-  Future<void> call(String eventId, bool isVisible) async {
+  Future<void> execute(String eventId, bool isVisible) async {
     try {
       final studentCode = await _getStudentCode();
 

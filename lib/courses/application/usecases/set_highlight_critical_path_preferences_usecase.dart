@@ -17,7 +17,7 @@ class SetHighlightCriticalPathPreferencesUseCase {
   );
 
   /// Sets whether critical path highlighting is enabled
-  Future<void> call(bool enabled) async {
+  Future<void> execute(bool enabled) async {
     try {
       final studentCode = await _getStudentCode();
       await _preferencesRepository.setPreference(

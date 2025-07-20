@@ -17,7 +17,7 @@ class GetHighlightCriticalPathUseCase {
   );
 
   /// Gets whether critical path highlighting is enabled
-  Future<bool> call() async {
+  Future<bool> execute() async {
     try {
       final studentCode = await _getStudentCode();
       final value = await _preferencesRepository.getPreference(

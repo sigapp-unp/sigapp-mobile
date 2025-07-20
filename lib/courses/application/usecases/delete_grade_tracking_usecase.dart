@@ -12,7 +12,7 @@ class DeleteGradeTrackingUseCase extends BaseGradeTrackingUseCase {
     StudentSessionRepository studentSessionRepository,
   ) : super(studentSessionRepository);
 
-  Future<void> call({required String courseCode}) async {
+  Future<void> execute({required String courseCode}) async {
     return _repository.deleteCourseTracking(
       studentCode: await getStudentCode(),
       courseCode: courseCode,

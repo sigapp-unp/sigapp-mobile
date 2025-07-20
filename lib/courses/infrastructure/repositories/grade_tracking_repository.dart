@@ -84,8 +84,17 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
   }
 
   @override
-  Future<CourseTracking> create(CourseTracking data) async {
+  Future<CourseTracking> createWithDefaults({
+    required String studentCode,
+    required String courseCode,
+    required String courseName,
+  }) async {
     try {
+      final data = CourseTracking.createWithDefaults(
+        courseCode: courseCode,
+        studentCode: studentCode,
+      );
+
       // 1. Insert course tracking record
       final Map<String, dynamic> courseData = {
         'student_code': data.studentCode,
@@ -181,25 +190,6 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         courseCode: data.courseCode,
         studentCode: data.studentCode,
         categories: categoriesWithIds,
-      );
-    } catch (e, s) {
-      _logger.e('[INFRASTRUCTURE] Error in create', error: e, stackTrace: s);
-      throw Exception('Failed to create course tracking data: $e');
-    }
-  }
-
-  @override
-  Future<CourseTracking> createWithDefaults({
-    required String studentCode,
-    required String courseCode,
-    required String courseName,
-  }) async {
-    try {
-      return await create(
-        CourseTracking.createWithDefaults(
-          courseCode: courseCode,
-          studentCode: studentCode,
-        ),
       );
     } catch (e, s) {
       _logger.e(

@@ -14,7 +14,7 @@ class CreateGradeTrackingUseCase extends BaseGradeTrackingUseCase {
   ) : super(studentSessionRepository);
 
   /// Crea un curso con categorías y notas predeterminadas
-  Future<CourseTracking> call({
+  Future<CourseTracking> execute({
     required String courseCode,
     required String courseName,
   }) async {

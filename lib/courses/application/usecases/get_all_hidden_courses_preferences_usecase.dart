@@ -17,7 +17,7 @@ class GetAllHiddenCoursesPreferencesUseCase {
   );
 
   /// Gets a list of all hidden course event IDs
-  Future<List<String>> call() async {
+  Future<List<String>> execute() async {
     try {
       final studentCode = await _getStudentCode();
       final preferences = await _preferencesRepository.getUserPreferences(

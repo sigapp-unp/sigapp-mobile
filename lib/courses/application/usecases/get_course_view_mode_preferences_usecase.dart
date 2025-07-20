@@ -18,7 +18,7 @@ class GetCourseViewModeUseCase {
   );
 
   /// Gets the current view mode for course prerequisite chains
-  Future<CourseViewMode> call() async {
+  Future<CourseViewMode> execute() async {
     try {
       final studentCode = await _getStudentCode();
       final value = await _preferencesRepository.getPreference(

@@ -13,7 +13,7 @@ class GetGradeTrackingUseCase extends BaseGradeTrackingUseCase {
     StudentSessionRepository studentSessionRepository,
   ) : super(studentSessionRepository);
 
-  Future<CourseTracking?> call({required String courseCode}) async {
+  Future<CourseTracking?> execute({required String courseCode}) async {
     return _repository.getCourseTracking(
       studentCode: await getStudentCode(),
       courseCode: courseCode,
