@@ -56,8 +56,6 @@ import 'package:sigapp/core/infrastructure/http/regeva_client.dart' as _i986;
 import 'package:sigapp/core/infrastructure/http/siga_client.dart' as _i857;
 import 'package:sigapp/core/infrastructure/services/update_service.dart'
     as _i897;
-import 'package:sigapp/core/infrastructure/ui/not_used_pages/schedule_page/partials/export_to_calendar_cubit.dart'
-    as _i893;
 import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart' as _i382;
 import 'package:sigapp/core/injection/register_module.dart' as _i799;
 import 'package:sigapp/courses/application/repositories/student_session_repository.dart'
@@ -326,12 +324,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i594.StudentRepository>(
       () => _i528.StudentRepositoryImpl(gh<_i857.SigaClient>()),
     );
-    gh.factory<_i893.ExportToCalendarCubit>(
-      () => _i893.ExportToCalendarCubit(
-        gh<_i315.GetClassScheduleUsecase>(),
-        gh<_i974.Logger>(),
-      ),
-    );
     gh.factory<_i186.GetCourseViewModeUseCase>(
       () => _i186.GetCourseViewModeUseCase(
         gh<_i939.UserPreferencesRepository>(),
@@ -360,25 +352,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i733.SetCourseVisibilityPreferencesUseCase>(
-      () => _i733.SetCourseVisibilityPreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
     gh.factory<_i131.SetHighlightCriticalPathPreferencesUseCase>(
       () => _i131.SetHighlightCriticalPathPreferencesUseCase(
         gh<_i939.UserPreferencesRepository>(),
         gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i55.CourseVisibilityCubit>(
-      () => _i55.CourseVisibilityCubit(
-        gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
-        gh<_i733.SetCourseVisibilityPreferencesUseCase>(),
-        gh<_i873.ToastService>(),
         gh<_i974.Logger>(),
       ),
     );
@@ -435,6 +412,14 @@ extension GetItInjectableX on _i174.GetIt {
       ),
       instanceName: 'getAcademicInfoUseCaseImpl',
     );
+    gh.factory<_i733.SetCourseVisibilityPreferencesUseCase>(
+      () => _i733.SetCourseVisibilityPreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i6.StudentSessionRepository>(),
+        gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.factory<_i1059.GradeTrackerSectionCubit>(
       () => _i1059.GradeTrackerSectionCubit(
         gh<_i409.GetGradeTrackingUseCase>(),
@@ -484,6 +469,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i889.ProgramCurriculumRepository>(),
         gh<_i97.GetAcademicInfoUseCase>(),
         gh<_i650.GetEnrolledCoursesUsecase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i55.CourseVisibilityCubit>(
+      () => _i55.CourseVisibilityCubit(
+        gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
+        gh<_i733.SetCourseVisibilityPreferencesUseCase>(),
+        gh<_i873.ToastService>(),
         gh<_i974.Logger>(),
       ),
     );

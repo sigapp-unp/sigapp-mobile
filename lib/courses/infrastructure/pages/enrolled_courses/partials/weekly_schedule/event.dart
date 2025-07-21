@@ -32,7 +32,7 @@ class EventWidget extends StatelessWidget {
     return BlocBuilder<CourseVisibilityCubit, CourseVisibilityState>(
       builder: (context, state) {
         final adaptiveScaleFactor = MediaQuery.of(context).size.width * 0.0013;
-        final isHidden = state.hiddenEvents[event.eventId] ?? event.isHidden;
+        final isHidden = state.hiddenEvents[event.data.id] ?? event.isHidden;
 
         // Nueva lógica para manejar eventos ocultos
         final Color displayColor = isHidden ? Colors.transparent : event.color;

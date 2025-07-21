@@ -2,24 +2,37 @@ import 'package:injectable/injectable.dart';
 import 'package:sigapp/student/domain/entities/weekly_schedule_event.dart';
 import 'package:sigapp/courses/domain/repositories/schedule_repository.dart';
 import 'package:sigapp/courses/domain/value-objects/raw_class_schedule.dart';
+import 'package:sigapp/courses/domain/entities/enrolled_course_data.dart';
 
 @lazySingleton
 class GetClassScheduleUsecase {
-  static const String _eventsIdsPrefix = 'SIGAPP';
+  // static const String _eventsIdsPrefix = 'SIGAPP';
 
   final ScheduleRepository _scheduleRepository;
-  // final CourseService _courseService;
 
   GetClassScheduleUsecase(this._scheduleRepository);
 
-  Future<List<WeeklyScheduleEvent>> execute(String semesterId) async {
+  /// Execute with course mapping for better event IDs
+  Future<List<WeeklyScheduleEvent>> execute(
+    String semesterId, {
+    List<EnrolledCourseData>? enrolledCourses,
+  }) async {
     final rawResult = await _scheduleRepository.getClassSchedule(semesterId);
-    final result = _processClassSchedule(rawResult);
+
+    // Create course name to code mapping if enrolled courses are provided
+    Map<String, String>? courseMapping;
+    if (enrolledCourses != null) {
+      courseMapping = _createCourseNameToCodeMapping(enrolledCourses);
+    }
+
+    final result = _processClassSchedule(rawResult, semesterId, courseMapping);
     return result;
   }
 
   List<WeeklyScheduleEvent> _processClassSchedule(
     List<RawClassSchedule> schedule,
+    String semesterId,
+    Map<String, String>? courseMapping,
   ) {
     // Map<String, Color> courseColorMap = {};
 
@@ -74,44 +87,51 @@ class GetClassScheduleUsecase {
       final classEndTime = parseTimestamp(classSchedule.endHour);
       // print(classSchedule);
 
-      List<List<dynamic>> classDaysAndNames = [];
+      List<(String classInfo, int weekday)> classDaysAndNames = [];
 
       if (classSchedule.monday.isNotEmpty) {
-        classDaysAndNames.add([classSchedule.monday, DateTime.monday]);
+        classDaysAndNames.add((classSchedule.monday, DateTime.monday));
       }
       if (classSchedule.tuesday.isNotEmpty) {
-        classDaysAndNames.add([classSchedule.tuesday, DateTime.tuesday]);
+        classDaysAndNames.add((classSchedule.tuesday, DateTime.tuesday));
       }
       if (classSchedule.wednesday.isNotEmpty) {
-        classDaysAndNames.add([classSchedule.wednesday, DateTime.wednesday]);
+        classDaysAndNames.add((classSchedule.wednesday, DateTime.wednesday));
       }
       if (classSchedule.thursday.isNotEmpty) {
-        classDaysAndNames.add([classSchedule.thursday, DateTime.thursday]);
+        classDaysAndNames.add((classSchedule.thursday, DateTime.thursday));
       }
       if (classSchedule.friday.isNotEmpty) {
-        classDaysAndNames.add([classSchedule.friday, DateTime.friday]);
+        classDaysAndNames.add((classSchedule.friday, DateTime.friday));
       }
       if (classSchedule.saturday.isNotEmpty) {
-        classDaysAndNames.add([classSchedule.saturday, DateTime.saturday]);
+        classDaysAndNames.add((classSchedule.saturday, DateTime.saturday));
       }
 
       for (var dayAndName in classDaysAndNames) {
-        final classInfo = dayAndName[0];
-        final weekday = dayAndName[1];
+        final (classInfo, weekday) = dayAndName;
 
         final parts = classInfo.split(' ? ');
         final courseName = parts[0];
         final classLocation = parts[1];
 
+        // Try to get the course code from the mapping
+        final courseCode =
+            courseMapping != null
+                ? _getCourseCodeFromName(courseName, courseMapping)
+                : null;
+
         final eventStart = calculateEventDateTime(classStartTime, weekday);
         final eventEnd = calculateEventDateTime(classEndTime, weekday);
-
         final id =
-            '$_eventsIdsPrefix-[$courseName]-${eventStart.toString().substring(0, 16)}-${eventEnd.toString().substring(0, 16)}';
+            '${semesterId}_${courseCode ?? courseName}_${eventStart.hour}_${eventStart.minute}';
+
         weeklyScheduleEvents.add(
           WeeklyScheduleEvent(
             id: id,
             courseName: courseName,
+            // courseCode: courseCode,
+            // semesterId: semesterId,
             weekday: weekday,
             startHour: eventStart.hour,
             startMinutes: eventStart.minute,
@@ -126,8 +146,41 @@ class GetClassScheduleUsecase {
     return weeklyScheduleEvents;
   }
 
-  // TODO: move this to a separate usecase
-  bool calculateIfEventIsOwnedByThisApp(String eventId) {
-    return eventId.startsWith(_eventsIdsPrefix);
+  // // TODO: move this to a separate usecase
+  // bool calculateIfEventIsOwnedByThisApp(String eventId) {
+  //   return eventId.startsWith(_eventsIdsPrefix);
+  // }
+
+  Map<String, String> _createCourseNameToCodeMapping(
+    List<EnrolledCourseData> enrolledCourses,
+  ) {
+    final mapping = <String, String>{};
+
+    for (final course in enrolledCourses) {
+      // Map the full course name to the course code
+      mapping[course.courseName] = course.courseCode;
+    }
+
+    return mapping;
+  }
+
+  String? _getCourseCodeFromName(
+    String courseName,
+    Map<String, String> mapping,
+  ) {
+    // Direct lookup first
+    if (mapping.containsKey(courseName)) {
+      return mapping[courseName];
+    }
+
+    // Fallback: try to find a course that contains this name
+    // This handles cases where the schedule might have slightly different formatting
+    for (final entry in mapping.entries) {
+      if (entry.key.contains(courseName) || courseName.contains(entry.key)) {
+        return entry.value;
+      }
+    }
+
+    return null; // No match found
   }
 }

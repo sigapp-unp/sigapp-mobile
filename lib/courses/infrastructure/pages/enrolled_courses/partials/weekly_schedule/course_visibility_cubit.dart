@@ -49,7 +49,7 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState>
     final hiddenEventIds = await _getAllHiddenCoursesUseCase.execute();
 
     for (var event in events) {
-      final eventId = event.eventId;
+      final eventId = event.data.id;
       final isHidden = hiddenEventIds.any((id) => id == eventId);
       hiddenStatusMap[eventId] = isHidden;
       event.isHidden = isHidden; // Actualizar el estado del evento
@@ -65,15 +65,15 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState>
     // 1. Update UI immediately
     event.isHidden = isHidden;
     final updatedHiddenEvents = Map<String, bool>.from(state.hiddenEvents);
-    updatedHiddenEvents[event.eventId] = isHidden;
+    updatedHiddenEvents[event.data.id] = isHidden;
 
     emit(state.copyWith(hiddenEvents: updatedHiddenEvents));
 
     // 2. Schedule debounced persistence
     debouncedSave(
-      key: 'visibility_${event.eventId}',
+      key: 'visibility_${event.data.id}',
       operation:
-          () => _setCourseVisibilityUseCase.execute(event.eventId, !isHidden),
+          () => _setCourseVisibilityUseCase.execute(event.data.id, !isHidden),
       errorMessage:
           'Error guardando visibilidad del curso. El cambio se mantiene localmente.',
     );

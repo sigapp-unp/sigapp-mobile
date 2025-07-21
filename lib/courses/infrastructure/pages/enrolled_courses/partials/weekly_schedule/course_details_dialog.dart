@@ -31,7 +31,7 @@ class CourseDetailsDialog extends StatelessWidget {
           BlocBuilder<CourseVisibilityCubit, CourseVisibilityState>(
             builder: (context, state) {
               final isEventHidden =
-                  state.hiddenEvents[event.eventId] ?? isHidden;
+                  state.hiddenEvents[event.data.id] ?? isHidden;
 
               return ListTile(
                 contentPadding: EdgeInsets.all(0),

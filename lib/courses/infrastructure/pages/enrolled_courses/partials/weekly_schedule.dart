@@ -12,10 +12,6 @@ class WeeklyScheduleWidgetItem {
   final Color color;
   bool isHidden;
 
-  // Generar un identificador único para el evento
-  String get eventId =>
-      '${data.courseName}_${data.weekday}_${data.startHour}_${data.startMinutes}';
-
   WeeklyScheduleWidgetItem({
     required this.data,
     required this.color,

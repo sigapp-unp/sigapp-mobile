@@ -28,7 +28,6 @@ class WeeklyScheduleEvent {
     required this.startMinutes,
     required this.endHour,
     required this.endMinutes,
-    // required this.color,
     required this.location,
   });
 }

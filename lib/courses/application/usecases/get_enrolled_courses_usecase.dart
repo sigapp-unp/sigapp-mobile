@@ -23,7 +23,10 @@ class GetEnrolledCoursesUsecase {
     final enrolledCoursesData = await _coursesRepository.getEnrolledCourses(
       semesterId,
     );
-    final scheduleEvents = await _getClassScheduleUsecase.execute(semesterId);
+    final scheduleEvents = await _getClassScheduleUsecase.execute(
+      semesterId,
+      enrolledCourses: enrolledCoursesData,
+    );
 
     final enrolledCourses =
         enrolledCoursesData

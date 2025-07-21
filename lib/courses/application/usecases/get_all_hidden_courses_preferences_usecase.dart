@@ -16,30 +16,14 @@ class GetAllHiddenCoursesPreferencesUseCase {
     this._logger,
   );
 
-  /// Gets a list of all hidden course event IDs
+  /// Gets a list of all hidden schedule event IDs
   Future<List<String>> execute() async {
     try {
       final studentCode = await _getStudentCode();
-      final preferences = await _preferencesRepository.getUserPreferences(
-        studentCode: studentCode,
-      );
-
-      final courseVisibility =
-          preferences[PreferenceKeys.courseVisibility] as Map<String, dynamic>?;
-
-      if (courseVisibility == null) return [];
-
-      final hiddenEventIds = <String>[];
-      courseVisibility.forEach((eventId, isHidden) {
-        if (isHidden == true) {
-          hiddenEventIds.add(eventId);
-        }
-      });
-
-      return hiddenEventIds;
+      return await _getHiddenScheduleEvents(studentCode: studentCode);
     } catch (e, s) {
       _logger.w(
-        '[USE_CASE] Error getting hidden courses, returning empty list',
+        '[USE_CASE] Error getting hidden schedule events, returning empty list',
         error: e,
         stackTrace: s,
       );
@@ -50,5 +34,25 @@ class GetAllHiddenCoursesPreferencesUseCase {
   Future<String> _getStudentCode() async {
     final info = await _studentSessionRepository.getStudentSessionInfo();
     return info.studentCode;
+  }
+
+  Future<List<String>> _getHiddenScheduleEvents({
+    required String studentCode,
+  }) async {
+    try {
+      final preference = await _preferencesRepository.getPreference(
+        studentCode: studentCode,
+        path: PreferenceKeys.scheduleHiddenEvents,
+      );
+
+      if (preference is List) {
+        return List<String>.from(preference);
+      }
+
+      return [];
+    } catch (e) {
+      _logger.w('Error getting hidden schedule events: $e');
+      return [];
+    }
   }
 }
