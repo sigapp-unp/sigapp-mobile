@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sigapp/core/infrastructure/utils/time_utils.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_detail/components/table_info.dart';
-import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
+import 'package:sigapp/courses/domain/value_objects/enrolled_course.dart';
 
 class ScheduleSectionWidget extends StatelessWidget {
   const ScheduleSectionWidget({super.key, required this.enrolledCourse});

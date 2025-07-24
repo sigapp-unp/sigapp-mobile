@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -41,6 +40,148 @@ class $UserAvatarButtonStateCopyWith<$Res>  {
 $UserAvatarButtonStateCopyWith(UserAvatarButtonState _, $Res Function(UserAvatarButtonState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [UserAvatarButtonState].
+extension UserAvatarButtonStatePatterns on UserAvatarButtonState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( UserAvatarButtonInitialState value)?  initial,TResult Function( UserAvatarButtonLoadingState value)?  loading,TResult Function( UserAvatarButtonSuccessState value)?  success,TResult Function( UserAvatarButtonErrorState value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case UserAvatarButtonInitialState() when initial != null:
+return initial(_that);case UserAvatarButtonLoadingState() when loading != null:
+return loading(_that);case UserAvatarButtonSuccessState() when success != null:
+return success(_that);case UserAvatarButtonErrorState() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( UserAvatarButtonInitialState value)  initial,required TResult Function( UserAvatarButtonLoadingState value)  loading,required TResult Function( UserAvatarButtonSuccessState value)  success,required TResult Function( UserAvatarButtonErrorState value)  error,}){
+final _that = this;
+switch (_that) {
+case UserAvatarButtonInitialState():
+return initial(_that);case UserAvatarButtonLoadingState():
+return loading(_that);case UserAvatarButtonSuccessState():
+return success(_that);case UserAvatarButtonErrorState():
+return error(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( UserAvatarButtonInitialState value)?  initial,TResult? Function( UserAvatarButtonLoadingState value)?  loading,TResult? Function( UserAvatarButtonSuccessState value)?  success,TResult? Function( UserAvatarButtonErrorState value)?  error,}){
+final _that = this;
+switch (_that) {
+case UserAvatarButtonInitialState() when initial != null:
+return initial(_that);case UserAvatarButtonLoadingState() when loading != null:
+return loading(_that);case UserAvatarButtonSuccessState() when success != null:
+return success(_that);case UserAvatarButtonErrorState() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( AcademicInfoData data,  String? errorMessage)?  success,TResult Function( dynamic error)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case UserAvatarButtonInitialState() when initial != null:
+return initial();case UserAvatarButtonLoadingState() when loading != null:
+return loading();case UserAvatarButtonSuccessState() when success != null:
+return success(_that.data,_that.errorMessage);case UserAvatarButtonErrorState() when error != null:
+return error(_that.error);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( AcademicInfoData data,  String? errorMessage)  success,required TResult Function( dynamic error)  error,}) {final _that = this;
+switch (_that) {
+case UserAvatarButtonInitialState():
+return initial();case UserAvatarButtonLoadingState():
+return loading();case UserAvatarButtonSuccessState():
+return success(_that.data,_that.errorMessage);case UserAvatarButtonErrorState():
+return error(_that.error);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( AcademicInfoData data,  String? errorMessage)?  success,TResult? Function( dynamic error)?  error,}) {final _that = this;
+switch (_that) {
+case UserAvatarButtonInitialState() when initial != null:
+return initial();case UserAvatarButtonLoadingState() when loading != null:
+return loading();case UserAvatarButtonSuccessState() when success != null:
+return success(_that.data,_that.errorMessage);case UserAvatarButtonErrorState() when error != null:
+return error(_that.error);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

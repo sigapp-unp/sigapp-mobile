@@ -5,7 +5,7 @@ import 'package:sigapp/courses/domain/entities/course_type.dart';
 import 'package:sigapp/courses/domain/entities/scheduled_course.dart';
 import 'package:sigapp/courses/domain/repositories/courses_repository.dart';
 import 'package:sigapp/courses/infrastructure/models/get_scheduled_courses.dart';
-import 'package:sigapp/student/domain/entities/raw_course_requirement.dart';
+import 'package:sigapp/shared/domain/entities/raw_course_requirement.dart';
 import 'package:sigapp/courses/domain/entities/enrolled_course_data.dart';
 import 'package:sigapp/student/infrastructure/models/get_course_requirements.dart';
 import 'package:sigapp/courses/infrastructure/models/get_enrolled_courses.dart';

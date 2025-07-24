@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
 import 'package:sigapp/courses/domain/value_objects/preference_keys.dart';
 

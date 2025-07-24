@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -101,6 +100,136 @@ as String,
 
 }
 
+
+/// Adds pattern-matching-related methods to [GetEnrolledCoursesModel].
+extension GetEnrolledCoursesModelPatterns on GetEnrolledCoursesModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GetEnrolledCoursesModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GetEnrolledCoursesModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GetEnrolledCoursesModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _GetEnrolledCoursesModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GetEnrolledCoursesModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GetEnrolledCoursesModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? Acta,  String? Activo,  String Aula,  int CeroEnActa,  String ClaveCurso,  String CodCurso,  int Creditos,  int Cupos,  String Curso,  int Desaprobados,  String Docente,  String? EstadoInscripcion,  String Fecha,  String FechaInscripcion,  String Grupo,  int Item,  String ItemProg,  String Observacion,  String Seccion,  dynamic Sylabus,  String TipoCurso)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GetEnrolledCoursesModel() when $default != null:
+return $default(_that.Acta,_that.Activo,_that.Aula,_that.CeroEnActa,_that.ClaveCurso,_that.CodCurso,_that.Creditos,_that.Cupos,_that.Curso,_that.Desaprobados,_that.Docente,_that.EstadoInscripcion,_that.Fecha,_that.FechaInscripcion,_that.Grupo,_that.Item,_that.ItemProg,_that.Observacion,_that.Seccion,_that.Sylabus,_that.TipoCurso);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? Acta,  String? Activo,  String Aula,  int CeroEnActa,  String ClaveCurso,  String CodCurso,  int Creditos,  int Cupos,  String Curso,  int Desaprobados,  String Docente,  String? EstadoInscripcion,  String Fecha,  String FechaInscripcion,  String Grupo,  int Item,  String ItemProg,  String Observacion,  String Seccion,  dynamic Sylabus,  String TipoCurso)  $default,) {final _that = this;
+switch (_that) {
+case _GetEnrolledCoursesModel():
+return $default(_that.Acta,_that.Activo,_that.Aula,_that.CeroEnActa,_that.ClaveCurso,_that.CodCurso,_that.Creditos,_that.Cupos,_that.Curso,_that.Desaprobados,_that.Docente,_that.EstadoInscripcion,_that.Fecha,_that.FechaInscripcion,_that.Grupo,_that.Item,_that.ItemProg,_that.Observacion,_that.Seccion,_that.Sylabus,_that.TipoCurso);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? Acta,  String? Activo,  String Aula,  int CeroEnActa,  String ClaveCurso,  String CodCurso,  int Creditos,  int Cupos,  String Curso,  int Desaprobados,  String Docente,  String? EstadoInscripcion,  String Fecha,  String FechaInscripcion,  String Grupo,  int Item,  String ItemProg,  String Observacion,  String Seccion,  dynamic Sylabus,  String TipoCurso)?  $default,) {final _that = this;
+switch (_that) {
+case _GetEnrolledCoursesModel() when $default != null:
+return $default(_that.Acta,_that.Activo,_that.Aula,_that.CeroEnActa,_that.ClaveCurso,_that.CodCurso,_that.Creditos,_that.Cupos,_that.Curso,_that.Desaprobados,_that.Docente,_that.EstadoInscripcion,_that.Fecha,_that.FechaInscripcion,_that.Grupo,_that.Item,_that.ItemProg,_that.Observacion,_that.Seccion,_that.Sylabus,_that.TipoCurso);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()

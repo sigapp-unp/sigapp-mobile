@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/auth/application/usecases/sign_out_usecase.dart';
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 
 part 'user_avatar_button_cubit.freezed.dart';

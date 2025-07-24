@@ -2,7 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:sigapp/core/infrastructure/http/siga_client.dart';
 import 'package:sigapp/courses/domain/entities/academic_history_term.dart';
 import 'package:sigapp/courses/domain/entities/course_type.dart';
-import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
+import 'package:sigapp/shared/domain/value_objects/scheduled_term_identifier.dart';
 import 'package:sigapp/courses/domain/repositories/program_curriculum_repository.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
 import 'package:sigapp/courses/infrastructure/models/get_academic_history_term.dart';

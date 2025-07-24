@@ -5,8 +5,8 @@ import 'package:sigapp/courses/domain/entities/academic_history_term.dart';
 import 'package:sigapp/courses/domain/repositories/program_curriculum_repository.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
 import 'package:sigapp/courses/domain/value-objects/program_curriculum_progress.dart';
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
-import 'package:sigapp/student/domain/value_objects/semester_context.dart';
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/shared/domain/value_objects/semester_context.dart';
 
 @lazySingleton
 class GetProgramCurriculumProgressUsecase {

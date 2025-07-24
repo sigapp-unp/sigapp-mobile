@@ -6,7 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:sigapp/courses/application/usecases/get_course_grade_usecase.dart';
 import 'package:sigapp/courses/application/usecases/get_syllabus_file_usecase.dart';
 import 'package:sigapp/courses/domain/value-objects/course_grade.dart';
-import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
+import 'package:sigapp/courses/domain/value_objects/enrolled_course.dart';
 
 part 'course_detail_cubit.freezed.dart';
 

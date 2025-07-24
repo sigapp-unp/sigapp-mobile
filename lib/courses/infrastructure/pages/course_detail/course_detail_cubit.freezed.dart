@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -41,6 +40,136 @@ class $CourseDetailStateCopyWith<$Res>  {
 $CourseDetailStateCopyWith(CourseDetailState _, $Res Function(CourseDetailState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [CourseDetailState].
+extension CourseDetailStatePatterns on CourseDetailState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CourseDetailEmptyState value)?  empty,TResult Function( CourseDetailReadyState value)?  ready,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case CourseDetailEmptyState() when empty != null:
+return empty(_that);case CourseDetailReadyState() when ready != null:
+return ready(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CourseDetailEmptyState value)  empty,required TResult Function( CourseDetailReadyState value)  ready,}){
+final _that = this;
+switch (_that) {
+case CourseDetailEmptyState():
+return empty(_that);case CourseDetailReadyState():
+return ready(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CourseDetailEmptyState value)?  empty,TResult? Function( CourseDetailReadyState value)?  ready,}){
+final _that = this;
+switch (_that) {
+case CourseDetailEmptyState() when empty != null:
+return empty(_that);case CourseDetailReadyState() when ready != null:
+return ready(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  empty,TResult Function( EnrolledCourse course,  String regevaScheduledCourseId,  CourseDetailSyllabusState syllabus,  CourseDetailGradesState grades)?  ready,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case CourseDetailEmptyState() when empty != null:
+return empty();case CourseDetailReadyState() when ready != null:
+return ready(_that.course,_that.regevaScheduledCourseId,_that.syllabus,_that.grades);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  empty,required TResult Function( EnrolledCourse course,  String regevaScheduledCourseId,  CourseDetailSyllabusState syllabus,  CourseDetailGradesState grades)  ready,}) {final _that = this;
+switch (_that) {
+case CourseDetailEmptyState():
+return empty();case CourseDetailReadyState():
+return ready(_that.course,_that.regevaScheduledCourseId,_that.syllabus,_that.grades);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  empty,TResult? Function( EnrolledCourse course,  String regevaScheduledCourseId,  CourseDetailSyllabusState syllabus,  CourseDetailGradesState grades)?  ready,}) {final _that = this;
+switch (_that) {
+case CourseDetailEmptyState() when empty != null:
+return empty();case CourseDetailReadyState() when ready != null:
+return ready(_that.course,_that.regevaScheduledCourseId,_that.syllabus,_that.grades);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -193,6 +322,154 @@ class $CourseDetailSyllabusStateCopyWith<$Res>  {
 $CourseDetailSyllabusStateCopyWith(CourseDetailSyllabusState _, $Res Function(CourseDetailSyllabusState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [CourseDetailSyllabusState].
+extension CourseDetailSyllabusStatePatterns on CourseDetailSyllabusState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CourseDetailSyllabusStateInitial value)?  initial,TResult Function( CourseDetailSyllabusStateLoading value)?  loading,TResult Function( CourseDetailSyllabusStateLoaded value)?  loaded,TResult Function( CourseDetailSyllabusStateNotFound value)?  notFound,TResult Function( CourseDetailSyllabusStateError value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case CourseDetailSyllabusStateInitial() when initial != null:
+return initial(_that);case CourseDetailSyllabusStateLoading() when loading != null:
+return loading(_that);case CourseDetailSyllabusStateLoaded() when loaded != null:
+return loaded(_that);case CourseDetailSyllabusStateNotFound() when notFound != null:
+return notFound(_that);case CourseDetailSyllabusStateError() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CourseDetailSyllabusStateInitial value)  initial,required TResult Function( CourseDetailSyllabusStateLoading value)  loading,required TResult Function( CourseDetailSyllabusStateLoaded value)  loaded,required TResult Function( CourseDetailSyllabusStateNotFound value)  notFound,required TResult Function( CourseDetailSyllabusStateError value)  error,}){
+final _that = this;
+switch (_that) {
+case CourseDetailSyllabusStateInitial():
+return initial(_that);case CourseDetailSyllabusStateLoading():
+return loading(_that);case CourseDetailSyllabusStateLoaded():
+return loaded(_that);case CourseDetailSyllabusStateNotFound():
+return notFound(_that);case CourseDetailSyllabusStateError():
+return error(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CourseDetailSyllabusStateInitial value)?  initial,TResult? Function( CourseDetailSyllabusStateLoading value)?  loading,TResult? Function( CourseDetailSyllabusStateLoaded value)?  loaded,TResult? Function( CourseDetailSyllabusStateNotFound value)?  notFound,TResult? Function( CourseDetailSyllabusStateError value)?  error,}){
+final _that = this;
+switch (_that) {
+case CourseDetailSyllabusStateInitial() when initial != null:
+return initial(_that);case CourseDetailSyllabusStateLoading() when loading != null:
+return loading(_that);case CourseDetailSyllabusStateLoaded() when loaded != null:
+return loaded(_that);case CourseDetailSyllabusStateNotFound() when notFound != null:
+return notFound(_that);case CourseDetailSyllabusStateError() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( File syllabusFile)?  loaded,TResult Function()?  notFound,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case CourseDetailSyllabusStateInitial() when initial != null:
+return initial();case CourseDetailSyllabusStateLoading() when loading != null:
+return loading();case CourseDetailSyllabusStateLoaded() when loaded != null:
+return loaded(_that.syllabusFile);case CourseDetailSyllabusStateNotFound() when notFound != null:
+return notFound();case CourseDetailSyllabusStateError() when error != null:
+return error(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( File syllabusFile)  loaded,required TResult Function()  notFound,required TResult Function( String message)  error,}) {final _that = this;
+switch (_that) {
+case CourseDetailSyllabusStateInitial():
+return initial();case CourseDetailSyllabusStateLoading():
+return loading();case CourseDetailSyllabusStateLoaded():
+return loaded(_that.syllabusFile);case CourseDetailSyllabusStateNotFound():
+return notFound();case CourseDetailSyllabusStateError():
+return error(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( File syllabusFile)?  loaded,TResult? Function()?  notFound,TResult? Function( String message)?  error,}) {final _that = this;
+switch (_that) {
+case CourseDetailSyllabusStateInitial() when initial != null:
+return initial();case CourseDetailSyllabusStateLoading() when loading != null:
+return loading();case CourseDetailSyllabusStateLoaded() when loaded != null:
+return loaded(_that.syllabusFile);case CourseDetailSyllabusStateNotFound() when notFound != null:
+return notFound();case CourseDetailSyllabusStateError() when error != null:
+return error(_that.message);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -451,6 +728,148 @@ class $CourseDetailGradesStateCopyWith<$Res>  {
 $CourseDetailGradesStateCopyWith(CourseDetailGradesState _, $Res Function(CourseDetailGradesState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [CourseDetailGradesState].
+extension CourseDetailGradesStatePatterns on CourseDetailGradesState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CourseDetailGradesStateInitial value)?  initial,TResult Function( CourseDetailGradesStateLoading value)?  loading,TResult Function( CourseDetailGradesStateLoaded value)?  loaded,TResult Function( CourseDetailGradesStateError value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case CourseDetailGradesStateInitial() when initial != null:
+return initial(_that);case CourseDetailGradesStateLoading() when loading != null:
+return loading(_that);case CourseDetailGradesStateLoaded() when loaded != null:
+return loaded(_that);case CourseDetailGradesStateError() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CourseDetailGradesStateInitial value)  initial,required TResult Function( CourseDetailGradesStateLoading value)  loading,required TResult Function( CourseDetailGradesStateLoaded value)  loaded,required TResult Function( CourseDetailGradesStateError value)  error,}){
+final _that = this;
+switch (_that) {
+case CourseDetailGradesStateInitial():
+return initial(_that);case CourseDetailGradesStateLoading():
+return loading(_that);case CourseDetailGradesStateLoaded():
+return loaded(_that);case CourseDetailGradesStateError():
+return error(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CourseDetailGradesStateInitial value)?  initial,TResult? Function( CourseDetailGradesStateLoading value)?  loading,TResult? Function( CourseDetailGradesStateLoaded value)?  loaded,TResult? Function( CourseDetailGradesStateError value)?  error,}){
+final _that = this;
+switch (_that) {
+case CourseDetailGradesStateInitial() when initial != null:
+return initial(_that);case CourseDetailGradesStateLoading() when loading != null:
+return loading(_that);case CourseDetailGradesStateLoaded() when loaded != null:
+return loaded(_that);case CourseDetailGradesStateError() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( CourseGradeInfo value)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case CourseDetailGradesStateInitial() when initial != null:
+return initial();case CourseDetailGradesStateLoading() when loading != null:
+return loading();case CourseDetailGradesStateLoaded() when loaded != null:
+return loaded(_that.value);case CourseDetailGradesStateError() when error != null:
+return error(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( CourseGradeInfo value)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+switch (_that) {
+case CourseDetailGradesStateInitial():
+return initial();case CourseDetailGradesStateLoading():
+return loading();case CourseDetailGradesStateLoaded():
+return loaded(_that.value);case CourseDetailGradesStateError():
+return error(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( CourseGradeInfo value)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+switch (_that) {
+case CourseDetailGradesStateInitial() when initial != null:
+return initial();case CourseDetailGradesStateLoading() when loading != null:
+return loading();case CourseDetailGradesStateLoaded() when loaded != null:
+return loaded(_that.value);case CourseDetailGradesStateError() when error != null:
+return error(_that.message);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

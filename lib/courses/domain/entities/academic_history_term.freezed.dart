@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -93,6 +92,136 @@ $AcademicHistoryTermStatisticsCopyWith<$Res>? get statistics {
 }
 }
 
+
+/// Adds pattern-matching-related methods to [AcademicHistoryTerm].
+extension AcademicHistoryTermPatterns on AcademicHistoryTerm {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AcademicHistoryTerm value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AcademicHistoryTerm() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AcademicHistoryTerm value)  $default,){
+final _that = this;
+switch (_that) {
+case _AcademicHistoryTerm():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AcademicHistoryTerm value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AcademicHistoryTerm() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ScheduledTermIdentifier term,  AcademicHistoryTermStatistics? statistics,  List<AcademicHistoryCourse> courses)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AcademicHistoryTerm() when $default != null:
+return $default(_that.term,_that.statistics,_that.courses);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ScheduledTermIdentifier term,  AcademicHistoryTermStatistics? statistics,  List<AcademicHistoryCourse> courses)  $default,) {final _that = this;
+switch (_that) {
+case _AcademicHistoryTerm():
+return $default(_that.term,_that.statistics,_that.courses);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ScheduledTermIdentifier term,  AcademicHistoryTermStatistics? statistics,  List<AcademicHistoryCourse> courses)?  $default,) {final _that = this;
+switch (_that) {
+case _AcademicHistoryTerm() when $default != null:
+return $default(_that.term,_that.statistics,_that.courses);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 
@@ -284,6 +413,136 @@ as int,
 
 }
 
+
+/// Adds pattern-matching-related methods to [AcademicHistoryTermStatistics].
+extension AcademicHistoryTermStatisticsPatterns on AcademicHistoryTermStatistics {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AcademicHistoryTermStatistics value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AcademicHistoryTermStatistics() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AcademicHistoryTermStatistics value)  $default,){
+final _that = this;
+switch (_that) {
+case _AcademicHistoryTermStatistics():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AcademicHistoryTermStatistics value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AcademicHistoryTermStatistics() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double termWeightedAverage,  double termWeightedAveragePassed,  double cumulativeWeightedAverage,  double cumulativeWeightedAveragePassed,  int mandatoryCreditsTaken,  int electiveCreditsTaken,  int mandatoryCreditsPassed,  int electiveCreditsPassed,  int mandatoryCreditsValidated,  int electiveCreditsValidated,  int totalMandatoryCreditsTaken,  int totalElectiveCreditsTaken,  int totalMandatoryCreditsPassed,  int totalElectiveCreditsPassed,  int totalMandatoryCreditsValidated)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AcademicHistoryTermStatistics() when $default != null:
+return $default(_that.termWeightedAverage,_that.termWeightedAveragePassed,_that.cumulativeWeightedAverage,_that.cumulativeWeightedAveragePassed,_that.mandatoryCreditsTaken,_that.electiveCreditsTaken,_that.mandatoryCreditsPassed,_that.electiveCreditsPassed,_that.mandatoryCreditsValidated,_that.electiveCreditsValidated,_that.totalMandatoryCreditsTaken,_that.totalElectiveCreditsTaken,_that.totalMandatoryCreditsPassed,_that.totalElectiveCreditsPassed,_that.totalMandatoryCreditsValidated);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double termWeightedAverage,  double termWeightedAveragePassed,  double cumulativeWeightedAverage,  double cumulativeWeightedAveragePassed,  int mandatoryCreditsTaken,  int electiveCreditsTaken,  int mandatoryCreditsPassed,  int electiveCreditsPassed,  int mandatoryCreditsValidated,  int electiveCreditsValidated,  int totalMandatoryCreditsTaken,  int totalElectiveCreditsTaken,  int totalMandatoryCreditsPassed,  int totalElectiveCreditsPassed,  int totalMandatoryCreditsValidated)  $default,) {final _that = this;
+switch (_that) {
+case _AcademicHistoryTermStatistics():
+return $default(_that.termWeightedAverage,_that.termWeightedAveragePassed,_that.cumulativeWeightedAverage,_that.cumulativeWeightedAveragePassed,_that.mandatoryCreditsTaken,_that.electiveCreditsTaken,_that.mandatoryCreditsPassed,_that.electiveCreditsPassed,_that.mandatoryCreditsValidated,_that.electiveCreditsValidated,_that.totalMandatoryCreditsTaken,_that.totalElectiveCreditsTaken,_that.totalMandatoryCreditsPassed,_that.totalElectiveCreditsPassed,_that.totalMandatoryCreditsValidated);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double termWeightedAverage,  double termWeightedAveragePassed,  double cumulativeWeightedAverage,  double cumulativeWeightedAveragePassed,  int mandatoryCreditsTaken,  int electiveCreditsTaken,  int mandatoryCreditsPassed,  int electiveCreditsPassed,  int mandatoryCreditsValidated,  int electiveCreditsValidated,  int totalMandatoryCreditsTaken,  int totalElectiveCreditsTaken,  int totalMandatoryCreditsPassed,  int totalElectiveCreditsPassed,  int totalMandatoryCreditsValidated)?  $default,) {final _that = this;
+switch (_that) {
+case _AcademicHistoryTermStatistics() when $default != null:
+return $default(_that.termWeightedAverage,_that.termWeightedAveragePassed,_that.cumulativeWeightedAverage,_that.cumulativeWeightedAveragePassed,_that.mandatoryCreditsTaken,_that.electiveCreditsTaken,_that.mandatoryCreditsPassed,_that.electiveCreditsPassed,_that.mandatoryCreditsValidated,_that.electiveCreditsValidated,_that.totalMandatoryCreditsTaken,_that.totalElectiveCreditsTaken,_that.totalMandatoryCreditsPassed,_that.totalElectiveCreditsPassed,_that.totalMandatoryCreditsValidated);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

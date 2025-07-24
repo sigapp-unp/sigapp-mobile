@@ -4,9 +4,9 @@ import 'package:sigapp/auth/application/services/api_gateway_auth_service.dart';
 import 'package:sigapp/auth/application/usecases/siga_authentication_usecase.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
 import 'package:sigapp/auth/domain/services/navigation_service.dart';
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/repositories/student_repository.dart';
-import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:logger/logger.dart';
 
 @injectable

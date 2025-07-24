@@ -1,9 +1,9 @@
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/core/infrastructure/http/siga_client.dart';
 import 'package:sigapp/courses/application/value-objects/student_session_info.dart';
-import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:html/parser.dart' as htmlParser;
-import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
+import 'package:sigapp/shared/domain/value_objects/scheduled_term_identifier.dart';
 
 @LazySingleton(as: StudentSessionRepository)
 class StudentSessionRepositoryImpl implements StudentSessionRepository {

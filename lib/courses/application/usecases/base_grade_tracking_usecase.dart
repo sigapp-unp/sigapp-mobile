@@ -1,4 +1,4 @@
-import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 
 /// Base class for grade tracking use cases that provides common functionality
 abstract class BaseGradeTrackingUseCase {

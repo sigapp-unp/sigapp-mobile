@@ -3,11 +3,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/courses/application/usecases/get_enrolled_courses_usecase.dart';
-import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
-import 'package:sigapp/student/domain/value_objects/semester_context.dart';
-import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
-import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
+import 'package:sigapp/shared/domain/value_objects/scheduled_term_identifier.dart';
+import 'package:sigapp/shared/domain/value_objects/semester_context.dart';
+import 'package:sigapp/shared/domain/entities/student_academic_report.dart';
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/courses/domain/value_objects/enrolled_course.dart';
 
 part 'enrolled_courses_page_cubit.freezed.dart';
 

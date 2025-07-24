@@ -8,7 +8,7 @@ import 'package:sigapp/auth/domain/services/navigation_service.dart';
 import 'package:sigapp/auth/domain/services/toast_service.dart';
 import 'package:sigapp/shared/domain/service/progress_indicator_service.dart';
 import 'package:sigapp/courses/domain/repositories/regeva_repository.dart';
-import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/student/domain/repositories/student_repository.dart';
 
 @injectable

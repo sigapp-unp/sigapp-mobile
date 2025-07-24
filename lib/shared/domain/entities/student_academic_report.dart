@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
-import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
+import 'package:sigapp/shared/domain/value_objects/scheduled_term_identifier.dart';
+import 'package:sigapp/student/domain/value_objects/faculty.dart';
 
 part 'student_academic_report.freezed.dart';
 

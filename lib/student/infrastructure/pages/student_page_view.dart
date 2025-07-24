@@ -4,7 +4,7 @@ import 'package:sigapp/core/infrastructure/ui/widgets/error_state.dart';
 import 'package:sigapp/core/infrastructure/ui/widgets/loading_state.dart';
 import 'package:sigapp/shared/infrastructure/partials/user_avatar_button.dart';
 import 'package:sigapp/shared/infrastructure/utils/logo_file_utils.dart';
-import 'package:sigapp/student/domain/entities/student_academic_report.dart';
+import 'package:sigapp/shared/domain/entities/student_academic_report.dart';
 import 'package:sigapp/student/infrastructure/pages/components/generic_pie_chart.dart';
 import 'package:sigapp/student/infrastructure/pages/student_cubit.dart';
 import 'dart:math' as math;

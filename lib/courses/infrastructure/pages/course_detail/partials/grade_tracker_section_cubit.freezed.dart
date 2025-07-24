@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -47,6 +46,148 @@ class $GradeTrackerSectionStateCopyWith<$Res>  {
 $GradeTrackerSectionStateCopyWith(GradeTrackerSectionState _, $Res Function(GradeTrackerSectionState) __);
 }
 
+
+/// Adds pattern-matching-related methods to [GradeTrackerSectionState].
+extension GradeTrackerSectionStatePatterns on GradeTrackerSectionState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( GradeTrackerSectionEmptyState value)?  empty,TResult Function( GradeTrackerSectionLoadingState value)?  loading,TResult Function( GradeTrackerSectionReadyState value)?  ready,TResult Function( GradeTrackerSectionErrorState value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case GradeTrackerSectionEmptyState() when empty != null:
+return empty(_that);case GradeTrackerSectionLoadingState() when loading != null:
+return loading(_that);case GradeTrackerSectionReadyState() when ready != null:
+return ready(_that);case GradeTrackerSectionErrorState() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( GradeTrackerSectionEmptyState value)  empty,required TResult Function( GradeTrackerSectionLoadingState value)  loading,required TResult Function( GradeTrackerSectionReadyState value)  ready,required TResult Function( GradeTrackerSectionErrorState value)  error,}){
+final _that = this;
+switch (_that) {
+case GradeTrackerSectionEmptyState():
+return empty(_that);case GradeTrackerSectionLoadingState():
+return loading(_that);case GradeTrackerSectionReadyState():
+return ready(_that);case GradeTrackerSectionErrorState():
+return error(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( GradeTrackerSectionEmptyState value)?  empty,TResult? Function( GradeTrackerSectionLoadingState value)?  loading,TResult? Function( GradeTrackerSectionReadyState value)?  ready,TResult? Function( GradeTrackerSectionErrorState value)?  error,}){
+final _that = this;
+switch (_that) {
+case GradeTrackerSectionEmptyState() when empty != null:
+return empty(_that);case GradeTrackerSectionLoadingState() when loading != null:
+return loading(_that);case GradeTrackerSectionReadyState() when ready != null:
+return ready(_that);case GradeTrackerSectionErrorState() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  empty,TResult Function()?  loading,TResult Function( CourseTracking courseTracking,  Set<String> processingGradeIds,  Set<String> processingCategoryIds)?  ready,TResult Function( Object error)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case GradeTrackerSectionEmptyState() when empty != null:
+return empty();case GradeTrackerSectionLoadingState() when loading != null:
+return loading();case GradeTrackerSectionReadyState() when ready != null:
+return ready(_that.courseTracking,_that.processingGradeIds,_that.processingCategoryIds);case GradeTrackerSectionErrorState() when error != null:
+return error(_that.error);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  empty,required TResult Function()  loading,required TResult Function( CourseTracking courseTracking,  Set<String> processingGradeIds,  Set<String> processingCategoryIds)  ready,required TResult Function( Object error)  error,}) {final _that = this;
+switch (_that) {
+case GradeTrackerSectionEmptyState():
+return empty();case GradeTrackerSectionLoadingState():
+return loading();case GradeTrackerSectionReadyState():
+return ready(_that.courseTracking,_that.processingGradeIds,_that.processingCategoryIds);case GradeTrackerSectionErrorState():
+return error(_that.error);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  empty,TResult? Function()?  loading,TResult? Function( CourseTracking courseTracking,  Set<String> processingGradeIds,  Set<String> processingCategoryIds)?  ready,TResult? Function( Object error)?  error,}) {final _that = this;
+switch (_that) {
+case GradeTrackerSectionEmptyState() when empty != null:
+return empty();case GradeTrackerSectionLoadingState() when loading != null:
+return loading();case GradeTrackerSectionReadyState() when ready != null:
+return ready(_that.courseTracking,_that.processingGradeIds,_that.processingCategoryIds);case GradeTrackerSectionErrorState() when error != null:
+return error(_that.error);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 

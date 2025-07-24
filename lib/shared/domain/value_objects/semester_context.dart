@@ -1,4 +1,4 @@
-import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
+import 'package:sigapp/shared/domain/value_objects/scheduled_term_identifier.dart';
 
 enum SemesterContextType {
   currentlyEnrolled,

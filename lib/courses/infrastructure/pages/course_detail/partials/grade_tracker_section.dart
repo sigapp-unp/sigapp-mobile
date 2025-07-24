@@ -5,7 +5,7 @@ import 'package:sigapp/core/infrastructure/ui/widgets/loading_state.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_detail/partials/grade_tracker_section/widgets.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_detail/partials/grade_tracker_section_cubit.dart';
-import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
+import 'package:sigapp/courses/domain/value_objects/enrolled_course.dart';
 
 class GradeTrackerSectionWidget extends StatefulWidget {
   const GradeTrackerSectionWidget({super.key, required this.enrolledCourse});

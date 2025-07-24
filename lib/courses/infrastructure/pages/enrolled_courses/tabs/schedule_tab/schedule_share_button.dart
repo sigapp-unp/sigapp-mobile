@@ -9,12 +9,12 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sigapp/core/infrastructure/ui/widgets/brand_text.dart';
 import 'package:sigapp/core/injection/get_it.dart';
-import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
+import 'package:sigapp/shared/domain/value_objects/scheduled_term_identifier.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule/course_visibility_cubit.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/tabs/schedule_tab/schedule_share_button_cubit.dart';
-import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
+import 'package:sigapp/shared/domain/entities/student_academic_report.dart';
+import 'package:sigapp/courses/domain/value_objects/enrolled_course.dart';
 import 'package:logger/logger.dart';
 
 class ScheduleShareButtonWidget extends StatefulWidget {

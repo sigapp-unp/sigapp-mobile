@@ -5,7 +5,7 @@ import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/we
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule/day_header.dart';
 import 'package:sigapp/courses/infrastructure/pages/enrolled_courses/partials/weekly_schedule/text_info.dart';
 import 'package:sigapp/student/domain/entities/weekly_schedule_event.dart';
-import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
+import 'package:sigapp/courses/domain/value_objects/enrolled_course.dart';
 
 class WeeklyScheduleWidgetItem {
   final WeeklyScheduleEvent data;

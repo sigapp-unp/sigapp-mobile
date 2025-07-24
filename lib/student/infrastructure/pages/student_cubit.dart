@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
 
 part 'student_cubit.freezed.dart';

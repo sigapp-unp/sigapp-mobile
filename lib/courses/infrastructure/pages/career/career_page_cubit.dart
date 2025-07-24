@@ -4,8 +4,8 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/courses/application/usecases/get_program_curriculum_progress_usecase.dart';
 import 'package:sigapp/courses/domain/value-objects/program_curriculum_progress.dart';
-import 'package:sigapp/student/domain/entities/student_academic_report.dart';
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/shared/domain/entities/student_academic_report.dart';
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart';
 
 part 'career_page_cubit.freezed.dart';
 

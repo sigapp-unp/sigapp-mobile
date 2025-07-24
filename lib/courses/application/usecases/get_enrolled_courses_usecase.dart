@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/courses/application/usecases/get_class_schedule_usecase.dart';
 import 'package:sigapp/courses/domain/repositories/courses_repository.dart';
-import 'package:sigapp/student/domain/value_objects/enrolled_course.dart';
+import 'package:sigapp/courses/domain/value_objects/enrolled_course.dart';
 
 @lazySingleton
 class GetEnrolledCoursesUsecase {

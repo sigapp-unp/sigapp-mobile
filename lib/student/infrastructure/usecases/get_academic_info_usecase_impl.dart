@@ -1,12 +1,12 @@
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/courses/application/repositories/student_session_repository.dart';
+import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/application/usecases/get_enrolled_courses_usecase.dart';
-import 'package:sigapp/courses/domain/entities/scheduled_term_identifier.dart';
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart';
+import 'package:sigapp/shared/domain/value_objects/scheduled_term_identifier.dart';
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart';
 import 'package:sigapp/student/domain/value_objects/academic_info_data.dart';
-import 'package:sigapp/student/domain/value_objects/semester_context.dart';
+import 'package:sigapp/shared/domain/value_objects/semester_context.dart';
 import 'package:sigapp/student/application/usecases/get_academic_report_usecase.dart';
-import 'package:sigapp/student/domain/entities/student_academic_report.dart';
+import 'package:sigapp/shared/domain/entities/student_academic_report.dart';
 
 @Singleton(as: GetAcademicInfoUseCase)
 @Named('getAcademicInfoUseCaseImpl')
