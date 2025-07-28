@@ -3,30 +3,35 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 import 'package:sigapp/courses/domain/repositories/grade_tracking_category_repository.dart';
-import 'package:sigapp/courses/domain/repositories/grade_tracking_course_repository.dart';
-import 'package:sigapp/courses/infrastructure/services/grade_tracking_local_service.dart';
+import 'package:sigapp/courses/infrastructure/services/grade_tracking_cache_service.dart';
 import 'package:sigapp/courses/infrastructure/services/sync_manager.dart';
 
-/// Local decorator for GradeCategory operations
-/// Implements cache-first reads and optimistic updates for category operations
+/// Optimized local decorator for GradeCategory operations
+/// Leverages enhanced coordinator service for granular category updates
+///
+/// Key optimizations:
+/// - Uses granular updateCategoriesField for better performance
+/// - Leverages optimized coordinator facade pattern
+/// - Enhanced error handling and fallback strategies
+/// - Smart caching with minimal data transfer
 @LazySingleton(as: GradeTrackingCategoryRepository)
-class LocalGradeTrackingCategoryDecorator
+class GradeTrackingCategoryRepositoryDecorator
     implements GradeTrackingCategoryRepository {
-  final GradeTrackingCategoryRepository _remoteRepo;
-  final GradeTrackingCourseRepository _courseRepo;
-  final GradeTrackingLocalService _cacheService;
+  final GradeTrackingCategoryRepository _remoteCategoryRepo;
+  final GradeTrackingCacheService _coordinator;
   final SyncManager _syncManager;
   final Logger _logger;
 
-  LocalGradeTrackingCategoryDecorator(
-    @Named('remote') this._remoteRepo,
-    @Named('remote') this._courseRepo,
-    this._cacheService,
+  GradeTrackingCategoryRepositoryDecorator(
+    @Named('remote') this._remoteCategoryRepo,
+    this._coordinator,
     this._syncManager,
     this._logger,
   );
 
-  /// Unified helper for optimistic updates
+  // 🚀 OPTIMIZED GRANULAR OPERATIONS
+
+  /// Enhanced optimistic update using centralized coordinator
   Future<CourseTracking> _performOptimisticUpdate({
     required String studentCode,
     required String courseCode,
@@ -37,64 +42,45 @@ class LocalGradeTrackingCategoryDecorator
     required Future<CourseTracking> Function() remoteFallback,
     Map<String, dynamic>? logContext,
   }) async {
-    final courseKey = _cacheService.buildCourseKey(studentCode, courseCode);
+    // Delegate to centralized coordinator method
+    final updated = await _coordinator.performOptimisticUpdate(
+      studentCode: studentCode,
+      courseCode: courseCode,
+      updateFunction: updateFunction,
+      operationType: operationType,
+      fieldType: 'categories',
+      syncDataBuilder: syncDataBuilder,
+      remoteFallback: remoteFallback,
+      logContext: logContext,
+    );
 
+    // Handle sync enqueueing at decorator level
     try {
-      // Get current state from cache or remote
-      final current = await _courseRepo.getCourseTracking(
-        studentCode: studentCode,
-        courseCode: courseCode,
+      final syncData = syncDataBuilder(updated);
+      await _syncManager.enqueueSyncOperation(
+        operationType: operationType,
+        fieldType: 'categories',
+        courseKey: '${studentCode}_$courseCode',
+        operationData: syncData,
       );
 
-      if (current == null) throw Exception('Course tracking not found');
+      final contextLog =
+          logContext?.entries.map((e) => '${e.key}=${e.value}').join(', ') ??
+          '';
 
-      // Apply optimistic update
-      final updated = updateFunction(current);
-
-      // Update cache
-      await _cacheService.saveCourse(courseKey, updated);
-      _logger.d('[CATEGORY_DECORATOR] Cache updated for $courseKey');
-
-      // Enqueue sync operation
-      try {
-        final syncData = syncDataBuilder(updated);
-        await _syncManager.enqueueSyncOperation(
-          operationType: operationType,
-          fieldType: 'categories',
-          courseKey: courseKey,
-          operationData: syncData,
-        );
-
-        final contextStr =
-            logContext != null
-                ? logContext.entries
-                    .map((e) => '${e.key}=${e.value}')
-                    .join(', ')
-                : '';
-        _logger.d(
-          '[CATEGORY_DECORATOR] Sync enqueued: $operationType ($contextStr)',
-        );
-      } catch (syncError, syncStack) {
-        _logger.e(
-          '[CATEGORY_DECORATOR] Sync enqueue failed for $operationType, continuing with optimistic state',
-          error: syncError,
-          stackTrace: syncStack,
-        );
-      }
-
-      return updated;
-    } catch (e, s) {
-      _logger.e(
-        '[CATEGORY_DECORATOR] Error in $operationType',
-        error: e,
-        stackTrace: s,
+      _logger.d(
+        '[CATEGORY_DECORATOR] ✅ $operationType sync enqueued: ${studentCode}_$courseCode'
+        '${contextLog.isNotEmpty ? ' ($contextLog)' : ''}',
       );
-      // Fallback to remote operation
-      final result = await remoteFallback();
-      final courseKey = _cacheService.buildCourseKey(studentCode, courseCode);
-      await _cacheService.saveCourse(courseKey, result);
-      return result;
+    } catch (syncError, syncStack) {
+      _logger.w(
+        '[CATEGORY_DECORATOR] ⚠️ Sync enqueue failed for $operationType, continuing optimistically',
+        error: syncError,
+        stackTrace: syncStack,
+      );
     }
+
+    return updated;
   }
 
   @override
@@ -137,7 +123,7 @@ class LocalGradeTrackingCategoryDecorator
                     .toList(),
           },
       remoteFallback:
-          () => _remoteRepo.addCategory(
+          () => _remoteCategoryRepo.addCategory(
             studentCode: studentCode,
             courseCode: courseCode,
             categoryName: categoryName,
@@ -182,7 +168,7 @@ class LocalGradeTrackingCategoryDecorator
             'grades': _serializeGradesForSync(updated.categories),
           },
       remoteFallback:
-          () => _remoteRepo.deleteCategory(
+          () => _remoteCategoryRepo.deleteCategory(
             studentCode: studentCode,
             courseCode: courseCode,
             categoryId: categoryId,
@@ -232,7 +218,7 @@ class LocalGradeTrackingCategoryDecorator
                     .toList(),
           },
       remoteFallback:
-          () => _remoteRepo.updateCategory(
+          () => _remoteCategoryRepo.updateCategory(
             studentCode: studentCode,
             courseCode: courseCode,
             categoryId: categoryId,
@@ -253,26 +239,21 @@ class LocalGradeTrackingCategoryDecorator
     required String courseCode,
     required List<GradeCategory> categories,
   }) async {
-    final courseKey = _cacheService.buildCourseKey(studentCode, courseCode);
-
     try {
-      // Get current course to preserve other data
-      final current = await _courseRepo.getCourseTracking(
+      // Use coordinator to update categories field
+      await _coordinator.updateCategoriesField(
         studentCode: studentCode,
         courseCode: courseCode,
+        categories: categories,
       );
 
-      if (current == null) throw Exception('Course tracking not found');
-
-      // Apply update with new categories
-      final updated = current.copyWith(categories: categories);
-
-      // Update cache
-      await _cacheService.saveCourse(courseKey, updated);
-      _logger.d('[CATEGORY_DECORATOR] Categories field updated in cache');
+      _logger.d(
+        '[CATEGORY_DECORATOR] Categories field updated via coordinator',
+      );
 
       // Enqueue sync operation
       try {
+        final courseKey = '${studentCode}_$courseCode';
         await _syncManager.enqueueSyncOperation(
           operationType: 'updateCategoriesField',
           fieldType: 'categories',
@@ -307,7 +288,7 @@ class LocalGradeTrackingCategoryDecorator
         stackTrace: s,
       );
       // Fallback to remote operation
-      await _remoteRepo.updateCategoriesField(
+      await _remoteCategoryRepo.updateCategoriesField(
         studentCode: studentCode,
         courseCode: courseCode,
         categories: categories,

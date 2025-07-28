@@ -116,6 +116,8 @@ import 'package:sigapp/courses/domain/repositories/schedule_repository.dart'
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart'
     as _i939;
 import 'package:sigapp/courses/domain/services/course_service.dart' as _i906;
+import 'package:sigapp/courses/infrastructure/mappers/grade_tracking_mapper.dart'
+    as _i722;
 import 'package:sigapp/courses/infrastructure/pages/career/career_page_cubit.dart'
     as _i112;
 import 'package:sigapp/courses/infrastructure/pages/course_detail/course_detail_cubit.dart'
@@ -134,12 +136,14 @@ import 'package:sigapp/courses/infrastructure/pages/scheduled_courses/scheduled_
     as _i27;
 import 'package:sigapp/courses/infrastructure/repositories/courses_repository.dart'
     as _i892;
-import 'package:sigapp/courses/infrastructure/repositories/local_grade_tracking_category_decorator.dart'
-    as _i219;
-import 'package:sigapp/courses/infrastructure/repositories/local_grade_tracking_course_decorator.dart'
-    as _i954;
-import 'package:sigapp/courses/infrastructure/repositories/local_grade_tracking_grade_decorator.dart'
-    as _i434;
+import 'package:sigapp/courses/infrastructure/repositories/grade_tracking_cache_repository.dart'
+    as _i481;
+import 'package:sigapp/courses/infrastructure/repositories/grade_tracking_category_repository_decorator.dart'
+    as _i1063;
+import 'package:sigapp/courses/infrastructure/repositories/grade_tracking_course_repository_decorator.dart'
+    as _i117;
+import 'package:sigapp/courses/infrastructure/repositories/grade_tracking_grade_repository_decorator.dart'
+    as _i867;
 import 'package:sigapp/courses/infrastructure/repositories/local_syllabus_repository.dart'
     as _i717;
 import 'package:sigapp/courses/infrastructure/repositories/program_curriculum_repository.dart'
@@ -164,8 +168,8 @@ import 'package:sigapp/courses/infrastructure/services/app_lifecycle_sync_integr
     as _i615;
 import 'package:sigapp/courses/infrastructure/services/conflict_resolver.dart'
     as _i710;
-import 'package:sigapp/courses/infrastructure/services/grade_tracking_local_service.dart'
-    as _i891;
+import 'package:sigapp/courses/infrastructure/services/grade_tracking_cache_service.dart'
+    as _i676;
 import 'package:sigapp/courses/infrastructure/services/sync_manager.dart'
     as _i870;
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart'
@@ -208,6 +212,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i880.ScheduleShareButtonCubit>(
       () => _i880.ScheduleShareButtonCubit(),
     );
+    gh.factory<_i722.GradeTrackingMapper>(() => _i722.GradeTrackingMapper());
     await gh.singletonAsync<_i460.SharedPreferences>(
       () => registerModule.prefs,
       preResolve: true,
@@ -287,14 +292,14 @@ extension GetItInjectableX on _i174.GetIt {
       ),
       instanceName: 'remote',
     );
-    gh.singletonAsync<_i891.GradeTrackingLocalService>(
-      () async => _i891.GradeTrackingLocalService(
+    gh.singletonAsync<_i328.SyncQueueRepository>(
+      () async => _i328.SyncQueueRepository(
         await getAsync<_i139.SQLiteClientManager>(),
         gh<_i974.Logger>(),
       ),
     );
-    gh.singletonAsync<_i328.SyncQueueRepository>(
-      () async => _i328.SyncQueueRepository(
+    gh.singletonAsync<_i481.GradeTrackingCacheRepository>(
+      () async => _i481.GradeTrackingCacheRepository(
         await getAsync<_i139.SQLiteClientManager>(),
         gh<_i974.Logger>(),
       ),
@@ -360,6 +365,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i27.ScheduledCoursesPageCubit>(
       () => _i27.ScheduledCoursesPageCubit(
         gh<_i154.GetScheduledCoursesUsecase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.singletonAsync<_i676.GradeTrackingCacheService>(
+      () async => _i676.GradeTrackingCacheService(
+        await getAsync<_i481.GradeTrackingCacheRepository>(),
+        gh<_i722.GradeTrackingMapper>(),
         gh<_i974.Logger>(),
       ),
     );
@@ -448,15 +460,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i364.GradeTrackingGradeRepository>(instanceName: 'remote'),
       ),
     );
-    gh.lazySingletonAsync<_i364.GradeTrackingGradeRepository>(
-      () async => _i434.LocalGradeTrackingGradeDecorator(
-        gh<_i364.GradeTrackingGradeRepository>(instanceName: 'remote'),
-        gh<_i786.GradeTrackingCourseRepository>(instanceName: 'remote'),
-        await getAsync<_i891.GradeTrackingLocalService>(),
-        await getAsync<_i870.SyncManager>(),
-        gh<_i974.Logger>(),
-      ),
-    );
     gh.singleton<_i354.GetAcademicInfoUseCase>(
       () => _i248.GetAcademicInfoUseCaseImpl(
         gh<_i771.GetAcademicReportUsecase>(),
@@ -484,19 +487,19 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       )..initialize(),
     );
+    gh.lazySingletonAsync<_i364.GradeTrackingGradeRepository>(
+      () async => _i867.GradeTrackingGradeRepositoryDecorator(
+        gh<_i364.GradeTrackingGradeRepository>(instanceName: 'remote'),
+        await getAsync<_i676.GradeTrackingCacheService>(),
+        await getAsync<_i870.SyncManager>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.factory<_i733.SetCourseVisibilityPreferencesUseCase>(
       () => _i733.SetCourseVisibilityPreferencesUseCase(
         gh<_i939.UserPreferencesRepository>(),
         gh<_i607.StudentSessionRepository>(),
         gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.lazySingletonAsync<_i786.GradeTrackingCourseRepository>(
-      () async => _i954.LocalGradeTrackingCourseDecorator(
-        gh<_i786.GradeTrackingCourseRepository>(instanceName: 'remote'),
-        await getAsync<_i891.GradeTrackingLocalService>(),
-        await getAsync<_i870.SyncManager>(),
         gh<_i974.Logger>(),
       ),
     );
@@ -510,29 +513,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i607.StudentSessionRepository>(),
       ),
     );
-    gh.factoryAsync<_i733.CreateGradeTrackingUseCase>(
-      () async => _i733.CreateGradeTrackingUseCase(
-        await getAsync<_i786.GradeTrackingCourseRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-      ),
-    );
-    gh.factoryAsync<_i362.DeleteGradeTrackingUseCase>(
-      () async => _i362.DeleteGradeTrackingUseCase(
-        await getAsync<_i786.GradeTrackingCourseRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-      ),
-    );
-    gh.factoryAsync<_i409.GetGradeTrackingUseCase>(
-      () async => _i409.GetGradeTrackingUseCase(
-        await getAsync<_i786.GradeTrackingCourseRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-      ),
-    );
     gh.lazySingletonAsync<_i325.GradeTrackingCategoryRepository>(
-      () async => _i219.LocalGradeTrackingCategoryDecorator(
+      () async => _i1063.GradeTrackingCategoryRepositoryDecorator(
         gh<_i325.GradeTrackingCategoryRepository>(instanceName: 'remote'),
+        await getAsync<_i676.GradeTrackingCacheService>(),
+        await getAsync<_i870.SyncManager>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.lazySingletonAsync<_i786.GradeTrackingCourseRepository>(
+      () async => _i117.GradeTrackingCourseRepositoryDecorator(
         gh<_i786.GradeTrackingCourseRepository>(instanceName: 'remote'),
-        await getAsync<_i891.GradeTrackingLocalService>(),
+        await getAsync<_i676.GradeTrackingCacheService>(),
         await getAsync<_i870.SyncManager>(),
         gh<_i974.Logger>(),
       ),
@@ -633,6 +625,24 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i354.GetAcademicInfoUseCase>(),
         gh<_i650.GetEnrolledCoursesUsecase>(),
         gh<_i974.Logger>(),
+      ),
+    );
+    gh.factoryAsync<_i733.CreateGradeTrackingUseCase>(
+      () async => _i733.CreateGradeTrackingUseCase(
+        await getAsync<_i786.GradeTrackingCourseRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factoryAsync<_i362.DeleteGradeTrackingUseCase>(
+      () async => _i362.DeleteGradeTrackingUseCase(
+        await getAsync<_i786.GradeTrackingCourseRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factoryAsync<_i409.GetGradeTrackingUseCase>(
+      () async => _i409.GetGradeTrackingUseCase(
+        await getAsync<_i786.GradeTrackingCourseRepository>(),
+        gh<_i607.StudentSessionRepository>(),
       ),
     );
     gh.factory<_i722.HomePageCubit>(
