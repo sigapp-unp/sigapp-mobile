@@ -202,11 +202,30 @@ class SyncManager {
     // Direct sync without complex conflict detection
     switch (operationType) {
       case 'create':
-        await _remoteRepository.createWithDefaults(
+        // ✅ REFACTORIZADO: Deserializar CourseTracking completo desde operationData
+        final categories =
+            (operationData['categories'] as List?)
+                ?.map(
+                  (cat) => GradeCategory(
+                    id: cat['id'],
+                    name: cat['name'],
+                    weight: cat['weight'].toDouble(),
+                    grades: _deserializeGradesForCategory(
+                      cat['id'],
+                      operationData['grades'] as List? ?? [],
+                    ),
+                  ),
+                )
+                .toList() ??
+            [];
+
+        final tracking = CourseTracking(
           studentCode: studentCode,
           courseCode: courseCode,
-          courseName: operationData['courseName'] ?? '',
+          categories: categories,
         );
+
+        await _remoteRepository.create(tracking);
         break;
       case 'update_categories':
         final categories =
@@ -424,6 +443,24 @@ class SyncManager {
         _processingKeys.remove(courseKey);
       }
     }
+  }
+
+  /// Helper para deserializar grades de una categoría específica desde sync data
+  List<Grade> _deserializeGradesForCategory(
+    String categoryId,
+    List<dynamic> gradesData,
+  ) {
+    return gradesData
+        .where((grade) => grade['categoryId'] == categoryId)
+        .map(
+          (grade) => Grade(
+            id: grade['id'],
+            name: grade['name'],
+            score: grade['score'].toDouble(),
+            enabled: grade['enabled'] ?? true,
+          ),
+        )
+        .toList();
   }
 
   // Enhanced metrics getters

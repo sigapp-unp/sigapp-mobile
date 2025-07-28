@@ -13,17 +13,14 @@ class CreateGradeTrackingUseCase extends BaseGradeTrackingUseCase {
     StudentSessionRepository studentSessionRepository,
   ) : super(studentSessionRepository);
 
-  /// Crea un curso con categorías y notas predeterminadas
   Future<CourseTracking> execute({
     required String courseCode,
     required String courseName,
   }) async {
-    // Utiliza el método implementado en el repositorio que a su vez usa
-    // la lógica en la entidad CourseTracking
-    return _repository.createWithDefaults(
+    final defaultTracking = CourseTracking.createWithDefaults(
       studentCode: await getStudentCode(),
       courseCode: courseCode,
-      courseName: courseName,
     );
+    return _repository.create(defaultTracking);
   }
 }

@@ -162,40 +162,52 @@ class LocalGradeTrackingDecorator implements GradeTrackingRepository {
   }
 
   @override
-  Future<CourseTracking> createWithDefaults({
-    required String studentCode,
-    required String courseCode,
-    required String courseName,
-  }) async {
+  Future<CourseTracking> create(CourseTracking tracking) async {
     return _performOptimisticUpdate(
-      studentCode: studentCode,
-      courseCode: courseCode,
+      studentCode: tracking.studentCode,
+      courseCode: tracking.courseCode,
       updateFunction:
-          (_) => CourseTracking.createWithDefaults(
-            courseCode: courseCode,
-            studentCode: studentCode,
-          ),
+          (_) => tracking, // ✅ REFACTORIZADO: Usar tracking directamente
       operationType: 'create',
-      fieldType: 'categories', // ✅ FIXED: Added fieldType
+      fieldType: 'categories',
       syncDataBuilder:
           (updated) => {
-            'studentCode': studentCode,
-            'courseCode': courseCode,
-            'courseName': courseName,
-            // ✅ ENHANCED: Include default categories structure for sync compatibility
-            'categories': [
-              {'name': 'Prácticas', 'weight': 0.20},
-              {'name': 'Trabajos', 'weight': 0.30},
-              {'name': 'Parciales', 'weight': 0.50},
-            ],
+            'studentCode': updated.studentCode,
+            'courseCode': updated.courseCode,
+            // ✅ MEJORADO: Serializar estructura completa para sync
+            'categories':
+                updated.categories
+                    .map(
+                      (cat) => {
+                        'id': cat.id,
+                        'name': cat.name,
+                        'weight': cat.weight,
+                      },
+                    )
+                    .toList(),
+            'grades': _serializeGradesForSync(updated.categories),
           },
-      remoteFallback:
-          () => _remoteRepo.createWithDefaults(
-            studentCode: studentCode,
-            courseCode: courseCode,
-            courseName: courseName,
-          ),
+      remoteFallback: () => _remoteRepo.create(tracking),
     );
+  }
+
+  /// Helper para serializar grades para sync
+  List<Map<String, dynamic>> _serializeGradesForSync(
+    List<GradeCategory> categories,
+  ) {
+    final grades = <Map<String, dynamic>>[];
+    for (final category in categories) {
+      for (final grade in category.grades) {
+        grades.add({
+          'id': grade.id,
+          'categoryId': category.id,
+          'name': grade.name,
+          'score': grade.score,
+          'enabled': grade.enabled,
+        });
+      }
+    }
+    return grades;
   }
 
   @override

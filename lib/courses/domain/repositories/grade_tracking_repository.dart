@@ -6,11 +6,7 @@ abstract class GradeTrackingRepository {
     required String courseCode,
   });
 
-  Future<CourseTracking> createWithDefaults({
-    required String studentCode,
-    required String courseCode,
-    required String courseName,
-  });
+  Future<CourseTracking> create(CourseTracking tracking);
 
   Future<CourseTracking> addCategory({
     required String studentCode,

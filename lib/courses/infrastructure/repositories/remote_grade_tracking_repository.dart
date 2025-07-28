@@ -199,25 +199,21 @@ class RemoteGradeTrackingRepository implements GradeTrackingRepository {
   }
 
   @override
-  Future<CourseTracking> createWithDefaults({
-    required String studentCode,
-    required String courseCode,
-    required String courseName,
-  }) async {
-    _logger.d('[REMOTE] Creating default course: $studentCode-$courseCode');
-
-    final defaultTracking = CourseTracking.createWithDefaults(
-      courseCode: courseCode,
-      studentCode: studentCode,
+  Future<CourseTracking> create(CourseTracking tracking) async {
+    _logger.d(
+      '[REMOTE] Creating course: ${tracking.studentCode}-${tracking.courseCode}',
     );
 
-    final apiData = _fromCourseTracking(defaultTracking, courseName);
+    // ✅ REFACTORIZADO: Método genérico que acepta cualquier CourseTracking
+    // courseName se podría obtener de metadata o usar courseCode como fallback
+    final courseName = tracking.courseCode; // Fallback simple
+    final apiData = _fromCourseTracking(tracking, courseName);
     await _apiPost(apiData);
 
     // Return created tracking
     final result = await getCourseTracking(
-      studentCode: studentCode,
-      courseCode: courseCode,
+      studentCode: tracking.studentCode,
+      courseCode: tracking.courseCode,
     );
     return result!;
   }
