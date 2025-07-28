@@ -61,8 +61,6 @@ import 'package:sigapp/core/infrastructure/services/update_service.dart'
     as _i897;
 import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart' as _i382;
 import 'package:sigapp/core/injection/register_module.dart' as _i799;
-import 'package:sigapp/shared/infrastructure/pages/sync_metrics_cubit.dart'
-    as _i606;
 import 'package:sigapp/courses/application/use_cases/get_sync_metrics_use_case.dart'
     as _i262;
 import 'package:sigapp/courses/application/usecases/create_grade_tracking_usecase.dart'
@@ -146,6 +144,8 @@ import 'package:sigapp/courses/infrastructure/repositories/schedule_repository.d
     as _i637;
 import 'package:sigapp/courses/infrastructure/repositories/student_session_repository.dart'
     as _i79;
+import 'package:sigapp/courses/infrastructure/repositories/sync_queue_repository.dart'
+    as _i328;
 import 'package:sigapp/courses/infrastructure/repositories/user_preferences_repository_impl.dart'
     as _i669;
 import 'package:sigapp/courses/infrastructure/services/app_lifecycle_sync_integration.dart'
@@ -166,6 +166,8 @@ import 'package:sigapp/shared/infrastructure/overlays/progress_indicator_bloc.da
     as _i675;
 import 'package:sigapp/shared/infrastructure/pages/home_page_cubit.dart'
     as _i722;
+import 'package:sigapp/shared/infrastructure/pages/sync_metrics_cubit.dart'
+    as _i43;
 import 'package:sigapp/shared/infrastructure/partials/user_avatar_button_cubit.dart'
     as _i259;
 import 'package:sigapp/shared/infrastructure/services/progress_indicator_service.dart'
@@ -272,6 +274,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
+    gh.singletonAsync<_i328.SyncQueueRepository>(
+      () async => _i328.SyncQueueRepository(
+        await getAsync<_i139.SQLiteClientManager>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.singletonAsync<_i576.AppInitializer>(
       () async => _i576.AppInitializer(
         await getAsync<_i139.SQLiteClientManager>(),
@@ -313,8 +321,21 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i315.GetClassScheduleUsecase>(
       () => _i315.GetClassScheduleUsecase(gh<_i974.ScheduleRepository>()),
     );
+    gh.lazySingletonAsync<_i870.SyncManager>(
+      () async => _i870.SyncManager(
+        await getAsync<_i328.SyncQueueRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i259.GradeTrackingRepository>(instanceName: 'remote'),
+      ),
+    );
     gh.lazySingleton<_i594.StudentRepository>(
       () => _i528.StudentRepositoryImpl(gh<_i857.SigaClient>()),
+    );
+    gh.singletonAsync<_i615.AppLifecycleSyncIntegration>(
+      () async => _i615.AppLifecycleSyncIntegration(
+        await getAsync<_i870.SyncManager>(),
+        gh<_i974.Logger>(),
+      )..initialize(),
     );
     gh.factory<_i908.KeepSessionAliveUsecase>(
       () => _i908.KeepSessionAliveUsecase(gh<_i10.AuthRepository>()),
@@ -334,6 +355,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i154.GetScheduledCoursesUsecase>(),
         gh<_i974.Logger>(),
       ),
+    );
+    gh.factoryAsync<_i262.GetSyncMetricsUseCase>(
+      () async =>
+          _i262.GetSyncMetricsUseCase(await getAsync<_i870.SyncManager>()),
     );
     gh.lazySingleton<_i650.GetEnrolledCoursesUsecase>(
       () => _i650.GetEnrolledCoursesUsecase(
@@ -382,13 +407,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.lazySingletonAsync<_i870.SyncManager>(
-      () async => _i870.SyncManager(
-        await getAsync<_i139.SQLiteClientManager>(),
-        gh<_i974.Logger>(),
-        gh<_i259.GradeTrackingRepository>(instanceName: 'remote'),
-      ),
-    );
     gh.lazySingleton<_i445.GetSyllabusFileUsecase>(
       () => _i445.GetSyllabusFileUsecase(
         gh<_i348.RegevaRepository>(),
@@ -402,6 +420,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i594.StudentRepository>(),
         gh<_i607.StudentSessionRepository>(),
       ),
+    );
+    gh.factoryAsync<_i43.SyncMetricsCubit>(
+      () async =>
+          _i43.SyncMetricsCubit(await getAsync<_i262.GetSyncMetricsUseCase>()),
     );
     gh.factory<_i215.CourseDetailCubit>(
       () => _i215.CourseDetailCubit(
@@ -438,12 +460,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i873.ToastService>(),
         gh<_i974.Logger>(),
       ),
-    );
-    gh.singletonAsync<_i615.AppLifecycleSyncIntegration>(
-      () async => _i615.AppLifecycleSyncIntegration(
-        await getAsync<_i870.SyncManager>(),
-        gh<_i974.Logger>(),
-      )..initialize(),
     );
     gh.factoryAsync<_i733.CreateGradeTrackingUseCase>(
       () async => _i733.CreateGradeTrackingUseCase(
@@ -482,14 +498,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
         gh<_i974.Logger>(),
       ),
-    );
-    gh.factoryAsync<_i262.GetSyncMetricsUseCase>(
-      () async =>
-          _i262.GetSyncMetricsUseCase(await getAsync<_i870.SyncManager>()),
-    );
-    gh.factoryAsync<_i606.SyncMetricsCubit>(
-      () async =>
-          _i606.SyncMetricsCubit(await getAsync<_i262.GetSyncMetricsUseCase>()),
     );
     gh.factoryAsync<_i1059.GradeTrackerSectionCubit>(
       () async => _i1059.GradeTrackerSectionCubit(

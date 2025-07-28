@@ -1,8 +1,8 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/core/infrastructure/database/sqlite_client_manager.dart';
 import 'package:sigapp/courses/domain/repositories/grade_tracking_repository.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
+import 'package:sigapp/courses/infrastructure/repositories/sync_queue_repository.dart';
 import 'dart:convert';
 import 'dart:async';
 
@@ -12,14 +12,17 @@ import 'dart:async';
 /// - Replaces chatty repository pattern (12+ calls per operation)
 /// - Uses single JSONB field updates instead of multiple JOINs
 /// - Enables full offline functionality with eventual consistency
+///
+/// ✅ REFACTORED: Uses SyncQueueRepository for all sync queue operations
+/// - Clear separation: SyncManager handles sync logic, SyncQueueRepository handles persistence
+/// - Improved testability and maintainability
 @LazySingleton()
 class SyncManager {
-  final SQLiteClientManager _database;
+  final SyncQueueRepository _syncQueueRepository;
   final Logger _logger;
   final GradeTrackingRepository _remoteRepository;
-  bool _isOfflineMode = false;
-
-  // Simplified batching: single timer, simple operations list
+  bool _isOfflineMode =
+      false; // Simplified batching: single timer, simple operations list
   Timer? _batchTimer;
   final List<Map<String, dynamic>> _pendingOperations = [];
   static const Duration _batchDebounceTime = Duration(seconds: 8);
@@ -39,7 +42,7 @@ class SyncManager {
       0; // ✅ Tracks retry attempts per batch cycle (resets after successful batch)
 
   SyncManager(
-    this._database,
+    this._syncQueueRepository,
     this._logger,
     @Named('remote') this._remoteRepository,
   );
@@ -78,12 +81,12 @@ class SyncManager {
 
       _logger.d('[SYNC] Batched: $operationType ($fieldType) for $courseKey');
 
-      // Simple SQLite persistence (crash protection only)
-      await _persistToSQLite(
-        operationType,
-        fieldType,
-        courseKey,
-        operationData,
+      // Simple sync queue persistence (crash protection only)
+      await _syncQueueRepository.persistOperation(
+        operationType: operationType,
+        fieldType: fieldType,
+        entityKey: courseKey,
+        operationData: operationData,
       );
 
       // Restart timer (simple debouncing)
@@ -118,7 +121,7 @@ class SyncManager {
 
       // Clear processed operations
       _pendingOperations.clear();
-      await _cleanupSQLite();
+      await _syncQueueRepository.cleanupCompletedOperations();
 
       _syncSuccessCount++;
       // ✅ RESET: Clear retry attempts after successful batch
@@ -352,15 +355,10 @@ class SyncManager {
     }
   }
 
-  /// Process operations stored in SQLite with retry policy
-  /// ✅ ENHANCED: Added retry policy for stored operations
+  /// Process operations stored in sync queue with retry policy
+  /// ✅ ENHANCED: Added retry policy for stored operations using SyncQueueRepository
   Future<void> _processStoredOperations() async {
-    final db = _database.db;
-    final operations = await db.query(
-      'sync_queue',
-      where: 'status = ? AND retry_count < ?',
-      whereArgs: ['pending', 3],
-    );
+    final operations = await _syncQueueRepository.getPendingOperations();
 
     if (operations.isEmpty) return;
 
@@ -412,75 +410,19 @@ class SyncManager {
 
         if (success) {
           // Mark as synced
-          await db.update(
-            'sync_queue',
-            {'status': 'synced'},
-            where: 'id = ?',
-            whereArgs: [op['id']],
-          );
+          await _syncQueueRepository.markAsSynced(op['id'] as int);
           _logger.d(
             '[SYNC] Stored operation $operationType for $courseKey synced successfully',
           );
         } else {
           // Increment retry count
           final retryCount = (op['retry_count'] as int) + 1;
-          await db.update(
-            'sync_queue',
-            {
-              'status': retryCount >= 3 ? 'failed' : 'pending',
-              'retry_count': retryCount,
-            },
-            where: 'id = ?',
-            whereArgs: [op['id']],
-          );
+          await _syncQueueRepository.markAsFailed(op['id'] as int, retryCount);
         }
       } finally {
         // ✅ UNLOCK: Always remove from processing set
         _processingKeys.remove(courseKey);
       }
-    }
-  }
-
-  /// Simple SQLite persistence for crash protection
-  /// ✅ FIXED: Added fieldType parameter for compatibility
-  Future<void> _persistToSQLite(
-    String operationType,
-    String fieldType,
-    String courseKey,
-    Map<String, dynamic> operationData,
-  ) async {
-    try {
-      await _database.db.insert('sync_queue', {
-        'operation_type': operationType,
-        'entity_type': 'course_grade_simulator',
-        'entity_key': courseKey,
-        'field_name': fieldType, // ✅ TRACK: field name for granular operations
-        'operation_data': jsonEncode(operationData),
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-        'retry_count': 0,
-        'status': 'pending',
-      });
-    } catch (e) {
-      _logger.e('[SYNC] Error persisting to SQLite: $e');
-      // Not critical - continue without persistence
-    }
-  }
-
-  /// Cleanup SQLite after successful batch
-  Future<void> _cleanupSQLite() async {
-    try {
-      final cutoff =
-          DateTime.now()
-              .subtract(_batchDebounceTime * 2)
-              .millisecondsSinceEpoch;
-
-      await _database.db.delete(
-        'sync_queue',
-        where: 'status = ? AND timestamp > ?',
-        whereArgs: ['pending', cutoff],
-      );
-    } catch (e) {
-      _logger.e('[SYNC] Error cleaning SQLite: $e');
     }
   }
 
