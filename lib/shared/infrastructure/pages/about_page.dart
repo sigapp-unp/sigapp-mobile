@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:sigapp/core/infrastructure/ui/links.dart';
 import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart';
 import 'package:sigapp/core/infrastructure/ui/widgets/brand_text.dart';
 import 'package:sigapp/core/injection/get_it.dart';
+import 'package:sigapp/shared/infrastructure/pages/sync_metrics_cubit.dart';
+import 'package:sigapp/courses/presentation/widgets/sync_metrics_widget.dart';
 import 'package:sigapp/shared/infrastructure/pages/easter_egg_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -56,6 +59,13 @@ class AboutPageWidget extends StatelessWidget {
                   'Cliente móvil del Sistema Integrado de Gestión Académica de la Universidad Nacional de Piura',
                 ),
               ),
+
+              // NEW: Synchronization metrics widget
+              BlocProvider(
+                create: (context) => getIt<SyncMetricsCubit>()..initialize(),
+                child: const SyncMetricsWidget(),
+              ),
+
               ListTile(
                 leading: Icon(MdiIcons.github),
                 title: const Text('GitHub del proyecto'),

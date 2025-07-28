@@ -42,6 +42,20 @@ Ya no utiliza WebView ni DOM scraping.
    flutter run
    ```
 
+## Solución de problemas
+
+**Error "Cannot recurse at later or equal phase 0" en build_runner:**
+
+Si build_runner falla con errores de ciclos de librería, ejecuta:
+
+```bash
+dart run build_runner clean
+# Eliminar archivos generados manualmente
+Get-ChildItem -Path lib -Recurse -Include "*.freezed.dart", "*.g.dart", "*.mocks.dart" | Remove-Item -Force
+# Rebuild limpio
+dart run build_runner build --delete-conflicting-outputs
+```
+
 ## Contribuciones
 
 Cualquier colaboración es bienvenida. Puedes abrir un issue, proponer mejoras o enviar un pull request. Este es un proyecto comunitario orientado a mejorar la experiencia estudiantil con tecnologías modernas.

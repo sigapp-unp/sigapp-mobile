@@ -110,18 +110,21 @@ class CourseTracking {
   }
 }
 
-class GradeCategory {
+class GradeCategory with Timestamped {
   final String? id;
   final String name;
   final double weight;
   final List<Grade> grades;
+  @override
+  final DateTime timestamp; // For conflict resolution
 
   GradeCategory({
     this.id,
     required this.name,
     required this.weight,
     required this.grades,
-  });
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
 
   double get averagePercentage {
     final enabledGrades = grades.where((g) => g.enabled).toList();
@@ -139,35 +142,52 @@ class GradeCategory {
     String? name,
     double? weight,
     List<Grade>? grades,
+    DateTime? timestamp,
   }) {
     return GradeCategory(
       id: id ?? this.id,
       name: name ?? this.name,
       weight: weight ?? this.weight,
       grades: grades ?? this.grades,
+      timestamp: timestamp ?? this.timestamp,
     );
   }
 }
 
-class Grade {
+/// Mixin for entities with timestamps for conflict resolution
+mixin Timestamped {
+  DateTime get timestamp;
+}
+
+class Grade with Timestamped {
   final String? id;
   final String name;
   final double score;
   final bool enabled;
+  @override
+  final DateTime timestamp; // For conflict resolution
 
   Grade({
     this.id,
     required this.name,
     required this.score,
     this.enabled = true,
-  });
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
 
-  Grade copyWith({String? id, String? name, double? score, bool? enabled}) {
+  Grade copyWith({
+    String? id,
+    String? name,
+    double? score,
+    bool? enabled,
+    DateTime? timestamp,
+  }) {
     return Grade(
       id: id ?? this.id,
       name: name ?? this.name,
       score: score ?? this.score,
       enabled: enabled ?? this.enabled,
+      timestamp: timestamp ?? this.timestamp,
     );
   }
 }

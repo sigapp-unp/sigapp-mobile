@@ -119,7 +119,7 @@ dev_dependencies:
 
   # A generator for injectable library.
   injectable_generator: ^2.6.1
-  # $ dart run build_runner watch
+  # $ dart run build_runner watch --delete-conflicting-outputs
   build_runner: ^2.4.11
 
   freezed: ^3.0.6

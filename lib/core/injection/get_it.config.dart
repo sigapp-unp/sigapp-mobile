@@ -48,6 +48,9 @@ import 'package:sigapp/auth/infrastructure/services/session_lifecycle_service.da
     as _i649;
 import 'package:sigapp/auth/infrastructure/services/toast_service.dart'
     as _i804;
+import 'package:sigapp/core/infrastructure/app/app_initializer.dart' as _i576;
+import 'package:sigapp/core/infrastructure/database/database_health_manager.dart'
+    as _i199;
 import 'package:sigapp/core/infrastructure/database/sqlite_client_manager.dart'
     as _i139;
 import 'package:sigapp/core/infrastructure/http/api_gateway_client.dart'
@@ -58,8 +61,10 @@ import 'package:sigapp/core/infrastructure/services/update_service.dart'
     as _i897;
 import 'package:sigapp/core/infrastructure/ui/utils/mail_utils.dart' as _i382;
 import 'package:sigapp/core/injection/register_module.dart' as _i799;
-import 'package:sigapp/courses/application/repositories/student_session_repository.dart'
-    as _i6;
+import 'package:sigapp/shared/infrastructure/pages/sync_metrics_cubit.dart'
+    as _i606;
+import 'package:sigapp/courses/application/use_cases/get_sync_metrics_use_case.dart'
+    as _i262;
 import 'package:sigapp/courses/application/usecases/create_grade_tracking_usecase.dart'
     as _i733;
 import 'package:sigapp/courses/application/usecases/delete_grade_tracking_usecase.dart'
@@ -84,14 +89,10 @@ import 'package:sigapp/courses/application/usecases/get_scheduled_courses_usecas
     as _i154;
 import 'package:sigapp/courses/application/usecases/get_syllabus_file_usecase.dart'
     as _i445;
-import 'package:sigapp/courses/application/usecases/manage_categories_usecase.dart'
-    as _i892;
 import 'package:sigapp/courses/application/usecases/manage_grade_tracking_categories_usecase.dart'
     as _i1033;
 import 'package:sigapp/courses/application/usecases/manage_grade_tracking_grades_usecase.dart'
     as _i811;
-import 'package:sigapp/courses/application/usecases/manage_grades_usecase.dart'
-    as _i787;
 import 'package:sigapp/courses/application/usecases/set_course_view_mode_preferences_usecase.dart'
     as _i857;
 import 'package:sigapp/courses/application/usecases/set_course_visibility_preferences_usecase.dart'
@@ -131,20 +132,34 @@ import 'package:sigapp/courses/infrastructure/pages/scheduled_courses/scheduled_
     as _i27;
 import 'package:sigapp/courses/infrastructure/repositories/courses_repository.dart'
     as _i892;
-import 'package:sigapp/courses/infrastructure/repositories/grade_tracking_repository.dart'
-    as _i4;
+import 'package:sigapp/courses/infrastructure/repositories/local_grade_tracking_repository_decorator.dart'
+    as _i399;
 import 'package:sigapp/courses/infrastructure/repositories/local_syllabus_repository.dart'
     as _i717;
 import 'package:sigapp/courses/infrastructure/repositories/program_curriculum_repository.dart'
     as _i654;
 import 'package:sigapp/courses/infrastructure/repositories/regeva_repository.dart'
     as _i75;
+import 'package:sigapp/courses/infrastructure/repositories/remote_grade_tracking_repository.dart'
+    as _i653;
 import 'package:sigapp/courses/infrastructure/repositories/schedule_repository.dart'
     as _i637;
 import 'package:sigapp/courses/infrastructure/repositories/student_session_repository.dart'
     as _i79;
 import 'package:sigapp/courses/infrastructure/repositories/user_preferences_repository_impl.dart'
     as _i669;
+import 'package:sigapp/courses/infrastructure/services/app_lifecycle_sync_integration.dart'
+    as _i615;
+import 'package:sigapp/courses/infrastructure/services/conflict_resolver.dart'
+    as _i710;
+import 'package:sigapp/courses/infrastructure/services/grade_tracking_local_service.dart'
+    as _i891;
+import 'package:sigapp/courses/infrastructure/services/sync_manager.dart'
+    as _i870;
+import 'package:sigapp/shared/application/repositories/student_session_repository.dart'
+    as _i607;
+import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart'
+    as _i354;
 import 'package:sigapp/shared/domain/service/progress_indicator_service.dart'
     as _i151;
 import 'package:sigapp/shared/infrastructure/overlays/progress_indicator_bloc.dart'
@@ -155,8 +170,6 @@ import 'package:sigapp/shared/infrastructure/partials/user_avatar_button_cubit.d
     as _i259;
 import 'package:sigapp/shared/infrastructure/services/progress_indicator_service.dart'
     as _i856;
-import 'package:sigapp/student/application/usecases/get_academic_info_usecase.dart'
-    as _i97;
 import 'package:sigapp/student/application/usecases/get_academic_report_usecase.dart'
     as _i771;
 import 'package:sigapp/student/domain/repositories/student_repository.dart'
@@ -203,14 +216,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i460.SharedPreferences>(),
       ),
     );
-    gh.singleton<_i139.SQLiteClientManager>(
-      () => _i139.SQLiteClientManager(gh<_i974.Logger>()),
-    );
+    gh.singletonAsync<_i139.SQLiteClientManager>(() {
+      final i = _i139.SQLiteClientManager(gh<_i974.Logger>());
+      return i.init().then((_) => i);
+    });
     gh.singleton<_i200.ApiGatewayClient>(
       () => _i200.ApiGatewayClient(gh<_i974.Logger>()),
     );
     gh.singleton<_i897.UpdateService>(
       () => _i897.UpdateService(gh<_i974.Logger>()),
+    );
+    gh.singleton<_i199.DatabaseHealthManager>(
+      () => _i199.DatabaseHealthManager(gh<_i974.Logger>()),
     );
     gh.lazySingleton<_i465.AsyncOperationGuard>(
       () => _i465.AsyncOperationGuard(gh<_i974.Logger>()),
@@ -218,15 +235,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i382.MailUtils>(
       () => _i382.MailUtils(gh<_i974.Logger>()),
     );
+    gh.lazySingleton<_i710.ConflictResolver>(
+      () => _i710.ConflictResolver(gh<_i974.Logger>()),
+    );
     gh.singleton<_i986.RegevaClient>(
       () =>
           _i986.RegevaClient(gh<_i460.SharedPreferences>(), gh<_i974.Logger>()),
     );
     gh.singleton<_i857.SigaClient>(
       () => _i857.SigaClient(gh<_i460.SharedPreferences>(), gh<_i974.Logger>()),
-    );
-    gh.lazySingleton<_i6.StudentSessionRepository>(
-      () => _i79.StudentSessionRepositoryImpl(gh<_i857.SigaClient>()),
     );
     gh.lazySingleton<_i391.ApiGatewayAuthService>(
       () => _i417.ApiGatewayAuthServiceImpl(
@@ -249,11 +266,25 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i889.ProgramCurriculumRepository>(
       () => _i654.ProgramCurriculumRepositoryImpl(gh<_i857.SigaClient>()),
     );
+    gh.singletonAsync<_i891.GradeTrackingLocalService>(
+      () async => _i891.GradeTrackingLocalService(
+        await getAsync<_i139.SQLiteClientManager>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.singletonAsync<_i576.AppInitializer>(
+      () async => _i576.AppInitializer(
+        await getAsync<_i139.SQLiteClientManager>(),
+        gh<_i199.DatabaseHealthManager>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.lazySingleton<_i259.GradeTrackingRepository>(
-      () => _i4.GradeTrackingRepositoryImpl(
+      () => _i653.RemoteGradeTrackingRepository(
         gh<_i200.ApiGatewayClient>(),
         gh<_i974.Logger>(),
       ),
+      instanceName: 'remote',
     );
     gh.lazySingleton<_i348.RegevaRepository>(
       () => _i75.RegevaRepositoryImpl(gh<_i986.RegevaClient>()),
@@ -263,6 +294,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i200.ApiGatewayClient>(),
         gh<_i974.Logger>(),
       ),
+    );
+    gh.lazySingleton<_i607.StudentSessionRepository>(
+      () => _i79.StudentSessionRepositoryImpl(gh<_i857.SigaClient>()),
     );
     gh.singleton<_i679.SessionLifecycleService>(
       () => _i649.SessionLifecycleServiceImpl(
@@ -279,85 +313,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i315.GetClassScheduleUsecase>(
       () => _i315.GetClassScheduleUsecase(gh<_i974.ScheduleRepository>()),
     );
-    gh.factory<_i409.GetGradeTrackingUseCase>(
-      () => _i409.GetGradeTrackingUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.factory<_i733.CreateGradeTrackingUseCase>(
-      () => _i733.CreateGradeTrackingUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.factory<_i1033.ManageGradeTrackingCategoriesUseCase>(
-      () => _i1033.ManageGradeTrackingCategoriesUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.factory<_i811.ManageGradeTrackingGradesUseCase>(
-      () => _i811.ManageGradeTrackingGradesUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.factory<_i892.ManageCategoriesUseCase>(
-      () => _i892.ManageCategoriesUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.factory<_i787.ManageGradesUseCase>(
-      () => _i787.ManageGradesUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.factory<_i362.DeleteGradeTrackingUseCase>(
-      () => _i362.DeleteGradeTrackingUseCase(
-        gh<_i259.GradeTrackingRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
     gh.lazySingleton<_i594.StudentRepository>(
       () => _i528.StudentRepositoryImpl(gh<_i857.SigaClient>()),
-    );
-    gh.factory<_i186.GetCourseViewModeUseCase>(
-      () => _i186.GetCourseViewModeUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i323.GetAllHiddenCoursesPreferencesUseCase>(
-      () => _i323.GetAllHiddenCoursesPreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i127.GetHighlightCriticalPathUseCase>(
-      () => _i127.GetHighlightCriticalPathUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i857.SetCourseViewModePreferencesUseCase>(
-      () => _i857.SetCourseViewModePreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i131.SetHighlightCriticalPathPreferencesUseCase>(
-      () => _i131.SetHighlightCriticalPathPreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
     );
     gh.factory<_i908.KeepSessionAliveUsecase>(
       () => _i908.KeepSessionAliveUsecase(gh<_i10.AuthRepository>()),
@@ -365,30 +322,16 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i154.GetScheduledCoursesUsecase>(
       () => _i154.GetScheduledCoursesUsecase(gh<_i986.CoursesRepository>()),
     );
+    gh.lazySingleton<_i504.GetCourseGradeUsecase>(
+      () => _i504.GetCourseGradeUsecase(
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i348.RegevaRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.factory<_i27.ScheduledCoursesPageCubit>(
       () => _i27.ScheduledCoursesPageCubit(
         gh<_i154.GetScheduledCoursesUsecase>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.lazySingleton<_i445.GetSyllabusFileUsecase>(
-      () => _i445.GetSyllabusFileUsecase(
-        gh<_i348.RegevaRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i504.LocalSyllabusRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.lazySingleton<_i771.GetAcademicReportUsecase>(
-      () => _i771.GetAcademicReportUsecase(
-        gh<_i594.StudentRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-    );
-    gh.lazySingleton<_i504.GetCourseGradeUsecase>(
-      () => _i504.GetCourseGradeUsecase(
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i348.RegevaRepository>(),
         gh<_i974.Logger>(),
       ),
     );
@@ -404,30 +347,60 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i679.SessionLifecycleService>(),
       ),
     );
-    gh.singleton<_i97.GetAcademicInfoUseCase>(
-      () => _i248.GetAcademicInfoUseCaseImpl(
-        gh<_i771.GetAcademicReportUsecase>(),
-        gh<_i650.GetEnrolledCoursesUsecase>(),
-        gh<_i6.StudentSessionRepository>(),
-      ),
-      instanceName: 'getAcademicInfoUseCaseImpl',
-    );
-    gh.factory<_i733.SetCourseVisibilityPreferencesUseCase>(
-      () => _i733.SetCourseVisibilityPreferencesUseCase(
+    gh.factory<_i323.GetAllHiddenCoursesPreferencesUseCase>(
+      () => _i323.GetAllHiddenCoursesPreferencesUseCase(
         gh<_i939.UserPreferencesRepository>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
+        gh<_i607.StudentSessionRepository>(),
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i1059.GradeTrackerSectionCubit>(
-      () => _i1059.GradeTrackerSectionCubit(
-        gh<_i409.GetGradeTrackingUseCase>(),
-        gh<_i733.CreateGradeTrackingUseCase>(),
-        gh<_i362.DeleteGradeTrackingUseCase>(),
-        gh<_i1033.ManageGradeTrackingCategoriesUseCase>(),
-        gh<_i811.ManageGradeTrackingGradesUseCase>(),
+    gh.factory<_i186.GetCourseViewModeUseCase>(
+      () => _i186.GetCourseViewModeUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i607.StudentSessionRepository>(),
         gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i127.GetHighlightCriticalPathUseCase>(
+      () => _i127.GetHighlightCriticalPathUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i857.SetCourseViewModePreferencesUseCase>(
+      () => _i857.SetCourseViewModePreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i131.SetHighlightCriticalPathPreferencesUseCase>(
+      () => _i131.SetHighlightCriticalPathPreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.lazySingletonAsync<_i870.SyncManager>(
+      () async => _i870.SyncManager(
+        await getAsync<_i139.SQLiteClientManager>(),
+        gh<_i974.Logger>(),
+        gh<_i259.GradeTrackingRepository>(instanceName: 'remote'),
+      ),
+    );
+    gh.lazySingleton<_i445.GetSyllabusFileUsecase>(
+      () => _i445.GetSyllabusFileUsecase(
+        gh<_i348.RegevaRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i504.LocalSyllabusRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.lazySingleton<_i771.GetAcademicReportUsecase>(
+      () => _i771.GetAcademicReportUsecase(
+        gh<_i594.StudentRepository>(),
+        gh<_i607.StudentSessionRepository>(),
       ),
     );
     gh.factory<_i215.CourseDetailCubit>(
@@ -437,8 +410,24 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
+    gh.singleton<_i354.GetAcademicInfoUseCase>(
+      () => _i248.GetAcademicInfoUseCaseImpl(
+        gh<_i771.GetAcademicReportUsecase>(),
+        gh<_i650.GetEnrolledCoursesUsecase>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+      instanceName: 'getAcademicInfoUseCaseImpl',
+    );
     gh.singleton<_i528.NavigationService>(
       () => _i561.NavigationServiceImpl(gh<_i583.GoRouter>()),
+    );
+    gh.lazySingletonAsync<_i259.GradeTrackingRepository>(
+      () async => _i399.LocalGradeTrackingDecorator(
+        gh<_i259.GradeTrackingRepository>(instanceName: 'remote'),
+        await getAsync<_i891.GradeTrackingLocalService>(),
+        await getAsync<_i870.SyncManager>(),
+        gh<_i974.Logger>(),
+      ),
     );
     gh.factory<_i293.CourseChainPreferencesCubit>(
       () => _i293.CourseChainPreferencesCubit(
@@ -450,46 +439,66 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.singleton<_i97.GetAcademicInfoUseCase>(
-      () => _i866.CachedGetAcademicInfoUseCase(
-        gh<_i97.GetAcademicInfoUseCase>(
-          instanceName: 'getAcademicInfoUseCaseImpl',
-        ),
-      ),
-    );
-    gh.factory<_i885.EnrolledCoursesPageCubit>(
-      () => _i885.EnrolledCoursesPageCubit(
-        gh<_i650.GetEnrolledCoursesUsecase>(),
-        gh<_i97.GetAcademicInfoUseCase>(),
+    gh.singletonAsync<_i615.AppLifecycleSyncIntegration>(
+      () async => _i615.AppLifecycleSyncIntegration(
+        await getAsync<_i870.SyncManager>(),
         gh<_i974.Logger>(),
+      )..initialize(),
+    );
+    gh.factoryAsync<_i733.CreateGradeTrackingUseCase>(
+      () async => _i733.CreateGradeTrackingUseCase(
+        await getAsync<_i259.GradeTrackingRepository>(),
+        gh<_i607.StudentSessionRepository>(),
       ),
     );
-    gh.lazySingleton<_i504.GetProgramCurriculumProgressUsecase>(
-      () => _i504.GetProgramCurriculumProgressUsecase(
-        gh<_i889.ProgramCurriculumRepository>(),
-        gh<_i97.GetAcademicInfoUseCase>(),
-        gh<_i650.GetEnrolledCoursesUsecase>(),
-        gh<_i974.Logger>(),
+    gh.factoryAsync<_i362.DeleteGradeTrackingUseCase>(
+      () async => _i362.DeleteGradeTrackingUseCase(
+        await getAsync<_i259.GradeTrackingRepository>(),
+        gh<_i607.StudentSessionRepository>(),
       ),
     );
-    gh.factory<_i55.CourseVisibilityCubit>(
-      () => _i55.CourseVisibilityCubit(
+    gh.factoryAsync<_i409.GetGradeTrackingUseCase>(
+      () async => _i409.GetGradeTrackingUseCase(
+        await getAsync<_i259.GradeTrackingRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factoryAsync<_i1033.ManageGradeTrackingCategoriesUseCase>(
+      () async => _i1033.ManageGradeTrackingCategoriesUseCase(
+        await getAsync<_i259.GradeTrackingRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factoryAsync<_i811.ManageGradeTrackingGradesUseCase>(
+      () async => _i811.ManageGradeTrackingGradesUseCase(
+        await getAsync<_i259.GradeTrackingRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i733.SetCourseVisibilityPreferencesUseCase>(
+      () => _i733.SetCourseVisibilityPreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i607.StudentSessionRepository>(),
         gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
-        gh<_i733.SetCourseVisibilityPreferencesUseCase>(),
-        gh<_i873.ToastService>(),
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i365.SignInUseCase>(
-      () => _i365.SignInUseCase(
-        gh<_i1010.SharedPreferencesAuthRepository>(),
-        gh<_i391.ApiGatewayAuthService>(),
-        gh<_i528.NavigationService>(),
-        gh<_i97.GetAcademicInfoUseCase>(),
-        gh<_i6.StudentSessionRepository>(),
-        gh<_i594.StudentRepository>(),
+    gh.factoryAsync<_i262.GetSyncMetricsUseCase>(
+      () async =>
+          _i262.GetSyncMetricsUseCase(await getAsync<_i870.SyncManager>()),
+    );
+    gh.factoryAsync<_i606.SyncMetricsCubit>(
+      () async =>
+          _i606.SyncMetricsCubit(await getAsync<_i262.GetSyncMetricsUseCase>()),
+    );
+    gh.factoryAsync<_i1059.GradeTrackerSectionCubit>(
+      () async => _i1059.GradeTrackerSectionCubit(
+        await getAsync<_i409.GetGradeTrackingUseCase>(),
+        await getAsync<_i733.CreateGradeTrackingUseCase>(),
+        await getAsync<_i362.DeleteGradeTrackingUseCase>(),
+        await getAsync<_i1033.ManageGradeTrackingCategoriesUseCase>(),
+        await getAsync<_i811.ManageGradeTrackingGradesUseCase>(),
         gh<_i974.Logger>(),
-        gh<_i568.SigaAuthenticationUsecase>(),
       ),
     );
     gh.factory<_i48.SignOutUseCase>(
@@ -501,39 +510,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i151.ProgressIndicatorService>(),
         gh<_i391.ApiGatewayAuthService>(),
         gh<_i873.ToastService>(),
-        gh<_i6.StudentSessionRepository>(),
+        gh<_i607.StudentSessionRepository>(),
         gh<_i594.StudentRepository>(),
         gh<_i974.Logger>(),
       ),
     );
-    gh.factory<_i259.UserAvatarButtonCubit>(
-      () => _i259.UserAvatarButtonCubit(
-        gh<_i97.GetAcademicInfoUseCase>(),
-        gh<_i48.SignOutUseCase>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i41.LoginCubit>(
-      () => _i41.LoginCubit(
-        gh<_i193.GetStoredCredentialsUseCase>(),
-        gh<_i365.SignInUseCase>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i151.StudentPageViewCubit>(
-      () => _i151.StudentPageViewCubit(
-        gh<_i97.GetAcademicInfoUseCase>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i722.HomePageCubit>(
-      () => _i722.HomePageCubit(gh<_i48.SignOutUseCase>(), gh<_i974.Logger>()),
-    );
-    gh.factory<_i112.CareerPageCubit>(
-      () => _i112.CareerPageCubit(
-        gh<_i504.GetProgramCurriculumProgressUsecase>(),
-        gh<_i97.GetAcademicInfoUseCase>(),
-        gh<_i974.Logger>(),
+    gh.singleton<_i354.GetAcademicInfoUseCase>(
+      () => _i866.CachedGetAcademicInfoUseCase(
+        gh<_i354.GetAcademicInfoUseCase>(
+          instanceName: 'getAcademicInfoUseCaseImpl',
+        ),
       ),
     );
     gh.singleton<_i767.AuthenticationManager>(
@@ -547,6 +533,71 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
       dispose: (i) => i.dispose(),
+    );
+    gh.factory<_i259.UserAvatarButtonCubit>(
+      () => _i259.UserAvatarButtonCubit(
+        gh<_i354.GetAcademicInfoUseCase>(),
+        gh<_i48.SignOutUseCase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i55.CourseVisibilityCubit>(
+      () => _i55.CourseVisibilityCubit(
+        gh<_i323.GetAllHiddenCoursesPreferencesUseCase>(),
+        gh<_i733.SetCourseVisibilityPreferencesUseCase>(),
+        gh<_i873.ToastService>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i151.StudentPageViewCubit>(
+      () => _i151.StudentPageViewCubit(
+        gh<_i354.GetAcademicInfoUseCase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i365.SignInUseCase>(
+      () => _i365.SignInUseCase(
+        gh<_i1010.SharedPreferencesAuthRepository>(),
+        gh<_i391.ApiGatewayAuthService>(),
+        gh<_i528.NavigationService>(),
+        gh<_i354.GetAcademicInfoUseCase>(),
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i594.StudentRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i568.SigaAuthenticationUsecase>(),
+      ),
+    );
+    gh.factory<_i885.EnrolledCoursesPageCubit>(
+      () => _i885.EnrolledCoursesPageCubit(
+        gh<_i650.GetEnrolledCoursesUsecase>(),
+        gh<_i354.GetAcademicInfoUseCase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i41.LoginCubit>(
+      () => _i41.LoginCubit(
+        gh<_i193.GetStoredCredentialsUseCase>(),
+        gh<_i365.SignInUseCase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.lazySingleton<_i504.GetProgramCurriculumProgressUsecase>(
+      () => _i504.GetProgramCurriculumProgressUsecase(
+        gh<_i889.ProgramCurriculumRepository>(),
+        gh<_i354.GetAcademicInfoUseCase>(),
+        gh<_i650.GetEnrolledCoursesUsecase>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i722.HomePageCubit>(
+      () => _i722.HomePageCubit(gh<_i48.SignOutUseCase>(), gh<_i974.Logger>()),
+    );
+    gh.factory<_i112.CareerPageCubit>(
+      () => _i112.CareerPageCubit(
+        gh<_i504.GetProgramCurriculumProgressUsecase>(),
+        gh<_i354.GetAcademicInfoUseCase>(),
+        gh<_i974.Logger>(),
+      ),
     );
     return this;
   }
