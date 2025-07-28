@@ -144,7 +144,7 @@ class GradeTrackingLocalService {
       );
 
       // ✅ ELIMINADO: Ya no usa _enqueueSyncOperation interno
-      // El LocalGradeTrackingDecorator ahora llama directamente al SyncManager
+      // Los decorators especializados ahora llaman directamente al SyncManager
       // para usar el sistema de batching optimizado con persistencia
 
       _logger.d(
@@ -206,7 +206,7 @@ class GradeTrackingLocalService {
       });
 
       // ✅ ELIMINADO: Ya no usa _enqueueSyncOperation interno
-      // El LocalGradeTrackingDecorator ahora llama directamente al SyncManager
+      // Los decorators especializados ahora llaman directamente al SyncManager
       // para usar el sistema de batching optimizado con persistencia
 
       _logger.d(

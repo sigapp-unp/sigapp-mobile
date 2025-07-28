@@ -2,11 +2,11 @@ import 'package:injectable/injectable.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/application/usecases/base_grade_tracking_usecase.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
-import 'package:sigapp/courses/domain/repositories/grade_tracking_repository.dart';
+import 'package:sigapp/courses/domain/repositories/grade_tracking_grade_repository.dart';
 
 @injectable
 class ManageGradeTrackingGradesUseCase extends BaseGradeTrackingUseCase {
-  final GradeTrackingRepository _repository;
+  final GradeTrackingGradeRepository _repository;
 
   ManageGradeTrackingGradesUseCase(
     this._repository,

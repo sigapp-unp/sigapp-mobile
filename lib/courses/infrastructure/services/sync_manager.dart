@@ -1,6 +1,8 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/courses/domain/repositories/grade_tracking_repository.dart';
+import 'package:sigapp/courses/domain/repositories/grade_tracking_course_repository.dart';
+import 'package:sigapp/courses/domain/repositories/grade_tracking_category_repository.dart';
+import 'package:sigapp/courses/domain/repositories/grade_tracking_grade_repository.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 import 'package:sigapp/courses/infrastructure/repositories/sync_queue_repository.dart';
 import 'dart:convert';
@@ -20,7 +22,9 @@ import 'dart:async';
 class SyncManager {
   final SyncQueueRepository _syncQueueRepository;
   final Logger _logger;
-  final GradeTrackingRepository _remoteRepository;
+  final GradeTrackingCourseRepository _courseRepository;
+  final GradeTrackingCategoryRepository _categoryRepository;
+  final GradeTrackingGradeRepository _gradeRepository;
   bool _isOfflineMode =
       false; // Simplified batching: single timer, simple operations list
   Timer? _batchTimer;
@@ -44,7 +48,9 @@ class SyncManager {
   SyncManager(
     this._syncQueueRepository,
     this._logger,
-    @Named('remote') this._remoteRepository,
+    @Named('remote') this._courseRepository,
+    @Named('remote') this._categoryRepository,
+    @Named('remote') this._gradeRepository,
   );
 
   /// Extract student and course codes from courseKey consistently
@@ -225,7 +231,7 @@ class SyncManager {
           categories: categories,
         );
 
-        await _remoteRepository.create(tracking);
+        await _courseRepository.create(tracking);
         break;
       case 'update_categories':
         final categories =
@@ -239,7 +245,7 @@ class SyncManager {
                   ),
                 )
                 .toList();
-        await _remoteRepository.updateCategoriesField(
+        await _categoryRepository.updateCategoriesField(
           studentCode: studentCode,
           courseCode: courseCode,
           categories: categories,
@@ -259,7 +265,7 @@ class SyncManager {
                   ),
                 )
                 .toList();
-        await _remoteRepository.updateGradesField(
+        await _gradeRepository.updateGradesField(
           studentCode: studentCode,
           courseCode: courseCode,
           categoryId: categoryId,
@@ -279,7 +285,7 @@ class SyncManager {
                   ),
                 )
                 .toList();
-        await _remoteRepository.updateCategoriesField(
+        await _categoryRepository.updateCategoriesField(
           studentCode: studentCode,
           courseCode: courseCode,
           categories: categories,
@@ -299,7 +305,7 @@ class SyncManager {
                   ),
                 )
                 .toList();
-        await _remoteRepository.updateGradesField(
+        await _gradeRepository.updateGradesField(
           studentCode: studentCode,
           courseCode: courseCode,
           categoryId: categoryId,
@@ -324,7 +330,7 @@ class SyncManager {
                       .toList();
               return MapEntry(categoryId, grades);
             });
-        await _remoteRepository.updateMultipleCategoriesGrades(
+        await _gradeRepository.updateMultipleCategoriesGrades(
           studentCode: studentCode,
           courseCode: courseCode,
           gradesByCategory: gradesByCategory,
@@ -350,7 +356,7 @@ class SyncManager {
 
     try {
       // Simple connectivity test
-      await _remoteRepository.getCourseTracking(
+      await _courseRepository.getCourseTracking(
         studentCode: 'test',
         courseCode: 'ping',
       );
