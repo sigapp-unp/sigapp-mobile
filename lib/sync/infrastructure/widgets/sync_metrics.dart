@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sigapp/grade_simulator/infrastructure/services/sync_manager.dart';
+import 'package:sigapp/sync/infrastructure/services/sync_manager.dart';
 
 /// Bypasses complex cubit/dashboard and reads directly from SyncManager
 /// Perfect for debugging without over-engineering
@@ -38,7 +38,7 @@ class SyncMetricWidget extends StatelessWidget {
               Icon(MdiIcons.chartLine, size: 14, color: Colors.grey.shade600),
               const SizedBox(width: 4),
               Text(
-                'Sync Stats (Lean)',
+                'Sync Stats',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,

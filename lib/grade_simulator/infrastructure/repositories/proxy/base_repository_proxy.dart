@@ -3,7 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
 import 'package:sigapp/grade_simulator/infrastructure/repositories/local/local_repository.dart';
 import 'package:sigapp/grade_simulator/infrastructure/repositories/remote/remote_repository.dart';
-import 'package:sigapp/grade_simulator/infrastructure/services/sync_manager.dart';
+import 'package:sigapp/sync/infrastructure/services/sync_manager.dart';
 
 /// Base class for all GradeTracking repository decorators
 /// Provides common functionality for optimistic updates, caching, and sync operations

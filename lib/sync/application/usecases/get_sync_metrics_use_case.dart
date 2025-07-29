@@ -1,9 +1,7 @@
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/grade_simulator/domain/value_objects/sync_dashboard.dart';
-import 'package:sigapp/grade_simulator/infrastructure/services/sync_manager.dart';
+import 'package:sigapp/sync/domain/value_objects/sync_dashboard.dart';
+import 'package:sigapp/sync/infrastructure/services/sync_manager.dart';
 
-/// 🚀 LEAN VERSION: Simple metrics for debugging (no over-engineering)
-///
 /// Provides just enough stats for compact_sync_metrics.dart to work
 /// without complex tracking or performance overhead
 @injectable
@@ -35,7 +33,7 @@ class GetSyncMetricsUseCase {
   String exportMetricsAsString() {
     final stats = _syncManager.basicStats;
     return '''
-=== LEAN SYNC STATS ===
+=== SYNC STATS ===
 Success Rate: ${stats['success_rate']}
 Total Processed: ${stats['total_operations_processed']}
 Failed: ${stats['failed_operations']}

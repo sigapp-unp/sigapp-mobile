@@ -1,4 +1,3 @@
-/// Simple health status enum (shared between full and lean implementations)
 enum SyncHealthStatus {
   excellent,
   good,

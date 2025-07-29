@@ -4,7 +4,7 @@ import 'package:sigapp/grade_simulator/domain/repositories/grade_tracking_course
 import 'package:sigapp/grade_simulator/domain/repositories/grade_tracking_category_repository.dart';
 import 'package:sigapp/grade_simulator/domain/repositories/grade_tracking_grade_repository.dart';
 import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
-import 'package:sigapp/grade_simulator/infrastructure/repositories/sync_queue_repository.dart';
+import 'package:sigapp/sync/infrastructure/repositories/sync_queue_repository.dart';
 import 'dart:convert';
 import 'dart:async';
 

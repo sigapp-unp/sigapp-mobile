@@ -3,26 +3,8 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/core/infrastructure/database/local_database.dart';
-import 'package:sigapp/grade_simulator/domain/sync_constants.dart';
+import 'package:sigapp/sync/domain/sync_constants.dart';
 
-/// 🚀 LEAN VERSION: Eliminates over-engineering from SyncQueueRepository
-///
-/// KEPT (3 core operations):
-/// ✅ persistOperation() - crash protection
-/// ✅ getPendingOperations() - recovery after crash
-/// ✅ markAsSynced() - cleanup after successful sync
-/// ✅ cleanupCompletedOperations() - prevent SQLite bloat
-///
-/// REMOVED (over-engineering):
-/// ❌ batchPersistOperations() - never used
-/// ❌ getOperationsByType() - analytics overkill
-/// ❌ batchMarkAsSynced() - premature optimization
-/// ❌ deleteOperationsForEntity() - edge case handling
-/// ❌ getPerformanceMetrics() - complex dashboard queries
-/// ❌ getQueuedOperationsReport() - reporting overkill
-/// ❌ _withLog() verbose wrapper - simple try/catch is enough
-///
-/// Result: ~500 lines → ~80 lines (84% reduction) with same core functionality
 @singleton
 class SyncQueueRepository {
   final LocalDatabase _database;

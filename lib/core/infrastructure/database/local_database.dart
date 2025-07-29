@@ -4,7 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sigapp/grade_simulator/infrastructure/database/local_course_grade_simulator.dart';
-import 'package:sigapp/grade_simulator/infrastructure/database/sync_queue.dart';
+import 'package:sigapp/sync/infrastructure/database/sync_queue.dart';
 
 part 'local_database.g.dart';
 

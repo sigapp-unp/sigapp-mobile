@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sigapp/grade_simulator/infrastructure/services/sync_manager.dart';
+import 'package:sigapp/sync/infrastructure/services/sync_manager.dart';
 
 /// Integrates with Flutter lifecycle for automatic sync on app resume
 /// Handles connectivity recovery and background sync scenarios

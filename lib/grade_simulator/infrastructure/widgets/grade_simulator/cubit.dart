@@ -32,7 +32,7 @@ sealed class GradeTrackerSectionState with _$GradeTrackerSectionState {
 @injectable
 class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   final GetGradeTrackingUseCase _getGradeTrackingUseCase;
-  final CreateGradeTrackingUseCase _createGradeTrackingUseCase;
+  final GradeSimulatorCreateUseCase _createGradeTrackingUseCase;
   final DeleteGradeTrackingUseCase _deleteGradeTrackingUseCase;
   final ManageGradeTrackingCategoriesUseCase
   _manageGradeTrackingCategoriesUseCase;
