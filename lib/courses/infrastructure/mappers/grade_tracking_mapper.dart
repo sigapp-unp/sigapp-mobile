@@ -1,9 +1,8 @@
 import 'dart:convert';
 
 import 'package:injectable/injectable.dart';
-
-import '../../domain/entities/grade_tracking.dart';
-import '../../domain/value_objects/course_key.dart';
+import 'package:sigapp/core/infrastructure/database/drift/app_database.dart';
+import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 
 /// Mapper responsible for transforming CourseTracking entities
 /// between different representations (JSON, database format, etc.)
@@ -11,10 +10,10 @@ import '../../domain/value_objects/course_key.dart';
 /// Features:
 /// - Centralized data transformation logic
 /// - Separation between categories and grades for optimal storage
-/// - Type-safe conversions using CourseKey
+/// - Type-safe conversions with student and course codes
 /// - Clear separation of concerns from business logic
 @injectable
-class GradeTrackingMapper {
+class LocalGradeTrackingMapper {
   /// Transforms CourseTracking into separate components for database storage
   ///
   /// Returns a map with:
@@ -63,15 +62,17 @@ class GradeTrackingMapper {
   ///
   /// Parameters:
   /// - row: Database row containing JSON fields
-  /// - courseKey: Type-safe course identifier
+  /// - studentCode: Student identifier
+  /// - courseCode: Course identifier
   ///
   /// Returns fully reconstructed CourseTracking entity
   CourseTracking reconstructCourseTracking(
     Map<String, dynamic> row,
-    CourseKey courseKey,
+    String studentCode,
+    String courseCode,
   ) {
-    final categoriesJson = row['categories_json'] as String?;
-    final gradesJson = row['grades_json'] as String?;
+    final categoriesJson = row['categories'] as String?;
+    final gradesJson = row['grades'] as String?;
 
     // Parse JSON data with safe defaults
     final categoriesData = _parseJsonList(categoriesJson);
@@ -81,9 +82,9 @@ class GradeTrackingMapper {
     final categories = _reconstructCategories(categoriesData, gradesData);
 
     return CourseTracking(
-      id: row['id'] ?? courseKey.value,
-      studentCode: courseKey.studentCode,
-      courseCode: courseKey.courseCode,
+      id: row['id'] ?? '${studentCode}_$courseCode',
+      studentCode: studentCode,
+      courseCode: courseCode,
       categories: categories,
     );
   }
@@ -91,9 +92,9 @@ class GradeTrackingMapper {
   /// Converts deconstructed data to JSON strings for database storage
   Map<String, String> toJsonStrings(Map<String, dynamic> deconstructed) {
     return {
-      'categories_json': jsonEncode(deconstructed['categories']),
-      'grades_json': jsonEncode(deconstructed['grades']),
-      'metadata_json': jsonEncode(deconstructed['metadata']),
+      'categories': jsonEncode(deconstructed['categories']),
+      'grades': jsonEncode(deconstructed['grades']),
+      'metadata': jsonEncode(deconstructed['metadata']),
     };
   }
 
@@ -131,6 +132,24 @@ class GradeTrackingMapper {
       }
     }
     return jsonEncode(grades);
+  }
+
+  /// Helper method to reconstruct CourseTracking from database row
+  CourseTracking? reconstructCourseFromDatabaseRow(
+    CourseGradeSimulatorData? row,
+    String studentCode,
+    String courseCode,
+  ) {
+    if (row == null) return null;
+
+    final rowMap = {
+      'id': row.id,
+      'categories': row.categories,
+      'grades': row.grades,
+      'metadata': row.metadata,
+    };
+
+    return reconstructCourseTracking(rowMap, studentCode, courseCode);
   }
 
   // Private helper methods

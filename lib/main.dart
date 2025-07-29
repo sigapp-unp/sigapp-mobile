@@ -20,7 +20,6 @@ void main() async {
 
     if (initResult.success) {
       logger.i('SigApp initialized successfully!');
-      logger.d('Database status: ${initResult.databaseStatus}');
     } else {
       logger.e('SigApp initialization failed: ${initResult.message}');
       // App can continue functioning even with some errors

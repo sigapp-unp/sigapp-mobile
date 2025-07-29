@@ -16,7 +16,7 @@ class SyncPerformanceMetrics {
   // TIMING METRICS
   int _totalSyncTimeMs = 0;
   int _averageSyncTimeMs = 0;
-  List<int> _recentSyncTimes = [];
+  final List<int> _recentSyncTimes = [];
   static const int _maxRecentSyncTimes = 10;
 
   // CONNECTIVITY METRICS
@@ -28,7 +28,7 @@ class SyncPerformanceMetrics {
   // BATCHING METRICS
   int _totalOperationsEnqueued = 0;
   int _operationsSavedByBatching = 0;
-  Map<String, int> _batchSizeDistribution = {};
+  final Map<String, int> _batchSizeDistribution = {};
 
   // INTERNAL STATE
   final List<String> _recentEvents = [];
@@ -43,10 +43,7 @@ class SyncPerformanceMetrics {
     'failed_syncs': _failedSyncs,
     'success_rate':
         _totalSyncOperations > 0
-            ? (_successfulSyncs / _totalSyncOperations * 100).toStringAsFixed(
-                  1,
-                ) +
-                '%'
+            ? '${(_successfulSyncs / _totalSyncOperations * 100).toStringAsFixed(1)}%'
             : '0%',
     'conflicts_resolved': _conflictsResolved,
   };
@@ -73,9 +70,7 @@ class SyncPerformanceMetrics {
     'operations_saved_by_batching': _operationsSavedByBatching,
     'batching_efficiency':
         _totalOperationsEnqueued > 0
-            ? (_operationsSavedByBatching / _totalOperationsEnqueued * 100)
-                    .toStringAsFixed(1) +
-                '%'
+            ? '${(_operationsSavedByBatching / _totalOperationsEnqueued * 100).toStringAsFixed(1)}%'
             : '0%',
     'batch_size_distribution': Map.from(_batchSizeDistribution),
   };
@@ -238,8 +233,8 @@ class SyncPerformanceMetrics {
 SyncPerformanceMetrics Summary:
 - Sync Operations: $_totalSyncOperations (Success: $_successfulSyncs, Failed: $_failedSyncs)
 - Average Sync Time: ${_averageSyncTimeMs}ms
-- Batches: $_batchesProcessed processed, ${_operationsSavedByBatching} operations saved
-- Connectivity: Online=${_isCurrentlyOnline}, Failures=${_connectivityFailures}
+- Batches: $_batchesProcessed processed, $_operationsSavedByBatching operations saved
+- Connectivity: Online=$_isCurrentlyOnline, Failures=$_connectivityFailures
 - Conflicts Resolved: $_conflictsResolved
 ''';
   }

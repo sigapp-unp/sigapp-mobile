@@ -146,8 +146,8 @@ CREATE TABLE course_grade_simulator (
   -- Grades: [{"id": "uuid", "categoryId": "uuid", "name": "Parcial 1", "score": 85, "enabled": true}, ...]
   grades JSONB NOT NULL DEFAULT '[]',
   
-  -- Metadata: {"passScore": 60, "semester": "2025-1", "notifications": true, ...}
-  metadata JSONB NOT NULL DEFAULT '{}',
+  -- -- Metadata: {"passScore": 60, "semester": "2025-1", "notifications": true, ...}
+  -- metadata JSONB NOT NULL DEFAULT '{}',
   
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

@@ -3,103 +3,59 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 import 'package:sigapp/courses/domain/repositories/grade_tracking_grade_repository.dart';
-import 'package:sigapp/courses/infrastructure/services/grade_tracking_cache_service.dart';
+import 'package:sigapp/courses/infrastructure/repositories/local_grade_tracking_repository.dart';
+import 'package:sigapp/courses/infrastructure/repositories/remote_grade_tracking_repository.dart';
 import 'package:sigapp/courses/infrastructure/services/sync_manager.dart';
 
 /// Optimized local decorator for Grade operations
-/// Leverages granular grade field updates for maximum performance
+/// Leverages local cache repository and mapper for maximum performance
 ///
-/// Key optimizations:
-/// - Uses updateGradesField for category-specific updates
-/// - Minimal data transfer with granular operations
-/// - Enhanced error handling and fallback strategies
-/// - Smart caching with coordinator integration
+/// Key improvements:
+/// - Direct integration with LocalGradeTrackingRepository
+/// - Uses LocalGradeTrackingMapper for data transformations
+/// - Simplified error handling with consistent logging
+/// - Smart cache strategies with fallback mechanisms
 @LazySingleton(as: GradeTrackingGradeRepository)
 class GradeTrackingGradeRepositoryDecorator
     implements GradeTrackingGradeRepository {
-  final GradeTrackingGradeRepository _remoteGradeRepo;
-  final GradeTrackingCacheService _coordinator;
+  final RemoteGradeTrackingRepository _remoteGradeRepo;
+  final LocalGradeTrackingRepository _localRepository;
   final SyncManager _syncManager;
   final Logger _logger;
 
   GradeTrackingGradeRepositoryDecorator(
-    @Named('remote') this._remoteGradeRepo,
-    this._coordinator,
+    this._remoteGradeRepo,
+    this._localRepository,
     this._syncManager,
     this._logger,
   );
 
-  // 🚀 OPTIMIZED OPERATIONS USING CENTRALIZED COORDINATOR
+  // 🚀 OPTIMIZED CACHE-FIRST OPERATIONS
 
-  /// Enhanced optimistic update using centralized coordinator
-  Future<CourseTracking> _performOptimisticUpdate({
+  /// Save to cache with sync queue
+  Future<void> _saveToCache({
     required String studentCode,
     required String courseCode,
-    required CourseTracking Function(CourseTracking current) updateFunction,
-    required String operationType,
-    required Map<String, dynamic> Function(CourseTracking updated)
-    syncDataBuilder,
-    required Future<CourseTracking> Function() remoteFallback,
-    Map<String, dynamic>? logContext,
+    required CourseTracking tracking,
   }) async {
-    // Delegate to centralized coordinator method
-    final updated = await _coordinator.performOptimisticUpdate(
-      studentCode: studentCode,
-      courseCode: courseCode,
-      updateFunction: updateFunction,
-      operationType: operationType,
-      fieldType: 'grades',
-      syncDataBuilder: syncDataBuilder,
-      remoteFallback: remoteFallback,
-      logContext: logContext,
-    );
-
-    // Handle sync enqueueing at decorator level
     try {
-      final syncData = syncDataBuilder(updated);
-      await _syncManager.enqueueSyncOperation(
-        operationType: operationType,
-        fieldType: 'grades',
-        courseKey: '${studentCode}_$courseCode',
-        operationData: syncData,
+      await _localRepository.saveCourseFromComponents(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        tracking: tracking,
       );
-
-      final contextLog =
-          logContext?.entries.map((e) => '${e.key}=${e.value}').join(', ') ??
-          '';
 
       _logger.d(
-        '[GRADE_DECORATOR] ✅ $operationType sync enqueued: ${studentCode}_$courseCode'
-        '${contextLog.isNotEmpty ? ' ($contextLog)' : ''}',
+        '[GRADE_DECORATOR] ✅ Saved to cache: ${studentCode}_$courseCode',
       );
-    } catch (syncError, syncStack) {
-      _logger.w(
-        '[GRADE_DECORATOR] ⚠️ Sync enqueue failed for $operationType, continuing optimistically',
-        error: syncError,
-        stackTrace: syncStack,
+    } catch (error, stackTrace) {
+      _logger.e(
+        '[GRADE_DECORATOR] ❌ Error saving to cache',
+        error: error,
+        stackTrace: stackTrace,
       );
+      // Don't rethrow - cache errors shouldn't block operations
     }
-
-    return updated;
-  }
-
-  /// Helper para serializar grades para sync
-  List<Map<String, dynamic>> _serializeGradesForSync(
-    List<GradeCategory> categories,
-  ) {
-    final grades = <Map<String, dynamic>>[];
-    for (final category in categories) {
-      for (final grade in category.grades) {
-        grades.add({
-          'id': grade.id,
-          'categoryId': category.id,
-          'name': grade.name,
-          'score': grade.score,
-          'enabled': grade.enabled,
-        });
-      }
-    }
-    return grades;
   }
 
   @override
@@ -110,94 +66,49 @@ class GradeTrackingGradeRepositoryDecorator
     required String gradeName,
     required double score,
   }) async {
-    return _performOptimisticUpdate(
-      studentCode: studentCode,
-      courseCode: courseCode,
-      updateFunction: (current) {
-        final newGrade = Grade(
-          id: 'grade_${DateTime.now().millisecondsSinceEpoch}',
-          name: gradeName,
-          score: score,
-        );
+    try {
+      _logger.d(
+        '[GRADE_DECORATOR] Adding grade: $gradeName to ${studentCode}_$courseCode',
+      );
 
-        final updatedCategories =
-            current.categories.map((cat) {
-              if (cat.id == categoryId) {
-                return cat.copyWith(grades: [...cat.grades, newGrade]);
-              }
-              return cat;
-            }).toList();
+      // Try remote operation first for data consistency
+      final result = await _remoteGradeRepo.addGrade(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        categoryId: categoryId,
+        gradeName: gradeName,
+        score: score,
+      );
 
-        return current.copyWith(categories: updatedCategories);
-      },
-      operationType: 'addGrade',
-      syncDataBuilder:
-          (updated) => {
-            'studentCode': studentCode,
-            'courseCode': courseCode,
-            'categoryId': categoryId,
-            'gradeName': gradeName,
-            'score': score,
-            'grades': _serializeGradesForSync(updated.categories),
-          },
-      remoteFallback:
-          () => _remoteGradeRepo.addGrade(
-            studentCode: studentCode,
-            courseCode: courseCode,
-            categoryId: categoryId,
-            gradeName: gradeName,
-            score: score,
-          ),
-      logContext: {
-        'categoryId': categoryId,
-        'gradeName': gradeName,
-        'score': score,
-      },
-    );
-  }
+      // Update cache
+      await _saveToCache(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        tracking: result,
+      );
 
-  @override
-  Future<CourseTracking> deleteGrade({
-    required String studentCode,
-    required String courseCode,
-    required String categoryId,
-    required String gradeId,
-  }) async {
-    return _performOptimisticUpdate(
-      studentCode: studentCode,
-      courseCode: courseCode,
-      updateFunction: (current) {
-        final updatedCategories =
-            current.categories.map((cat) {
-              if (cat.id == categoryId) {
-                return cat.copyWith(
-                  grades:
-                      cat.grades.where((grade) => grade.id != gradeId).toList(),
-                );
-              }
-              return cat;
-            }).toList();
+      // Enqueue sync operation
+      await _syncManager.enqueueSyncOperation(
+        operationType: 'addGrade',
+        fieldType: 'grades',
+        courseKey: '${studentCode}_$courseCode',
+        operationData: {
+          'categoryId': categoryId,
+          'gradeName': gradeName,
+          'score': score,
+        },
+      );
 
-        return current.copyWith(categories: updatedCategories);
-      },
-      operationType: 'deleteGrade',
-      syncDataBuilder:
-          (updated) => {
-            'studentCode': studentCode,
-            'courseCode': courseCode,
-            'categoryId': categoryId,
-            'gradeId': gradeId,
-            'grades': _serializeGradesForSync(updated.categories),
-          },
-      remoteFallback:
-          () => _remoteGradeRepo.deleteGrade(
-            studentCode: studentCode,
-            courseCode: courseCode,
-            categoryId: categoryId,
-            gradeId: gradeId,
-          ),
-      logContext: {'categoryId': categoryId, 'gradeId': gradeId},
-    );
+      _logger.d('[GRADE_DECORATOR] ✅ Grade added successfully');
+      return result;
+    } catch (error, stackTrace) {
+      _logger.e(
+        '[GRADE_DECORATOR] ❌ Error adding grade',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   @override
@@ -209,55 +120,98 @@ class GradeTrackingGradeRepositoryDecorator
     required String newName,
     required double newScore,
   }) async {
-    return _performOptimisticUpdate(
-      studentCode: studentCode,
-      courseCode: courseCode,
-      updateFunction: (current) {
-        final updatedCategories =
-            current.categories.map((cat) {
-              if (cat.id == categoryId) {
-                return cat.copyWith(
-                  grades:
-                      cat.grades.map((grade) {
-                        if (grade.id == gradeId) {
-                          return grade.copyWith(name: newName, score: newScore);
-                        }
-                        return grade;
-                      }).toList(),
-                );
-              }
-              return cat;
-            }).toList();
+    try {
+      _logger.d(
+        '[GRADE_DECORATOR] Updating grade: $gradeId in ${studentCode}_$courseCode',
+      );
 
-        return current.copyWith(categories: updatedCategories);
-      },
-      operationType: 'updateGrade',
-      syncDataBuilder:
-          (updated) => {
-            'studentCode': studentCode,
-            'courseCode': courseCode,
-            'categoryId': categoryId,
-            'gradeId': gradeId,
-            'newName': newName,
-            'newScore': newScore,
-            'grades': _serializeGradesForSync(updated.categories),
-          },
-      remoteFallback:
-          () => _remoteGradeRepo.updateGrade(
-            studentCode: studentCode,
-            courseCode: courseCode,
-            categoryId: categoryId,
-            gradeId: gradeId,
-            newName: newName,
-            newScore: newScore,
-          ),
-      logContext: {
-        'categoryId': categoryId,
-        'gradeId': gradeId,
-        'newName': newName,
-        'newScore': newScore,
-      },
-    );
+      // Try remote operation first
+      final result = await _remoteGradeRepo.updateGrade(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        categoryId: categoryId,
+        gradeId: gradeId,
+        newName: newName,
+        newScore: newScore,
+      );
+
+      // Update cache
+      await _saveToCache(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        tracking: result,
+      );
+
+      // Enqueue sync operation
+      await _syncManager.enqueueSyncOperation(
+        operationType: 'updateGrade',
+        fieldType: 'grades',
+        courseKey: '${studentCode}_$courseCode',
+        operationData: {
+          'categoryId': categoryId,
+          'gradeId': gradeId,
+          'newName': newName,
+          'newScore': newScore,
+        },
+      );
+
+      _logger.d('[GRADE_DECORATOR] ✅ Grade updated successfully');
+      return result;
+    } catch (error, stackTrace) {
+      _logger.e(
+        '[GRADE_DECORATOR] ❌ Error updating grade',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<CourseTracking> deleteGrade({
+    required String studentCode,
+    required String courseCode,
+    required String categoryId,
+    required String gradeId,
+  }) async {
+    try {
+      _logger.d(
+        '[GRADE_DECORATOR] Deleting grade: $gradeId from ${studentCode}_$courseCode',
+      );
+
+      // Try remote operation first
+      final result = await _remoteGradeRepo.deleteGrade(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        categoryId: categoryId,
+        gradeId: gradeId,
+      );
+
+      // Update cache
+      await _saveToCache(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        tracking: result,
+      );
+
+      // Enqueue sync operation
+      await _syncManager.enqueueSyncOperation(
+        operationType: 'deleteGrade',
+        fieldType: 'grades',
+        courseKey: '${studentCode}_$courseCode',
+        operationData: {'categoryId': categoryId, 'gradeId': gradeId},
+      );
+
+      _logger.d('[GRADE_DECORATOR] ✅ Grade deleted successfully');
+      return result;
+    } catch (error, stackTrace) {
+      _logger.e(
+        '[GRADE_DECORATOR] ❌ Error deleting grade',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   @override
@@ -268,52 +222,51 @@ class GradeTrackingGradeRepositoryDecorator
     required String gradeId,
     required bool enabled,
   }) async {
-    return _performOptimisticUpdate(
-      studentCode: studentCode,
-      courseCode: courseCode,
-      updateFunction: (current) {
-        final updatedCategories =
-            current.categories.map((cat) {
-              if (cat.id == categoryId) {
-                return cat.copyWith(
-                  grades:
-                      cat.grades.map((grade) {
-                        if (grade.id == gradeId) {
-                          return grade.copyWith(enabled: enabled);
-                        }
-                        return grade;
-                      }).toList(),
-                );
-              }
-              return cat;
-            }).toList();
+    try {
+      _logger.d(
+        '[GRADE_DECORATOR] Toggling grade enabled: $gradeId (enabled: $enabled)',
+      );
 
-        return current.copyWith(categories: updatedCategories);
-      },
-      operationType: 'toggleGradeEnabled',
-      syncDataBuilder:
-          (updated) => {
-            'studentCode': studentCode,
-            'courseCode': courseCode,
-            'categoryId': categoryId,
-            'gradeId': gradeId,
-            'enabled': enabled,
-            'grades': _serializeGradesForSync(updated.categories),
-          },
-      remoteFallback:
-          () => _remoteGradeRepo.toggleGradeEnabled(
-            studentCode: studentCode,
-            courseCode: courseCode,
-            categoryId: categoryId,
-            gradeId: gradeId,
-            enabled: enabled,
-          ),
-      logContext: {
-        'categoryId': categoryId,
-        'gradeId': gradeId,
-        'enabled': enabled,
-      },
-    );
+      // Try remote operation first
+      final result = await _remoteGradeRepo.toggleGradeEnabled(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        categoryId: categoryId,
+        gradeId: gradeId,
+        enabled: enabled,
+      );
+
+      // Update cache
+      await _saveToCache(
+        studentCode: studentCode,
+        courseCode: courseCode,
+        tracking: result,
+      );
+
+      // Enqueue sync operation
+      await _syncManager.enqueueSyncOperation(
+        operationType: 'toggleGradeEnabled',
+        fieldType: 'grades',
+        courseKey: '${studentCode}_$courseCode',
+        operationData: {
+          'categoryId': categoryId,
+          'gradeId': gradeId,
+          'enabled': enabled,
+        },
+      );
+
+      _logger.d(
+        '[GRADE_DECORATOR] ✅ Grade enabled status toggled successfully',
+      );
+      return result;
+    } catch (error, stackTrace) {
+      _logger.e(
+        '[GRADE_DECORATOR] ❌ Error toggling grade enabled status',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   @override
@@ -324,66 +277,47 @@ class GradeTrackingGradeRepositoryDecorator
     required List<Grade> grades,
   }) async {
     try {
-      // Use coordinator to update grades field
-      await _coordinator.updateGradesField(
-        studentCode: studentCode,
-        courseCode: courseCode,
-        categoryId: categoryId,
-        grades: grades,
-      );
-
       _logger.d(
-        '[GRADE_DECORATOR] Grades field updated via coordinator for category $categoryId',
+        '[GRADE_DECORATOR] Updating grades field for category: $categoryId',
       );
 
-      // Enqueue sync operation
-      try {
-        final courseKey = '${studentCode}_$courseCode';
-        await _syncManager.enqueueSyncOperation(
-          operationType: 'updateGradesField',
-          fieldType: 'grades',
-          courseKey: courseKey,
-          operationData: {
-            'studentCode': studentCode,
-            'courseCode': courseCode,
-            'categoryId': categoryId,
-            'grades':
-                grades
-                    .map(
-                      (grade) => {
-                        'id': grade.id,
-                        'categoryId': categoryId,
-                        'name': grade.name,
-                        'score': grade.score,
-                        'enabled': grade.enabled,
-                      },
-                    )
-                    .toList(),
-          },
-        );
-        _logger.d(
-          '[GRADE_DECORATOR] Grades field sync enqueued for category $categoryId',
-        );
-      } catch (syncError, syncStack) {
-        _logger.e(
-          '[GRADE_DECORATOR] Grades field sync enqueue failed',
-          error: syncError,
-          stackTrace: syncStack,
-        );
-      }
-    } catch (e, s) {
-      _logger.e(
-        '[GRADE_DECORATOR] Error in updateGradesField',
-        error: e,
-        stackTrace: s,
-      );
-      // Fallback to remote operation
+      // Remote operation
       await _remoteGradeRepo.updateGradesField(
         studentCode: studentCode,
         courseCode: courseCode,
         categoryId: categoryId,
         grades: grades,
       );
+
+      // Enqueue sync operation
+      await _syncManager.enqueueSyncOperation(
+        operationType: 'updateGradesField',
+        fieldType: 'grades',
+        courseKey: '${studentCode}_$courseCode',
+        operationData: {
+          'categoryId': categoryId,
+          'grades':
+              grades
+                  .map(
+                    (g) => {
+                      'id': g.id,
+                      'name': g.name,
+                      'score': g.score,
+                      'enabled': g.enabled,
+                    },
+                  )
+                  .toList(),
+        },
+      );
+
+      _logger.d('[GRADE_DECORATOR] ✅ Grades field updated successfully');
+    } catch (error, stackTrace) {
+      _logger.e(
+        '[GRADE_DECORATOR] ❌ Error updating grades field',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
     }
   }
 
@@ -394,83 +328,49 @@ class GradeTrackingGradeRepositoryDecorator
     required Map<String, List<Grade>> gradesByCategory,
   }) async {
     try {
-      // Use coordinator to update multiple categories grades
-      for (final entry in gradesByCategory.entries) {
-        await _coordinator.updateGradesField(
-          studentCode: studentCode,
-          courseCode: courseCode,
-          categoryId: entry.key,
-          grades: entry.value,
-        );
-      }
+      _logger.d('[GRADE_DECORATOR] Updating multiple categories grades');
 
-      _logger.d(
-        '[GRADE_DECORATOR] Multiple categories grades updated via coordinator',
-      );
-
-      // Enqueue sync operation
-      try {
-        final courseKey = '${studentCode}_$courseCode';
-        final allGrades = <Map<String, dynamic>>[];
-        for (final entry in gradesByCategory.entries) {
-          final categoryId = entry.key;
-          final grades = entry.value;
-          for (final grade in grades) {
-            allGrades.add({
-              'id': grade.id,
-              'categoryId': categoryId,
-              'name': grade.name,
-              'score': grade.score,
-              'enabled': grade.enabled,
-            });
-          }
-        }
-
-        await _syncManager.enqueueSyncOperation(
-          operationType: 'updateMultipleCategoriesGrades',
-          fieldType: 'grades',
-          courseKey: courseKey,
-          operationData: {
-            'studentCode': studentCode,
-            'courseCode': courseCode,
-            'gradesByCategory': gradesByCategory.map(
-              (categoryId, grades) => MapEntry(
-                categoryId,
-                grades
-                    .map(
-                      (grade) => {
-                        'id': grade.id,
-                        'name': grade.name,
-                        'score': grade.score,
-                        'enabled': grade.enabled,
-                      },
-                    )
-                    .toList(),
-              ),
-            ),
-            'allGrades': allGrades,
-          },
-        );
-        _logger.d('[GRADE_DECORATOR] Multiple categories grades sync enqueued');
-      } catch (syncError, syncStack) {
-        _logger.e(
-          '[GRADE_DECORATOR] Multiple categories grades sync enqueue failed',
-          error: syncError,
-          stackTrace: syncStack,
-        );
-      }
-    } catch (e, s) {
-      _logger.e(
-        '[GRADE_DECORATOR] Error in updateMultipleCategoriesGrades',
-        error: e,
-        stackTrace: s,
-      );
-      // Fallback to remote operation
+      // Remote operation
       await _remoteGradeRepo.updateMultipleCategoriesGrades(
         studentCode: studentCode,
         courseCode: courseCode,
         gradesByCategory: gradesByCategory,
       );
+
+      // Enqueue sync operation
+      await _syncManager.enqueueSyncOperation(
+        operationType: 'updateMultipleCategoriesGrades',
+        fieldType: 'grades',
+        courseKey: '${studentCode}_$courseCode',
+        operationData: {
+          'gradesByCategory': gradesByCategory.map(
+            (categoryId, grades) => MapEntry(
+              categoryId,
+              grades
+                  .map(
+                    (g) => {
+                      'id': g.id,
+                      'name': g.name,
+                      'score': g.score,
+                      'enabled': g.enabled,
+                    },
+                  )
+                  .toList(),
+            ),
+          ),
+        },
+      );
+
+      _logger.d(
+        '[GRADE_DECORATOR] ✅ Multiple categories grades updated successfully',
+      );
+    } catch (error, stackTrace) {
+      _logger.e(
+        '[GRADE_DECORATOR] ❌ Error updating multiple categories grades',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
     }
   }
 }

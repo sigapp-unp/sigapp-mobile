@@ -3,22 +3,20 @@ import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:sigapp/core/infrastructure/database/sqlite_client_manager.dart';
-import 'package:sigapp/core/infrastructure/database/database_health_manager.dart';
+import 'package:sigapp/core/infrastructure/database/drift/app_database.dart';
 import 'package:sigapp/core/config/environment_config.dart';
 import 'package:sigapp/firebase_options.dart';
 
 /// Responsible for the entire application initialization
 /// - Load environment configuration
-/// - Initialize local database
+/// - Initialize Drift database
 /// - Initialize Firebase (only in production)
 @singleton
 class AppInitializer {
-  final SQLiteClientManager _localDatabase;
-  final DatabaseHealthManager _healthManager;
+  final AppDatabase _database;
   final Logger _logger;
 
-  AppInitializer(this._localDatabase, this._healthManager, this._logger);
+  AppInitializer(this._database, this._logger);
 
   Future<AppInitializationResult> initializeApp() async {
     _logger.i('[APP_INIT] 🚀 Starting application initialization...');
@@ -28,9 +26,9 @@ class AppInitializer {
       await EnvironmentConfig.loadEnvironment();
       _logger.d('[APP_INIT] ✅ Environment loaded');
 
-      // 2. Verify and initialize database
-      final dbStatus = await _initializeDatabase();
-      _logger.d('[APP_INIT] ✅ Database initialization completed: $dbStatus');
+      // 2. Initialize database (AppDatabase handles migration automatically)
+      await _database.init();
+      _logger.d('[APP_INIT] ✅ Drift database initialization completed');
 
       // 3. Initialize Firebase (only in production)
       await _initializeFirebase();
@@ -40,7 +38,6 @@ class AppInitializer {
 
       return AppInitializationResult(
         success: true,
-        databaseStatus: dbStatus,
         message: 'App initialized successfully',
       );
     } catch (e) {
@@ -48,44 +45,9 @@ class AppInitializer {
 
       return AppInitializationResult(
         success: false,
-        databaseStatus: DatabaseHealthStatus.critical,
         message: 'Initialization failed: $e',
         error: e,
       );
-    }
-  }
-
-  Future<DatabaseHealthStatus> _initializeDatabase() async {
-    _logger.d('[APP_INIT] 🗄️ Initializing database...');
-
-    try {
-      // Verificar salud de la base de datos
-      final healthStatus = await _healthManager.performHealthCheck(
-        _localDatabase.db,
-        () async {
-          _logger.w('[APP_INIT] 🆘 Performing database reset...');
-          await _localDatabase.resetDatabase();
-          // Re-inicializar después del reset
-          await _localDatabase.init();
-        },
-      );
-
-      switch (healthStatus) {
-        case DatabaseHealthStatus.healthy:
-          _logger.i('[APP_INIT] ✅ Database is healthy and ready');
-          break;
-        case DatabaseHealthStatus.recovered:
-          _logger.i('[APP_INIT] 🔄 Database was recovered successfully');
-          break;
-        case DatabaseHealthStatus.critical:
-          _logger.e('[APP_INIT] ❌ Database is in critical state');
-          break;
-      }
-
-      return healthStatus;
-    } catch (e) {
-      _logger.e('[APP_INIT] 💥 Database initialization failed: $e');
-      rethrow;
     }
   }
 
@@ -124,18 +86,16 @@ class AppInitializer {
 /// Resultado de la inicialización de la aplicación
 class AppInitializationResult {
   final bool success;
-  final DatabaseHealthStatus databaseStatus;
   final String message;
   final Object? error;
 
   AppInitializationResult({
     required this.success,
-    required this.databaseStatus,
     required this.message,
     this.error,
   });
 
   @override
   String toString() =>
-      'AppInitializationResult(success: $success, db: $databaseStatus, message: $message)';
+      'AppInitializationResult(success: $success, message: $message)';
 }

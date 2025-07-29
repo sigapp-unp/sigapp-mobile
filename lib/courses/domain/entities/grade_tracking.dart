@@ -171,9 +171,10 @@ class Grade with Timestamped {
     this.id,
     required this.name,
     required this.score,
-    this.enabled = true,
+    bool? enabled,
     DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+  }) : enabled = enabled ?? true,
+       timestamp = timestamp ?? DateTime.now();
 
   Grade copyWith({
     String? id,

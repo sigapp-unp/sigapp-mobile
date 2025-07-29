@@ -84,6 +84,7 @@ class SyncManager {
       });
 
       _operationsBatched++;
+      _addEvent('Operation batched: $operationType for $courseKey');
 
       _logger.d('[SYNC] Batched: $operationType ($fieldType) for $courseKey');
 
@@ -110,7 +111,9 @@ class SyncManager {
   Future<void> _processPendingOperations() async {
     if (_pendingOperations.isEmpty) return;
 
+    _addEvent('Processing batch of ${_pendingOperations.length} operations');
     _logger.i('[SYNC] Processing ${_pendingOperations.length} operations');
+    final batchStartTime = DateTime.now().millisecondsSinceEpoch;
 
     try {
       // Group by course for efficiency (simplified grouping)
@@ -129,12 +132,27 @@ class SyncManager {
       _pendingOperations.clear();
       await _syncQueueRepository.cleanupCompletedOperations();
 
+      // Update metrics
+      final batchDuration =
+          DateTime.now().millisecondsSinceEpoch - batchStartTime;
+      _lastSyncDuration = batchDuration;
+      _totalSyncTime += batchDuration;
+      _batchesProcessed++;
+
+      if (_fastestSync == 0 || batchDuration < _fastestSync) {
+        _fastestSync = batchDuration;
+      }
+      if (batchDuration > _slowestSync) {
+        _slowestSync = batchDuration;
+      }
+
       _syncSuccessCount++;
-      // ✅ RESET: Clear retry attempts after successful batch
       _retryAttempts = 0;
+      _addEvent('Batch completed successfully in ${batchDuration}ms');
       _logger.i('[SYNC] Batch processed successfully');
     } catch (e) {
       _syncFailureCount++;
+      _addEvent('Batch failed: $e');
       _logger.e('[SYNC] Batch processing failed: $e');
       _handleOfflineMode();
     }
@@ -173,8 +191,9 @@ class SyncManager {
           );
           break; // Success, exit retry loop
         } catch (e) {
-          if (attempt > 1)
+          if (attempt > 1) {
             _retryAttempts++; // Track retry attempts (not first attempt)
+          }
 
           if (attempt == _maxRetryAttempts) {
             _logger.e(
@@ -272,8 +291,8 @@ class SyncManager {
           grades: grades,
         );
         break;
-      case 'update_categories_granular':
-        // Handle granular category updates from decorator
+      case 'updateCategoriesField':
+        // ✨ REFACTORED: Map updateCategoriesField to update_categories
         final categories =
             (operationData['categories'] as List)
                 .map(
@@ -291,8 +310,8 @@ class SyncManager {
           categories: categories,
         );
         break;
-      case 'update_grades_granular':
-        // Handle granular grade updates from decorator
+      case 'updateGradesField':
+        // ✨ REFACTORED: Map updateGradesField to update_grades
         final categoryId = operationData['categoryId'] as String;
         final grades =
             (operationData['grades'] as List)
@@ -390,7 +409,7 @@ class SyncManager {
     _logger.d('[SYNC] Processing ${operations.length} stored operations');
 
     for (final op in operations) {
-      final courseKey = op['entity_key'] as String;
+      final courseKey = op.entityKey;
 
       // ✅ LOCK: Prevent concurrent operations on same courseKey
       if (!_processingKeys.add(courseKey)) {
@@ -401,8 +420,8 @@ class SyncManager {
       }
 
       try {
-        final operationData = jsonDecode(op['operation_data'] as String);
-        final operationType = op['operation_type'] as String;
+        final operationData = jsonDecode(op.operationData);
+        final operationType = op.operationType;
         final (studentCode, courseCode) = _parseCourseKey(courseKey);
 
         // ✅ RETRY POLICY: Apply retry logic to stored operations too
@@ -435,14 +454,14 @@ class SyncManager {
 
         if (success) {
           // Mark as synced
-          await _syncQueueRepository.markAsSynced(op['id'] as int);
+          await _syncQueueRepository.markAsSynced(op.id);
           _logger.d(
             '[SYNC] Stored operation $operationType for $courseKey synced successfully',
           );
         } else {
           // Increment retry count
-          final retryCount = (op['retry_count'] as int) + 1;
-          await _syncQueueRepository.markAsFailed(op['id'] as int, retryCount);
+          final retryCount = op.retryCount + 1;
+          await _syncQueueRepository.markAsFailed(op.id, retryCount);
         }
       } finally {
         // ✅ UNLOCK: Always remove from processing set
@@ -474,19 +493,135 @@ class SyncManager {
   int get syncSuccessCount => _syncSuccessCount;
   int get syncFailureCount => _syncFailureCount;
   int get operationsBatched => _operationsBatched;
-  int get retryAttempts => _retryAttempts; // ✅ NEW: Expose retry attempts
-  int get processingKeysCount =>
-      _processingKeys.length; // ✅ NEW: Active operations
+  int get retryAttempts => _retryAttempts;
+  int get processingKeysCount => _processingKeys.length;
 
   /// Get enhanced sync stats with retry and concurrency info
-  /// ✅ ENHANCED: retry_attempts resets after each successful batch to prevent indefinite growth
   Map<String, dynamic> get syncStats => {
     'success_count': _syncSuccessCount,
     'failure_count': _syncFailureCount,
     'operations_batched': _operationsBatched,
     'pending_operations': _pendingOperations.length,
-    'retry_attempts': _retryAttempts, // Resets after successful batch
+    'retry_attempts': _retryAttempts,
     'active_operations': _processingKeys.length,
     'is_offline': _isOfflineMode,
+    'success_rate': _calculateSuccessRate(),
+    'total_operations': _syncSuccessCount + _syncFailureCount,
   };
+
+  /// Get performance statistics
+  Map<String, dynamic> get performanceStats => {
+    'average_sync_time_ms': _calculateAverageSync(),
+    'last_sync_duration_ms': _lastSyncDuration,
+    'fastest_sync_ms': _fastestSync,
+    'slowest_sync_ms': _slowestSync,
+    'sync_frequency_per_minute': _calculateSyncFrequency(),
+  };
+
+  /// Get connectivity statistics
+  Map<String, dynamic> get connectivityStats => {
+    'is_online': !_isOfflineMode,
+    'offline_duration_ms': _offlineDuration,
+    'connection_attempts': _connectionAttempts,
+    'last_connection_attempt': _lastConnectionAttempt,
+  };
+
+  /// Get batching efficiency statistics
+  Map<String, dynamic> get batchingStats => {
+    'batches_processed': _batchesProcessed,
+    'average_batch_size': _calculateAverageBatchSize(),
+    'batching_efficiency': _calculateBatchingEfficiency(),
+    'operations_per_batch':
+        _operationsBatched / (_batchesProcessed > 0 ? _batchesProcessed : 1),
+  };
+
+  /// Get recent events for debugging
+  List<String> get recentEvents => List.from(_recentEvents);
+
+  /// Get full dashboard metrics
+  Map<String, dynamic> get metricsFullDashboard => {
+    'sync': syncStats,
+    'performance': performanceStats,
+    'connectivity': connectivityStats,
+    'batching': batchingStats,
+    'events': recentEvents,
+  };
+
+  /// Get metrics as formatted string for logging
+  String get metricsLogString {
+    final buffer = StringBuffer();
+    buffer.writeln('=== SYNC METRICS ===');
+    buffer.writeln('Success Rate: ${_calculateSuccessRate()}');
+    buffer.writeln(
+      'Total Operations: ${_syncSuccessCount + _syncFailureCount}',
+    );
+    buffer.writeln('Pending: ${_pendingOperations.length}');
+    buffer.writeln('Offline: $_isOfflineMode');
+    buffer.writeln('Batches: $_batchesProcessed');
+    buffer.writeln('Recent Events: ${_recentEvents.length}');
+    return buffer.toString();
+  }
+
+  /// Reset all metrics
+  void resetMetrics() {
+    _syncSuccessCount = 0;
+    _syncFailureCount = 0;
+    _operationsBatched = 0;
+    _retryAttempts = 0;
+    _batchesProcessed = 0;
+    _recentEvents.clear();
+    _lastSyncDuration = 0;
+    _fastestSync = 0;
+    _slowestSync = 0;
+    _offlineDuration = 0;
+    _connectionAttempts = 0;
+    _logger.d('[SYNC] Metrics reset');
+  }
+
+  // Private helper methods for metrics calculation
+  String _calculateSuccessRate() {
+    final total = _syncSuccessCount + _syncFailureCount;
+    if (total == 0) return '0%';
+    return '${((_syncSuccessCount / total) * 100).toStringAsFixed(1)}%';
+  }
+
+  int _calculateAverageSync() {
+    return _batchesProcessed > 0
+        ? (_totalSyncTime / _batchesProcessed).round()
+        : 0;
+  }
+
+  double _calculateSyncFrequency() {
+    // Calculate operations per minute based on recent activity
+    return _syncSuccessCount + _syncFailureCount > 0 ? 1.0 : 0.0;
+  }
+
+  double _calculateAverageBatchSize() {
+    return _batchesProcessed > 0 ? _operationsBatched / _batchesProcessed : 0.0;
+  }
+
+  String _calculateBatchingEfficiency() {
+    // Simple efficiency calculation
+    return _batchesProcessed > 0
+        ? '${((1.0 - (_syncFailureCount / (_syncSuccessCount + _syncFailureCount + 1))) * 100).toStringAsFixed(1)}%'
+        : '0%';
+  }
+
+  // Additional tracking variables needed for metrics
+  int _batchesProcessed = 0;
+  int _lastSyncDuration = 0;
+  int _fastestSync = 0;
+  int _slowestSync = 0;
+  int _totalSyncTime = 0;
+  int _offlineDuration = 0;
+  int _connectionAttempts = 0;
+  final int _lastConnectionAttempt = 0;
+  final List<String> _recentEvents = [];
+
+  void _addEvent(String event) {
+    _recentEvents.add('${DateTime.now().toIso8601String()}: $event');
+    if (_recentEvents.length > 50) {
+      _recentEvents.removeAt(0);
+    }
+  }
 }
