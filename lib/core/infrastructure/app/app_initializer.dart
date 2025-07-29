@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:sigapp/core/infrastructure/database/drift/local_database.dart';
+import 'package:sigapp/core/infrastructure/database/local_database.dart';
 import 'package:sigapp/core/config/environment_config.dart';
 import 'package:sigapp/firebase_options.dart';
 

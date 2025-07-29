@@ -48,9 +48,9 @@
 
 **Componentes single-write**:
 
-- `RemoteGradeTrackingRepository` (HTTP unificado con single-writes) → implementa 3 interfaces, reemplaza patrón chatty
-- `LocalGradeTrackingRepository` (Drift local-first) → source of truth inmediato con SQLite optimizado
-- Decoradores especializados (orquestan cache + sync) → mantienen API actual:
+- `RemoteGradeSimulatorRepository` (HTTP unificado con single-writes) → implementa 3 interfaces, reemplaza patrón chatty
+- `LocalGradeSimulatorRepository` (Drift local-first) → source of truth inmediato con SQLite optimizado
+- Proxies especializados (orquestan cache + sync) → mantienen API actual:
   - `GradeTrackingCourseRepositoryDecorator`
   - `GradeTrackingCategoryRepositoryDecorator`
   - `GradeTrackingGradeRepositoryDecorator`
@@ -60,7 +60,7 @@
 **Flujo optimizado**:
 
 ```text
-UI → [Course|Category|Grade]RepositoryDecorator → LocalGradeTrackingRepository (Drift instant) + SyncQueue → SyncManager → RemoteGradeTrackingRepository → Supabase (batch single-writes)
+UI → [Course|Category|Grade]RepositoryDecorator → LocalGradeSimulatorRepository (Drift instant) + SyncQueue → SyncManager → RemoteGradeSimulatorRepository → Supabase (batch single-writes)
 ```
 
 **Estrategias implementadas**:
@@ -79,31 +79,31 @@ UI → [Course|Category|Grade]RepositoryDecorator → LocalGradeTrackingReposito
 ```mermaid
 sequenceDiagram
     participant UI
-    participant GradeDecorator
+    participant GradeRepositoryDecorator
     participant LocalRepo
     participant SyncManager
     participant RemoteRepo
     participant Supabase
 
-    UI->>GradeDecorator: addGrade(nota1)
-    GradeDecorator->>LocalRepo: saveCourse() (Drift UPDATE grades field, instant)
-    LocalRepo-->>GradeDecorator: Success (0ms)
-    GradeDecorator->>SyncManager: enqueueSyncOperation(grades_field)
-    GradeDecorator-->>UI: Success (0ms)
+    UI->>GradeRepositoryDecorator: addGrade(nota1)
+    GradeRepositoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE grades field, instant)
+    LocalRepo-->>GradeRepositoryDecorator: Success (0ms)
+    GradeRepositoryDecorator->>SyncManager: enqueueSyncOperation(grades_field)
+    GradeRepositoryDecorator-->>UI: Success (0ms)
 
-    UI->>GradeDecorator: addGrade(nota2)
-    GradeDecorator->>LocalRepo: saveCourse() (Drift UPDATE grades field, instant)
-    LocalRepo-->>GradeDecorator: Success (0ms)
-    GradeDecorator->>SyncManager: enqueueSyncOperation(grades_field)
-    GradeDecorator-->>UI: Success (0ms)
+    UI->>GradeRepositoryDecorator: addGrade(nota2)
+    GradeRepositoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE grades field, instant)
+    LocalRepo-->>GradeRepositoryDecorator: Success (0ms)
+    GradeRepositoryDecorator->>SyncManager: enqueueSyncOperation(grades_field)
+    GradeRepositoryDecorator-->>UI: Success (0ms)
 
     Note over SyncManager: Timer 8s, se reinicia con cada operación
 
-    UI->>GradeDecorator: addGrade(nota10)
-    GradeDecorator->>LocalRepo: saveCourse() (Drift UPDATE grades field, instant)
-    LocalRepo-->>GradeDecorator: Success (0ms)
-    GradeDecorator->>SyncManager: enqueueSyncOperation(grades_field)
-    GradeDecorator-->>UI: Success (0ms)
+    UI->>GradeRepositoryDecorator: addGrade(nota10)
+    GradeRepositoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE grades field, instant)
+    LocalRepo-->>GradeRepositoryDecorator: Success (0ms)
+    GradeRepositoryDecorator->>SyncManager: enqueueSyncOperation(grades_field)
+    GradeRepositoryDecorator-->>UI: Success (0ms)
 
     Note over SyncManager: 8s sin actividad, ejecuta batch
 
@@ -125,7 +125,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant UI
-    participant CategoryDecorator
+    participant CategoryRepositoryDecorator
     participant LocalRepo
     participant SyncQueue
     participant SyncManager
@@ -134,25 +134,25 @@ sequenceDiagram
 
     Note over UI: Usuario selecciona "Eliminar todas las categorías"
 
-    UI->>CategoryDecorator: deleteAllCategories()
-    CategoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE categories field = [], instant)
-    LocalRepo-->>CategoryDecorator: Success (0ms)
-    CategoryDecorator->>SyncQueue: enqueueSyncOperation(categories_field)
-    CategoryDecorator-->>UI: Categories deleted (0ms)
+    UI->>CategoryRepositoryDecorator: deleteAllCategories()
+    CategoryRepositoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE categories field = [], instant)
+    LocalRepo-->>CategoryRepositoryDecorator: Success (0ms)
+    CategoryRepositoryDecorator->>SyncQueue: enqueueSyncOperation(categories_field)
+    CategoryRepositoryDecorator-->>UI: Categories deleted (0ms)
 
     Note over UI: Usuario comienza a crear categorías nuevas
 
-    UI->>CategoryDecorator: addCategory("Exámenes")
-    CategoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE categories field append, instant)
-    LocalRepo-->>CategoryDecorator: Success (0ms)
-    CategoryDecorator->>SyncQueue: enqueueSyncOperation(categories_field)
-    CategoryDecorator-->>UI: Created (0ms)
+    UI->>CategoryRepositoryDecorator: addCategory("Exámenes")
+    CategoryRepositoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE categories field append, instant)
+    LocalRepo-->>CategoryRepositoryDecorator: Success (0ms)
+    CategoryRepositoryDecorator->>SyncQueue: enqueueSyncOperation(categories_field)
+    CategoryRepositoryDecorator-->>UI: Created (0ms)
 
-    UI->>CategoryDecorator: addCategory("Tareas")
-    CategoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE categories field append, instant)
-    LocalRepo-->>CategoryDecorator: Success (0ms)
-    CategoryDecorator->>SyncQueue: enqueueSyncOperation(categories_field)
-    CategoryDecorator-->>UI: Created (0ms)
+    UI->>CategoryRepositoryDecorator: addCategory("Tareas")
+    CategoryRepositoryDecorator->>LocalRepo: saveCourse() (Drift UPDATE categories field append, instant)
+    LocalRepo-->>CategoryRepositoryDecorator: Success (0ms)
+    CategoryRepositoryDecorator->>SyncQueue: enqueueSyncOperation(categories_field)
+    CategoryRepositoryDecorator-->>UI: Created (0ms)
 
     Note over SyncQueue: Batch después de 8s inactividad
     SyncManager->>RemoteRepo: updateCategoriesField(studentCode, courseCode, categories)
@@ -172,7 +172,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant App
-    participant GradeDecorator
+    participant GradeRepositoryDecorator
     participant LocalRepo
     participant SyncQueue
     participant SyncManager
@@ -180,11 +180,11 @@ sequenceDiagram
 
     Note over App: Usuario editando, batería crítica
 
-    App->>GradeDecorator: updateGrade(nota_pendiente)
-    GradeDecorator->>LocalRepo: saveCourse() (Drift ACID transaction)
-    LocalRepo-->>GradeDecorator: Saved locally (instant)
-    GradeDecorator->>SyncQueue: persistOperation(grades_field)
-    SyncQueue-->>GradeDecorator: Persisted to sync_queue table
+    App->>GradeRepositoryDecorator: updateGrade(nota_pendiente)
+    GradeRepositoryDecorator->>LocalRepo: saveCourse() (Drift ACID transaction)
+    LocalRepo-->>GradeRepositoryDecorator: Saved locally (instant)
+    GradeRepositoryDecorator->>SyncQueue: persistOperation(grades_field)
+    SyncQueue-->>GradeRepositoryDecorator: Persisted to sync_queue table
 
     Note over App: App killed abruptamente
     App->>App: Process terminated
@@ -213,16 +213,16 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
-    participant Decorators
+    participant RepositoryDecorators
     participant LocalRepo
     participant SyncManager
     participant RemoteRepo
     participant Supabase
 
-    User->>Decorators: 50+ operaciones durante 8 horas offline
-    Decorators->>LocalRepo: saveCourse() × 50 (Drift acumula single-write operations)
-    LocalRepo-->>Decorators: All saved locally (instant)
-    Decorators->>SyncManager: enqueueSyncOperation × 50 (3 types max: categories, grades, metadata)
+    User->>RepositoryDecorators: 50+ operaciones durante 8 horas offline
+    RepositoryDecorators->>LocalRepo: saveCourse() × 50 (Drift acumula single-write operations)
+    LocalRepo-->>RepositoryDecorators: All saved locally (instant)
+    RepositoryDecorators->>SyncManager: enqueueSyncOperation × 50 (3 types max: categories, grades, metadata)
 
     SyncManager->>RemoteRepo: try batch single-write sync
     RemoteRepo->>Supabase: HTTP requests
@@ -342,9 +342,9 @@ sequenceDiagram
 
 **Bottom line**: Arquitectura implementada elimina el patrón Repository chatty mediante:
 
-- **Decoradores especializados** que orquestan cache-first + sync diferido
-- **LocalGradeTrackingRepository** con Drift para operaciones locales instantáneas
-- **RemoteGradeTrackingRepository** unificado que implementa single-write operations por campo JSONB
+- **Proxies especializados** que orquestan cache-first + sync diferido
+- **LocalGradeSimulatorRepository** con Drift para operaciones locales instantáneas
+- **RemoteGradeSimulatorRepository** unificado que implementa single-write operations por campo JSONB
 - **SyncManager** con batching inteligente + retry logic robusto
 - **Máxima eficiencia** en Supabase Free Plan mediante granularidad JSONB y debouncing
 
@@ -357,7 +357,7 @@ sequenceDiagram
 | **5.1** Usuario agrega 10 notas rápidamente | ✅ **CUMPLIDO** | `GradeTrackingGradeRepositoryDecorator` → Drift local + batching 8s |
 | **5.2** Recrear categorías desde cero       | ✅ **CUMPLIDO** | `GradeTrackingCategoryRepositoryDecorator` → campo categories JSONB |
 | **5.3** App se cierra abruptamente          | ✅ **CUMPLIDO** | `SyncQueueRepository` + ACID transactions en Drift                  |
-| **5.4** Sin conexión prolongada             | ✅ **CUMPLIDO** | `LocalGradeTrackingRepository` + `checkConnectivityRecovery()`      |
+| **5.4** Sin conexión prolongada             | ✅ **CUMPLIDO** | `LocalGradeSimulatorRepository` + `checkConnectivityRecovery()`     |
 | **5.5** Conflictos entre dispositivos       | ✅ **CUMPLIDO** | Campos JSONB granulares (categories/grades/metadata)                |
 | **5.6** Supabase falla durante batch        | ✅ **CUMPLIDO** | Retry logic con 2 intentos max + fallback queue                     |
 
@@ -369,51 +369,87 @@ sequenceDiagram
 
 - `docs/database/remote_db_setup.sql` - Esquema Supabase con tabla course_grade_simulator JSONB
 - `docs/database/remote_db_destroy.sql` - Script de limpieza completa Supabase
-- `lib/core/infrastructure/database/drift/app_database.dart` - Configuración Drift SQLite local
-- `lib/core/infrastructure/database/drift/tables/course_grade_simulator.dart` - Tabla local Drift
-- `lib/core/infrastructure/database/drift/tables/sync_queue.dart` - Queue de sincronización persistente
+- `lib/core/infrastructure/database/local_database.dart`: Configuración Drift SQLite local (renombrado desde `drift/local_database.dart`)
+- `lib/grade_simulator/infrastructure/database/local_course_grade_simulator.dart`: Tabla local Drift (renombrado desde `core/infrastructure/database/drift/tables/course_grade_simulator.dart`)
+- `lib/grade_simulator/infrastructure/database/sync_queue.dart`: Queue de sincronización persistente (renombrado desde `core/infrastructure/database/drift/tables/sync_queue.dart`)
 
-### **Repositorios y Decoradores**
+### **Repositorios y Arquitectura**
 
-- `lib/courses/infrastructure/repositories/local_grade_tracking_repository.dart` - Cache local Drift (source of truth)
-- `lib/courses/infrastructure/repositories/remote_grade_tracking_repository.dart` - HTTP unificado single-writes
-- `lib/courses/infrastructure/repositories/grade_tracking_course_repository_decorator.dart` - Orquesta cache+sync courses
-- `lib/courses/infrastructure/repositories/grade_tracking_category_repository_decorator.dart` - Orquesta cache+sync categories
-- `lib/courses/infrastructure/repositories/grade_tracking_grade_repository_decorator.dart` - Orquesta cache+sync grades
-- `lib/courses/infrastructure/repositories/sync_queue_repository.dart` - Persistencia operaciones diferidas
+#### **Local (Cache-First)**
+
+- `lib/grade_simulator/infrastructure/repositories/local/local_repository.dart`: Cache local Drift (source of truth, renombrado desde `courses/infrastructure/repositories/local_grade_tracking_repository.dart`)
+
+#### **Remote (Single-Write Operations)**
+
+- `lib/grade_simulator/infrastructure/repositories/remote/remote_repository.dart`: HTTP unificado single-writes
+- `lib/grade_simulator/infrastructure/repositories/remote/single_write_client.dart`: Cliente HTTP especializado para batch operations
+- `lib/grade_simulator/infrastructure/repositories/remote/course_remote_source.dart`: Source remoto para operaciones de curso
+- `lib/grade_simulator/infrastructure/repositories/remote/category_remote_source.dart`: Source remoto para operaciones de categorías
+- `lib/grade_simulator/infrastructure/repositories/remote/grade_remote_source.dart`: Source remoto para operaciones de notas
+
+#### **Proxies (Cache + Sync Orchestration)**
+
+- `lib/grade_simulator/infrastructure/repositories/proxy/base_repository_proxy.dart`: Base para patrones proxy unificados
+- `lib/grade_simulator/infrastructure/repositories/proxy/course_repository_proxy.dart`: Proxy cache+sync courses
+- `lib/grade_simulator/infrastructure/repositories/proxy/category_repository_proxy.dart`: Proxy cache+sync categories
+- `lib/grade_simulator/infrastructure/repositories/proxy/grade_repository_proxy.dart`: Proxy cache+sync grades
+
+#### **Sincronización**
+
+- `lib/grade_simulator/infrastructure/repositories/sync_queue_repository.dart`: Persistencia operaciones diferidas con Drift
 
 ### **Servicios de Sincronización**
 
-- `lib/courses/infrastructure/services/sync_manager.dart` - Batching + retry logic principal
-- `lib/courses/infrastructure/services/sync_performance_metrics.dart` - Métricas de rendimiento
-- `lib/core/infrastructure/app/app_initializer.dart` - Inicialización sistema + sync startup
+- `lib/grade_simulator/infrastructure/services/sync_manager.dart`: Batching + retry logic principal con SyncQueueRepository (renombrado desde `courses/infrastructure/services/sync_manager.dart`)
+- `lib/grade_simulator/infrastructure/services/conflict_resolver.dart`: Resolución conflictos Last-Write-Wins (renombrado desde `courses/infrastructure/services/conflict_resolver.dart`)
+- `lib/grade_simulator/infrastructure/services/resume_sync.dart`: Integración lifecycle Flutter para auto-sync (renombrado desde `courses/infrastructure/services/app_lifecycle_sync_integration.dart`)
+- `lib/core/infrastructure/app/app_initializer.dart`: Inicialización sistema + sync startup
 
-### **Mappers y Transformaciones**
+**❌ ELIMINADOS:**
 
-- `lib/courses/infrastructure/mappers/grade_tracking_mapper.dart` - Transformaciones JSON ↔ Domain entities
+- `lib/courses/infrastructure/services/sync_performance_metrics.dart`
+- `lib/courses/presentation/widgets/sync_metrics_widget.dart`
+
+### **Mappers y DTOs**
+
+- `lib/grade_simulator/infrastructure/mappers/local_mapper.dart`: Transformaciones JSON ↔ Domain entities (renombrado desde `courses/infrastructure/mappers/grade_tracking_mapper.dart`)
+- `lib/grade_simulator/infrastructure/dtos/dtos.dart`: DTOs para comunicación remota
+- `lib/grade_simulator/infrastructure/dtos/sync_reporting_dtos.dart`: DTOs especializados para reportes de sync
 
 ### **Casos de Uso**
 
-- `lib/courses/application/usecases/create_grade_tracking_usecase.dart` - Crear tracking inicial
-- `lib/courses/application/usecases/get_grade_tracking_usecase.dart` - Obtener tracking existente
-- `lib/courses/application/usecases/delete_grade_tracking_usecase.dart` - Eliminar tracking completo
-- `lib/courses/application/usecases/manage_grade_tracking_categories_usecase.dart` - CRUD categorías
-- `lib/courses/application/usecases/manage_grade_tracking_grades_usecase.dart` - CRUD notas individuales
+- `lib/grade_simulator/application/usecases/create_grade_tracking_usecase.dart`: Crear tracking inicial (renombrado desde `courses/application/usecases/`)
+- `lib/grade_simulator/application/usecases/get_grade_tracking_usecase.dart`: Obtener tracking existente (renombrado desde `courses/application/usecases/`)
+- `lib/grade_simulator/application/usecases/delete_grade_tracking_usecase.dart`: Eliminar tracking completo (renombrado desde `courses/application/usecases/`)
+- `lib/grade_simulator/application/usecases/manage_grade_tracking_categories_usecase.dart`: CRUD categorías (renombrado desde `courses/application/usecases/`)
+- `lib/grade_simulator/application/usecases/manage_grade_tracking_grades_usecase.dart`: CRUD notas individuales (renombrado desde `courses/application/usecases/`)
+- `lib/grade_simulator/application/usecases/get_sync_metrics_use_case.dart`: Obtener métricas de sincronización (renombrado desde `courses/application/use_cases/`)
+- `lib/grade_simulator/application/usecases/base_grade_tracking_usecase.dart`: Base común para casos de uso (renombrado desde `courses/application/usecases/`)
 
 ### **Entidades de Dominio**
 
-- `lib/courses/domain/entities/grade_tracking.dart` - CourseTracking + GradeCategory + Grade entities
-- `lib/courses/domain/repositories/grade_tracking_course_repository.dart` - Interface curso
-- `lib/courses/domain/repositories/grade_tracking_category_repository.dart` - Interface categorías
-- `lib/courses/domain/repositories/grade_tracking_grade_repository.dart` - Interface notas
+- `lib/grade_simulator/domain/entities/course_tracking.dart`: CourseTracking + GradeCategory + Grade entities (renombrado desde `courses/domain/entities/grade_tracking.dart`)
+- `lib/grade_simulator/domain/repositories/grade_tracking_course_repository.dart`: Interface curso (renombrado desde `courses/domain/repositories/`)
+- `lib/grade_simulator/domain/repositories/grade_tracking_category_repository.dart`: Interface categorías (renombrado desde `courses/domain/repositories/`)
+- `lib/grade_simulator/domain/repositories/grade_tracking_grade_repository.dart`: Interface notas (renombrado desde `courses/domain/repositories/`)
+- `lib/grade_simulator/domain/sync_constants.dart`: Constantes para sincronización
+- `lib/grade_simulator/domain/value_objects/sync_value_objects.dart`: Value objects para sync operations
+- `lib/grade_simulator/domain/value_objects/value_objects.dart`: Value objects del dominio
 
 ### **UI y Presentación**
 
-- `lib/courses/infrastructure/pages/course_detail/partials/grade_tracker_section_cubit.dart` - Estado UI tracking
-- `lib/courses/presentation/widgets/sync_metrics_widget.dart` - Widget métricas sincronización
+- `lib/grade_simulator/infrastructure/widgets/grade_simulator.dart`: Widget principal GradeTrackerSectionWidget (renombrado desde `courses/infrastructure/pages/course_detail/partials/grade_tracker_section.dart`)
+- `lib/grade_simulator/infrastructure/widgets/grade_simulator/cubit.dart`: Estado UI tracking GradeTrackerSectionCubit (renombrado desde `courses/infrastructure/pages/course_detail/partials/grade_tracker_section_cubit.dart`)
+- `lib/grade_simulator/infrastructure/widgets/grade_simulator/cubit.freezed.dart`: Código generado Freezed (renombrado desde `courses/infrastructure/pages/course_detail/partials/grade_tracker_section_cubit.freezed.dart`)
+- `lib/grade_simulator/infrastructure/widgets/grade_simulator/widgets.dart`: Componentes UI (FinalGradeCardWidget, CategoryCardWidget, etc.) (renombrado desde `courses/infrastructure/pages/course_detail/partials/grade_tracker_section/widgets.dart`)
+- `lib/grade_simulator/infrastructure/widgets/grade_simulator/dialogs.dart`: Diálogos para CRUD operaciones con métricas discretas integradas (renombrado desde `courses/infrastructure/pages/course_detail/partials/grade_tracker_section/dialogs.dart`)
+- `lib/grade_simulator/infrastructure/widgets/grade_simulator/compact_sync_metrics.dart`: Widget compacto de métricas para geeks
+- `lib/grade_simulator/infrastructure/widgets/grade_simulator/sync_metrics_cubit.dart`: Cubit para métricas de sincronización (renombrado desde `lib/shared/infrastructure/pages/sync_metrics_cubit.dart`)
+- `lib/shared/infrastructure/pages/about_page.dart`: SyncMetricsWidget removido, página más limpia
+- `lib/courses/infrastructure/pages/course_detail/course_detail_page.dart`: Página detalle curso con nueva integración
 
 ### **Configuración**
 
-- `lib/core/injection/get_it.config.dart` - Inyección dependencias actualizada
+- `lib/core/injection/get_it.config.dart`: Inyección dependencias actualizada con nuevas rutas
 - `lib/main.dart` - Inicialización app + AppInitializer
 - `pubspec.yaml` - Dependencias Drift + networking
