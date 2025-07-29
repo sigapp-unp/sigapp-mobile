@@ -125,14 +125,13 @@ EXECUTE FUNCTION update_timestamp();
 -- Replaces the complex 3-table setup (gt_course_tracking + gt_grade_categories + gt_grades)
 -- with a single document-based table using JSONB for maximum performance.
 --
--- WHY HYBRID (3 JSON fields vs 1 monolithic)?
+-- WHY HYBRID (2 JSON fields vs 1 monolithic)?
 -- - categories vs grades rarely conflict (different UI sections)
--- - metadata changes independently (settings, preferences)
 -- - granular overwrites reduce data loss in multi-device scenarios
 --
 -- PERFORMANCE GAINS:
 -- - Before: 12+ DB operations for createWithDefaults
--- - After:  3 operations max (categories + grades + metadata)
+-- - After:  2 operations max (categories + grades)
 -- - Offline: Everything in memory, single sync per field type
 
 CREATE TABLE course_grade_simulator (
@@ -175,7 +174,7 @@ EXECUTE FUNCTION update_timestamp();
 -- ----------------------------------------------------------------------------
 
 -- Example 1: Complete course setup
--- INSERT INTO course_grade_simulator (student_code, course_code, categories, grades, metadata) VALUES (
+-- INSERT INTO course_grade_simulator (student_code, course_code, categories, grades) VALUES (
 --   '2021001234',
 --   'MAT101',
 --   '[
@@ -187,11 +186,10 @@ EXECUTE FUNCTION update_timestamp();
 --     {"id": "g1", "categoryId": "cat1", "name": "Parcial 1", "score": 85, "enabled": true},
 --     {"id": "g2", "categoryId": "cat1", "name": "Parcial 2", "score": 92, "enabled": true},
 --     {"id": "g3", "categoryId": "cat2", "name": "Tarea 1", "score": 78, "enabled": true}
---   ]',
---   '{"passScore": 60, "semester": "2025-1", "notifications": true}'
+--   ]'
 -- );
 
--- Example 2: Update only grades (preserves categories + metadata)
+-- Example 2: Update only grades (preserves categories)
 -- UPDATE course_grade_simulator 
 -- SET grades = '[
 --   {"id": "g1", "categoryId": "cat1", "name": "Parcial 1", "score": 90, "enabled": true},
@@ -201,7 +199,7 @@ EXECUTE FUNCTION update_timestamp();
 -- ]'
 -- WHERE student_code = '2021001234' AND course_code = 'MAT101';
 
--- Example 3: Bulk category restructure (preserves grades + metadata)
+-- Example 3: Bulk category restructure (preserves grades)
 -- UPDATE course_grade_simulator 
 -- SET categories = '[
 --   {"id": "cat1", "name": "Evaluaciones", "weight": 0.7},
@@ -213,14 +211,13 @@ EXECUTE FUNCTION update_timestamp();
 -- Get all data: SELECT * FROM course_grade_simulator WHERE student_code = ? AND course_code = ?
 -- Get categories only: SELECT categories FROM course_grade_simulator WHERE student_code = ? AND course_code = ?
 -- Search in grades: SELECT * FROM course_grade_simulator WHERE grades @> '[{"name": "Parcial"}]'
--- Filter by metadata: SELECT * FROM course_grade_simulator WHERE metadata->>'semester' = '2025-1'
 
 -- ----------------------------------------------------------------------------
 -- MIGRATION STRATEGY (when ready)
 -- ----------------------------------------------------------------------------
 
 -- Step 1: Migrate existing data from 3-table structure
--- INSERT INTO course_grade_simulator (student_code, course_code, categories, grades, metadata)
+-- INSERT INTO course_grade_simulator (student_code, course_code, categories, grades)
 -- SELECT 
 --   ct.student_code,
 --   ct.course_code,
@@ -237,8 +234,7 @@ EXECUTE FUNCTION update_timestamp();
 --       ORDER BY g.created_at
 --     ) FILTER (WHERE g.id IS NOT NULL),
 --     '[]'::json
---   ) as grades,
---   '{}'::json as metadata
+--   ) as grades
 -- FROM gt_course_tracking ct
 -- LEFT JOIN gt_grade_categories gc ON ct.id = gc.course_tracking_id
 -- LEFT JOIN gt_grades g ON gc.id = g.category_id

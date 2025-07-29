@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/core/infrastructure/database/drift/app_database.dart';
+import 'package:sigapp/core/infrastructure/database/drift/local_database.dart';
 
 /// Repository for managing sync queue operations
 /// Handles all SQLite operations related to the sync_queue table
 @singleton
 class SyncQueueRepository {
-  final AppDatabase _database;
+  final LocalDatabase _database;
   final Logger _logger;
 
   SyncQueueRepository(this._database, this._logger);

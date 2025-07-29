@@ -18,13 +18,13 @@ import 'package:sigapp/courses/infrastructure/services/sync_manager.dart';
 @LazySingleton(as: GradeTrackingGradeRepository)
 class GradeTrackingGradeRepositoryDecorator
     implements GradeTrackingGradeRepository {
-  final RemoteGradeTrackingRepository _remoteGradeRepo;
+  final RemoteGradeTrackingRepository _remoteRepository;
   final LocalGradeTrackingRepository _localRepository;
   final SyncManager _syncManager;
   final Logger _logger;
 
   GradeTrackingGradeRepositoryDecorator(
-    this._remoteGradeRepo,
+    this._remoteRepository,
     this._localRepository,
     this._syncManager,
     this._logger,
@@ -72,7 +72,7 @@ class GradeTrackingGradeRepositoryDecorator
       );
 
       // Try remote operation first for data consistency
-      final result = await _remoteGradeRepo.addGrade(
+      final result = await _remoteRepository.addGrade(
         studentCode: studentCode,
         courseCode: courseCode,
         categoryId: categoryId,
@@ -126,7 +126,7 @@ class GradeTrackingGradeRepositoryDecorator
       );
 
       // Try remote operation first
-      final result = await _remoteGradeRepo.updateGrade(
+      final result = await _remoteRepository.updateGrade(
         studentCode: studentCode,
         courseCode: courseCode,
         categoryId: categoryId,
@@ -180,7 +180,7 @@ class GradeTrackingGradeRepositoryDecorator
       );
 
       // Try remote operation first
-      final result = await _remoteGradeRepo.deleteGrade(
+      final result = await _remoteRepository.deleteGrade(
         studentCode: studentCode,
         courseCode: courseCode,
         categoryId: categoryId,
@@ -228,7 +228,7 @@ class GradeTrackingGradeRepositoryDecorator
       );
 
       // Try remote operation first
-      final result = await _remoteGradeRepo.toggleGradeEnabled(
+      final result = await _remoteRepository.toggleGradeEnabled(
         studentCode: studentCode,
         courseCode: courseCode,
         categoryId: categoryId,
@@ -282,7 +282,7 @@ class GradeTrackingGradeRepositoryDecorator
       );
 
       // Remote operation
-      await _remoteGradeRepo.updateGradesField(
+      await _remoteRepository.updateGradesField(
         studentCode: studentCode,
         courseCode: courseCode,
         categoryId: categoryId,
@@ -331,7 +331,7 @@ class GradeTrackingGradeRepositoryDecorator
       _logger.d('[GRADE_DECORATOR] Updating multiple categories grades');
 
       // Remote operation
-      await _remoteGradeRepo.updateMultipleCategoriesGrades(
+      await _remoteRepository.updateMultipleCategoriesGrades(
         studentCode: studentCode,
         courseCode: courseCode,
         gradesByCategory: gradesByCategory,

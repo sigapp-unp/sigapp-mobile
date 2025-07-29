@@ -36,7 +36,6 @@
 
 - `categories JSONB` - array de categorías de evaluación
 - `grades JSONB` - array de notas individuales
-- `metadata JSONB` - configuración del simulador
 
 **Beneficios inmediatos**:
 
@@ -364,85 +363,57 @@ sequenceDiagram
 
 ### **Conclusión**: Todos los escenarios críticos han sido exitosamente implementados y son funcionales según la arquitectura documentada
 
-2025-01-28 - ACTUALIZADO REFLEJANDO IMPLEMENTACIÓN REAL
+## 8. Archivos Involucrados en la Implementación
 
-```bash
-sigapp on  release/2.0.0 [$✘+] is 📦 v2.0.8+16 via 🎯
-❯ git status
-On branch release/2.0.0
-Your branch is up to date with 'origin/release/2.0.0'.
+### **Archivos de Base de Datos**
 
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-        modified:   docs/db_setup.sql
-        modified:   lib/core/infrastructure/app/app_initializer.dart
-        deleted:    lib/core/infrastructure/database/database_health_manager.dart
-        new file:   lib/core/infrastructure/database/drift/app_database.dart
-        new file:   lib/core/infrastructure/database/drift/app_database.g.dart
-        new file:   lib/core/infrastructure/database/drift/tables/course_grade_simulator.dart
-        new file:   lib/core/infrastructure/database/drift/tables/sync_queue.dart
-        deleted:    lib/core/infrastructure/database/sqlite_client_manager.dart
-        modified:   lib/core/injection/get_it.config.dart
-        modified:   lib/courses/domain/entities/grade_tracking.dart
-        deleted:    lib/courses/domain/value_objects/course_key.dart
-        deleted:    lib/courses/domain/value_objects/course_key.freezed.dart
-        modified:   lib/courses/infrastructure/mappers/grade_tracking_mapper.dart
-        deleted:    lib/courses/infrastructure/repositories/grade_tracking_cache_repository.dart
-        modified:   lib/courses/infrastructure/repositories/grade_tracking_category_repository_decorator.dart
-        modified:   lib/courses/infrastructure/repositories/grade_tracking_course_repository_decorator.dart
-        modified:   lib/courses/infrastructure/repositories/grade_tracking_grade_repository_decorator.dart
-        new file:   lib/courses/infrastructure/repositories/local_grade_tracking_repository.dart
-        deleted:    lib/courses/infrastructure/repositories/remote_grade_tracking_category_repository.dart
-        deleted:    lib/courses/infrastructure/repositories/remote_grade_tracking_course_repository.dart
-        deleted:    lib/courses/infrastructure/repositories/remote_grade_tracking_grade_repository.dart
-        new file:   lib/courses/infrastructure/repositories/remote_grade_tracking_repository.dart
-        modified:   lib/courses/infrastructure/repositories/sync_queue_repository.dart
-        deleted:    lib/courses/infrastructure/services/grade_tracking_cache_service.dart
-        modified:   lib/courses/infrastructure/services/sync_manager.dart
-        modified:   lib/courses/infrastructure/services/sync_performance_metrics.dart
-        modified:   lib/courses/presentation/widgets/sync_metrics_widget.dart
-        modified:   lib/main.dart
-        modified:   linux/flutter/generated_plugin_registrant.cc
-        modified:   linux/flutter/generated_plugins.cmake
-        modified:   macos/Flutter/GeneratedPluginRegistrant.swift
-        modified:   pubspec.lock
-        modified:   pubspec.yaml
-        modified:   windows/flutter/generated_plugin_registrant.cc
-        modified:   windows/flutter/generated_plugins.cmake
-```
+- `docs/database/remote_db_setup.sql` - Esquema Supabase con tabla course_grade_simulator JSONB
+- `docs/database/remote_db_destroy.sql` - Script de limpieza completa Supabase
+- `lib/core/infrastructure/database/drift/app_database.dart` - Configuración Drift SQLite local
+- `lib/core/infrastructure/database/drift/tables/course_grade_simulator.dart` - Tabla local Drift
+- `lib/core/infrastructure/database/drift/tables/sync_queue.dart` - Queue de sincronización persistente
 
-```
-sigapp on  release/2.0.0 [$✘!+] is 📦 v2.0.8+16 via 🎯 took 2m1s
-❯ git status
-On branch release/2.0.0
-Your branch is up to date with 'origin/release/2.0.0'.
+### **Repositorios y Decoradores**
 
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-        modified:   README.md
-        new file:   docs/database-optimization-strategy.md
-        modified:   docs/db_setup.sql
-        new file:   lib/core/infrastructure/app/app_initializer.dart
-        new file:   lib/core/infrastructure/database/database_health_manager.dart
-        modified:   lib/core/infrastructure/database/sqlite_client_manager.dart
-        modified:   lib/core/injection/get_it.config.dart
-        new file:   lib/courses/application/use_cases/get_sync_metrics_use_case.dart
-        deleted:    lib/courses/application/usecases/manage_categories_usecase.dart
-        deleted:    lib/courses/application/usecases/manage_grades_usecase.dart
-        modified:   lib/courses/domain/entities/grade_tracking.dart
-        modified:   lib/courses/domain/repositories/grade_tracking_repository.dart
-        deleted:    lib/courses/infrastructure/repositories/grade_tracking_repository.dart
-        new file:   lib/courses/infrastructure/repositories/local_grade_tracking_repository_decorator.dart
-        new file:   lib/courses/infrastructure/repositories/remote_grade_tracking_repository.dart
-        new file:   lib/courses/infrastructure/services/app_lifecycle_sync_integration.dart
-        new file:   lib/courses/infrastructure/services/conflict_resolver.dart
-        new file:   lib/courses/infrastructure/services/grade_tracking_local_service.dart
-        new file:   lib/courses/infrastructure/services/sync_manager.dart
-        new file:   lib/courses/infrastructure/services/sync_performance_metrics.dart
-        new file:   lib/courses/presentation/widgets/sync_metrics_widget.dart
-        modified:   lib/main.dart
-        modified:   lib/shared/infrastructure/pages/about_page.dart
-        new file:   lib/shared/infrastructure/pages/sync_metrics_cubit.dart
-        modified:   pubspec.yaml
+- `lib/courses/infrastructure/repositories/local_grade_tracking_repository.dart` - Cache local Drift (source of truth)
+- `lib/courses/infrastructure/repositories/remote_grade_tracking_repository.dart` - HTTP unificado single-writes
+- `lib/courses/infrastructure/repositories/grade_tracking_course_repository_decorator.dart` - Orquesta cache+sync courses
+- `lib/courses/infrastructure/repositories/grade_tracking_category_repository_decorator.dart` - Orquesta cache+sync categories
+- `lib/courses/infrastructure/repositories/grade_tracking_grade_repository_decorator.dart` - Orquesta cache+sync grades
+- `lib/courses/infrastructure/repositories/sync_queue_repository.dart` - Persistencia operaciones diferidas
 
-```
+### **Servicios de Sincronización**
+
+- `lib/courses/infrastructure/services/sync_manager.dart` - Batching + retry logic principal
+- `lib/courses/infrastructure/services/sync_performance_metrics.dart` - Métricas de rendimiento
+- `lib/core/infrastructure/app/app_initializer.dart` - Inicialización sistema + sync startup
+
+### **Mappers y Transformaciones**
+
+- `lib/courses/infrastructure/mappers/grade_tracking_mapper.dart` - Transformaciones JSON ↔ Domain entities
+
+### **Casos de Uso**
+
+- `lib/courses/application/usecases/create_grade_tracking_usecase.dart` - Crear tracking inicial
+- `lib/courses/application/usecases/get_grade_tracking_usecase.dart` - Obtener tracking existente
+- `lib/courses/application/usecases/delete_grade_tracking_usecase.dart` - Eliminar tracking completo
+- `lib/courses/application/usecases/manage_grade_tracking_categories_usecase.dart` - CRUD categorías
+- `lib/courses/application/usecases/manage_grade_tracking_grades_usecase.dart` - CRUD notas individuales
+
+### **Entidades de Dominio**
+
+- `lib/courses/domain/entities/grade_tracking.dart` - CourseTracking + GradeCategory + Grade entities
+- `lib/courses/domain/repositories/grade_tracking_course_repository.dart` - Interface curso
+- `lib/courses/domain/repositories/grade_tracking_category_repository.dart` - Interface categorías
+- `lib/courses/domain/repositories/grade_tracking_grade_repository.dart` - Interface notas
+
+### **UI y Presentación**
+
+- `lib/courses/infrastructure/pages/course_detail/partials/grade_tracker_section_cubit.dart` - Estado UI tracking
+- `lib/courses/presentation/widgets/sync_metrics_widget.dart` - Widget métricas sincronización
+
+### **Configuración**
+
+- `lib/core/injection/get_it.config.dart` - Inyección dependencias actualizada
+- `lib/main.dart` - Inicialización app + AppInitializer
+- `pubspec.yaml` - Dependencias Drift + networking

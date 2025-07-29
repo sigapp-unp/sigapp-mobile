@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/core/infrastructure/database/drift/app_database.dart';
+import 'package:sigapp/core/infrastructure/database/drift/local_database.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 
 /// Mapper responsible for transforming CourseTracking entities

@@ -18,13 +18,13 @@ import 'package:sigapp/courses/infrastructure/services/sync_manager.dart';
 @LazySingleton(as: GradeTrackingCourseRepository)
 class GradeTrackingCourseRepositoryDecorator
     implements GradeTrackingCourseRepository {
-  final RemoteGradeTrackingRepository _remoteCourseRepo;
+  final RemoteGradeTrackingRepository _remoteRepository;
   final LocalGradeTrackingRepository _localRepository;
   final SyncManager _syncManager;
   final Logger _logger;
 
   GradeTrackingCourseRepositoryDecorator(
-    this._remoteCourseRepo,
+    this._remoteRepository,
     this._localRepository,
     this._syncManager,
     this._logger,
@@ -54,7 +54,7 @@ class GradeTrackingCourseRepositoryDecorator
         '[COURSE_DECORATOR] ⚡ Cache MISS, fetching remote: ${studentCode}_$courseCode',
       );
 
-      final remote = await _remoteCourseRepo.getCourseTracking(
+      final remote = await _remoteRepository.getCourseTracking(
         studentCode: studentCode,
         courseCode: courseCode,
       );
@@ -246,7 +246,7 @@ class GradeTrackingCourseRepositoryDecorator
                     .toList(),
             'grades': _buildSyncGradeData(updated.categories),
           },
-      remoteFallback: () => _remoteCourseRepo.create(tracking),
+      remoteFallback: () => _remoteRepository.create(tracking),
       logContext: {
         'courseCode': tracking.courseCode,
         'categoriesCount': tracking.categories.length,
@@ -298,7 +298,7 @@ class GradeTrackingCourseRepositoryDecorator
 
       // Enhanced fallback to remote
       try {
-        await _remoteCourseRepo.deleteCourseTracking(
+        await _remoteRepository.deleteCourseTracking(
           studentCode: studentCode,
           courseCode: courseCode,
         );

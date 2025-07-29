@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_database.dart';
+part of 'local_database.dart';
 
 // ignore_for_file: type=lint
 class $CourseGradeSimulatorTable extends CourseGradeSimulator
@@ -1137,9 +1137,9 @@ class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
   }
 }
 
-abstract class _$AppDatabase extends GeneratedDatabase {
-  _$AppDatabase(QueryExecutor e) : super(e);
-  $AppDatabaseManager get managers => $AppDatabaseManager(this);
+abstract class _$LocalDatabase extends GeneratedDatabase {
+  _$LocalDatabase(QueryExecutor e) : super(e);
+  $LocalDatabaseManager get managers => $LocalDatabaseManager(this);
   late final $CourseGradeSimulatorTable courseGradeSimulator =
       $CourseGradeSimulatorTable(this);
   late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
@@ -1179,7 +1179,7 @@ typedef $$CourseGradeSimulatorTableUpdateCompanionBuilder =
     });
 
 class $$CourseGradeSimulatorTableFilterComposer
-    extends Composer<_$AppDatabase, $CourseGradeSimulatorTable> {
+    extends Composer<_$LocalDatabase, $CourseGradeSimulatorTable> {
   $$CourseGradeSimulatorTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1229,7 +1229,7 @@ class $$CourseGradeSimulatorTableFilterComposer
 }
 
 class $$CourseGradeSimulatorTableOrderingComposer
-    extends Composer<_$AppDatabase, $CourseGradeSimulatorTable> {
+    extends Composer<_$LocalDatabase, $CourseGradeSimulatorTable> {
   $$CourseGradeSimulatorTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1279,7 +1279,7 @@ class $$CourseGradeSimulatorTableOrderingComposer
 }
 
 class $$CourseGradeSimulatorTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CourseGradeSimulatorTable> {
+    extends Composer<_$LocalDatabase, $CourseGradeSimulatorTable> {
   $$CourseGradeSimulatorTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1321,7 +1321,7 @@ class $$CourseGradeSimulatorTableAnnotationComposer
 class $$CourseGradeSimulatorTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
+          _$LocalDatabase,
           $CourseGradeSimulatorTable,
           CourseGradeSimulatorData,
           $$CourseGradeSimulatorTableFilterComposer,
@@ -1332,7 +1332,7 @@ class $$CourseGradeSimulatorTableTableManager
           (
             CourseGradeSimulatorData,
             BaseReferences<
-              _$AppDatabase,
+              _$LocalDatabase,
               $CourseGradeSimulatorTable,
               CourseGradeSimulatorData
             >,
@@ -1341,7 +1341,7 @@ class $$CourseGradeSimulatorTableTableManager
           PrefetchHooks Function()
         > {
   $$CourseGradeSimulatorTableTableManager(
-    _$AppDatabase db,
+    _$LocalDatabase db,
     $CourseGradeSimulatorTable table,
   ) : super(
         TableManagerState(
@@ -1423,7 +1423,7 @@ class $$CourseGradeSimulatorTableTableManager
 
 typedef $$CourseGradeSimulatorTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
+      _$LocalDatabase,
       $CourseGradeSimulatorTable,
       CourseGradeSimulatorData,
       $$CourseGradeSimulatorTableFilterComposer,
@@ -1434,7 +1434,7 @@ typedef $$CourseGradeSimulatorTableProcessedTableManager =
       (
         CourseGradeSimulatorData,
         BaseReferences<
-          _$AppDatabase,
+          _$LocalDatabase,
           $CourseGradeSimulatorTable,
           CourseGradeSimulatorData
         >,
@@ -1468,7 +1468,7 @@ typedef $$SyncQueueTableUpdateCompanionBuilder =
     });
 
 class $$SyncQueueTableFilterComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
+    extends Composer<_$LocalDatabase, $SyncQueueTable> {
   $$SyncQueueTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1523,7 +1523,7 @@ class $$SyncQueueTableFilterComposer
 }
 
 class $$SyncQueueTableOrderingComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
+    extends Composer<_$LocalDatabase, $SyncQueueTable> {
   $$SyncQueueTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1578,7 +1578,7 @@ class $$SyncQueueTableOrderingComposer
 }
 
 class $$SyncQueueTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
+    extends Composer<_$LocalDatabase, $SyncQueueTable> {
   $$SyncQueueTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1625,7 +1625,7 @@ class $$SyncQueueTableAnnotationComposer
 class $$SyncQueueTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
+          _$LocalDatabase,
           $SyncQueueTable,
           SyncQueueData,
           $$SyncQueueTableFilterComposer,
@@ -1635,12 +1635,12 @@ class $$SyncQueueTableTableManager
           $$SyncQueueTableUpdateCompanionBuilder,
           (
             SyncQueueData,
-            BaseReferences<_$AppDatabase, $SyncQueueTable, SyncQueueData>,
+            BaseReferences<_$LocalDatabase, $SyncQueueTable, SyncQueueData>,
           ),
           SyncQueueData,
           PrefetchHooks Function()
         > {
-  $$SyncQueueTableTableManager(_$AppDatabase db, $SyncQueueTable table)
+  $$SyncQueueTableTableManager(_$LocalDatabase db, $SyncQueueTable table)
     : super(
         TableManagerState(
           db: db,
@@ -1712,7 +1712,7 @@ class $$SyncQueueTableTableManager
 
 typedef $$SyncQueueTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
+      _$LocalDatabase,
       $SyncQueueTable,
       SyncQueueData,
       $$SyncQueueTableFilterComposer,
@@ -1722,15 +1722,15 @@ typedef $$SyncQueueTableProcessedTableManager =
       $$SyncQueueTableUpdateCompanionBuilder,
       (
         SyncQueueData,
-        BaseReferences<_$AppDatabase, $SyncQueueTable, SyncQueueData>,
+        BaseReferences<_$LocalDatabase, $SyncQueueTable, SyncQueueData>,
       ),
       SyncQueueData,
       PrefetchHooks Function()
     >;
 
-class $AppDatabaseManager {
-  final _$AppDatabase _db;
-  $AppDatabaseManager(this._db);
+class $LocalDatabaseManager {
+  final _$LocalDatabase _db;
+  $LocalDatabaseManager(this._db);
   $$CourseGradeSimulatorTableTableManager get courseGradeSimulator =>
       $$CourseGradeSimulatorTableTableManager(_db, _db.courseGradeSimulator);
   $$SyncQueueTableTableManager get syncQueue =>

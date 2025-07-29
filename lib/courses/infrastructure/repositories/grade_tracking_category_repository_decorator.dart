@@ -18,13 +18,13 @@ import 'package:sigapp/courses/infrastructure/services/sync_manager.dart';
 @LazySingleton(as: GradeTrackingCategoryRepository)
 class GradeTrackingCategoryRepositoryDecorator
     implements GradeTrackingCategoryRepository {
-  final RemoteGradeTrackingRepository _remoteCategoryRepo;
+  final RemoteGradeTrackingRepository _remoteRepository;
   final LocalGradeTrackingRepository _localRepository;
   final SyncManager _syncManager;
   final Logger _logger;
 
   GradeTrackingCategoryRepositoryDecorator(
-    this._remoteCategoryRepo,
+    this._remoteRepository,
     this._localRepository,
     this._syncManager,
     this._logger,
@@ -203,7 +203,7 @@ class GradeTrackingCategoryRepositoryDecorator
                     .toList(),
           },
       remoteFallback:
-          () => _remoteCategoryRepo.addCategory(
+          () => _remoteRepository.addCategory(
             studentCode: studentCode,
             courseCode: courseCode,
             categoryName: categoryName,
@@ -248,7 +248,7 @@ class GradeTrackingCategoryRepositoryDecorator
             'grades': _serializeGradesForSync(updated.categories),
           },
       remoteFallback:
-          () => _remoteCategoryRepo.deleteCategory(
+          () => _remoteRepository.deleteCategory(
             studentCode: studentCode,
             courseCode: courseCode,
             categoryId: categoryId,
@@ -298,7 +298,7 @@ class GradeTrackingCategoryRepositoryDecorator
                     .toList(),
           },
       remoteFallback:
-          () => _remoteCategoryRepo.updateCategory(
+          () => _remoteRepository.updateCategory(
             studentCode: studentCode,
             courseCode: courseCode,
             categoryId: categoryId,
@@ -343,7 +343,7 @@ class GradeTrackingCategoryRepositoryDecorator
                     .toList(),
           },
       remoteFallback: () async {
-        await _remoteCategoryRepo.updateCategoriesField(
+        await _remoteRepository.updateCategoriesField(
           studentCode: studentCode,
           courseCode: courseCode,
           categories: categories,

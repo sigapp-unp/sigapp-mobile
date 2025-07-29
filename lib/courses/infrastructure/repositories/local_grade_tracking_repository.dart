@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/core/infrastructure/database/drift/app_database.dart';
+import 'package:sigapp/core/infrastructure/database/drift/local_database.dart';
 import 'package:sigapp/courses/domain/entities/grade_tracking.dart';
 import 'package:sigapp/courses/infrastructure/mappers/grade_tracking_mapper.dart';
 import 'package:drift/drift.dart';
@@ -16,7 +16,7 @@ import 'package:drift/drift.dart';
 /// - Performance monitoring and logging
 @singleton
 class LocalGradeTrackingRepository {
-  final AppDatabase _database;
+  final LocalDatabase _database;
   final Logger _logger;
   final LocalGradeTrackingMapper _mapper;
 

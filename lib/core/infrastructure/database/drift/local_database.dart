@@ -7,16 +7,16 @@ import 'package:path_provider/path_provider.dart';
 import 'tables/course_grade_simulator.dart';
 import 'tables/sync_queue.dart';
 
-part 'app_database.g.dart';
+part 'local_database.g.dart';
 
 /// Main Drift database class for SigApp
 /// Handles course grade simulation with JSONB hybrid approach for performance
 @DriftDatabase(tables: [CourseGradeSimulator, SyncQueue])
 @singleton
-class AppDatabase extends _$AppDatabase {
+class LocalDatabase extends _$LocalDatabase {
   final Logger _logger;
 
-  AppDatabase(this._logger) : super(_openConnection());
+  LocalDatabase(this._logger) : super(_openConnection());
 
   @override
   int get schemaVersion => 2; // v1=old sqflite, v2=Drift (current and new)
