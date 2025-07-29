@@ -48,7 +48,7 @@ Ya no utiliza WebView ni DOM scraping.
 
 Si build_runner falla con errores de ciclos de librería, ejecuta:
 
-```bash
+```ps1
 dart run build_runner clean
 # Eliminar archivos generados manualmente
 Get-ChildItem -Path lib -Recurse -Include "*.freezed.dart", "*.g.dart", "*.mocks.dart" | Remove-Item -Force

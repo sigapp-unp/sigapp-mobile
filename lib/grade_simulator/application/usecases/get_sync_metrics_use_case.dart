@@ -1,154 +1,46 @@
 import 'package:injectable/injectable.dart';
-import '../../infrastructure/services/sync_manager.dart';
+import 'package:sigapp/grade_simulator/domain/value_objects/sync_dashboard.dart';
+import 'package:sigapp/grade_simulator/infrastructure/services/sync_manager.dart';
 
-/// 📊 USE CASE: Obtener métricas de performance del GradeSimulatorSyncManager
+/// 🚀 LEAN VERSION: Simple metrics for debugging (no over-engineering)
 ///
-/// Funcionalidades:
-/// - Estadísticas de sincronización (éxito/fallo)
-/// - Métricas de performance temporal
-/// - Estado de conectividad
-/// - Eficiencia del batching
-/// - Eventos recientes para debugging
+/// Provides just enough stats for compact_sync_metrics.dart to work
+/// without complex tracking or performance overhead
 @injectable
 class GetSyncMetricsUseCase {
   final GradeSimulatorSyncManager _syncManager;
 
   GetSyncMetricsUseCase(this._syncManager);
 
-  /// Obtener todas las métricas en un dashboard completo
+  /// Get minimal dashboard for UI widgets
   SyncMetricsDashboard execute() {
+    final stats = _syncManager.basicStats;
+
     return SyncMetricsDashboard(
-      syncStats: _syncManager.syncStats,
-      performanceStats: _syncManager.performanceStats,
-      connectivityStats: _syncManager.connectivityStats,
-      batchingStats: _syncManager.batchingStats,
-      recentEvents: _syncManager.recentEvents,
-      fullDashboard: _syncManager.metricsFullDashboard,
       isOfflineMode: _syncManager.isOfflineMode,
+      pendingOperations: _syncManager.pendingOperationsCount,
+      successRate: stats['success_rate'] as String,
+      totalOperations: stats['total_operations_processed'] as int,
+      failedOperations: stats['failed_operations'] as int,
     );
   }
 
-  /// Resetear todas las métricas
+  /// Reset minimal metrics (no complex state to reset)
   void resetMetrics() {
-    _syncManager.resetMetrics();
+    // In lean version, we don't track complex metrics to reset
+    // This method exists for compatibility but does nothing
   }
 
-  /// Exportar métricas para logging/sharing
+  /// Export basic stats as string for debugging
   String exportMetricsAsString() {
-    return _syncManager.metricsLogString;
-  }
-}
-
-/// 📊 MODELO DE DATOS: Dashboard completo de métricas
-class SyncMetricsDashboard {
-  final Map<String, dynamic> syncStats;
-  final Map<String, dynamic> performanceStats;
-  final Map<String, dynamic> connectivityStats;
-  final Map<String, dynamic> batchingStats;
-  final List<String> recentEvents;
-  final Map<String, dynamic> fullDashboard;
-  final bool isOfflineMode;
-
-  const SyncMetricsDashboard({
-    required this.syncStats,
-    required this.performanceStats,
-    required this.connectivityStats,
-    required this.batchingStats,
-    required this.recentEvents,
-    required this.fullDashboard,
-    required this.isOfflineMode,
-  });
-
-  /// Obtener resumen ejecutivo de las métricas más importantes
-  Map<String, String> get executiveSummary => {
-    'Sync Success Rate': syncStats['success_rate']?.toString() ?? '0%',
-    'Average Sync Time': '${performanceStats['average_sync_time_ms']}ms',
-    'Connectivity Status': isOfflineMode ? 'Offline' : 'Online',
-    'Batching Efficiency':
-        batchingStats['batching_efficiency']?.toString() ?? '0%',
-    'Total Operations': syncStats['total_operations']?.toString() ?? '0',
-    'Batches Processed': batchingStats['batches_processed']?.toString() ?? '0',
-  };
-
-  /// Obtener estado general del sistema
-  SyncHealthStatus get healthStatus {
-    final successRate = _extractPercentage(syncStats['success_rate']);
-    final isOnline = !isOfflineMode;
-    final hasRecentActivity = (syncStats['total_operations'] as int? ?? 0) > 0;
-
-    if (!isOnline) {
-      return SyncHealthStatus.offline;
-    } else if (successRate >= 90 && hasRecentActivity) {
-      return SyncHealthStatus.excellent;
-    } else if (successRate >= 70) {
-      return SyncHealthStatus.good;
-    } else if (successRate >= 50) {
-      return SyncHealthStatus.warning;
-    } else {
-      return SyncHealthStatus.critical;
-    }
-  }
-
-  double _extractPercentage(dynamic value) {
-    if (value == null) return 0.0;
-    final str = value.toString().replaceAll('%', '');
-    return double.tryParse(str) ?? 0.0;
-  }
-}
-
-/// 📊 ENUM: Estado de salud del sistema de sincronización
-enum SyncHealthStatus {
-  excellent, // > 90% success rate, online
-  good, // 70-90% success rate
-  warning, // 50-70% success rate
-  critical, // < 50% success rate
-  offline, // Sin conectividad
-}
-
-/// 📊 EXTENSION: Helpers para SyncHealthStatus
-extension SyncHealthStatusExtension on SyncHealthStatus {
-  String get displayName {
-    switch (this) {
-      case SyncHealthStatus.excellent:
-        return 'Excelente';
-      case SyncHealthStatus.good:
-        return 'Bueno';
-      case SyncHealthStatus.warning:
-        return 'Advertencia';
-      case SyncHealthStatus.critical:
-        return 'Crítico';
-      case SyncHealthStatus.offline:
-        return 'Sin conexión';
-    }
-  }
-
-  String get description {
-    switch (this) {
-      case SyncHealthStatus.excellent:
-        return 'Sistema funcionando perfectamente';
-      case SyncHealthStatus.good:
-        return 'Sistema funcionando bien';
-      case SyncHealthStatus.warning:
-        return 'Algunos problemas de sincronización';
-      case SyncHealthStatus.critical:
-        return 'Problemas graves de sincronización';
-      case SyncHealthStatus.offline:
-        return 'Sin conectividad a internet';
-    }
-  }
-
-  String get icon {
-    switch (this) {
-      case SyncHealthStatus.excellent:
-        return '🟢';
-      case SyncHealthStatus.good:
-        return '🟡';
-      case SyncHealthStatus.warning:
-        return '🟠';
-      case SyncHealthStatus.critical:
-        return '🔴';
-      case SyncHealthStatus.offline:
-        return '📡';
-    }
+    final stats = _syncManager.basicStats;
+    return '''
+=== LEAN SYNC STATS ===
+Success Rate: ${stats['success_rate']}
+Total Processed: ${stats['total_operations_processed']}
+Failed: ${stats['failed_operations']}
+Pending: ${stats['pending_operations']}
+Offline: ${stats['is_offline']}
+''';
   }
 }

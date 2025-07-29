@@ -31,13 +31,11 @@ class RemoteGradeSimulatorRepository
   late final CategoryRemoteSource _category;
   late final GradeRemoteSource _grade;
 
-  RemoteGradeSimulatorRepository(
-    ApiGatewayClient client,
-    Logger logger,
-    SingleWriteClient patcher,
-  ) : _course = CourseRemoteSource(client, logger) {
+  RemoteGradeSimulatorRepository(ApiGatewayClient client, Logger logger)
+    : _course = CourseRemoteSource(client, logger) {
+    final patcher = SingleWriteClient(client, logger);
     _category = CategoryRemoteSource(_course, patcher, logger);
-    _grade = GradeRemoteSource(_course, logger, client);
+    _grade = GradeRemoteSource(_course, logger, patcher);
   }
 
   // 🎓 COURSE REPOSITORY IMPLEMENTATION (delegated to CourseRemoteSource)

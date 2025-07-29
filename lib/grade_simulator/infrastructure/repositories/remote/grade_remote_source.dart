@@ -1,5 +1,4 @@
 import 'package:logger/logger.dart';
-import 'package:sigapp/core/infrastructure/http/api_gateway_client.dart';
 import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
 import 'single_write_client.dart';
 import 'course_remote_source.dart';
@@ -11,8 +10,7 @@ class GradeRemoteSource {
   final SingleWriteClient _patcher;
   final Logger _logger;
 
-  GradeRemoteSource(this._course, this._logger, ApiGatewayClient client)
-    : _patcher = SingleWriteClient(client, _logger);
+  GradeRemoteSource(this._course, this._logger, this._patcher);
 
   /// Add a new grade to a category
   Future<CourseTracking> addGrade({

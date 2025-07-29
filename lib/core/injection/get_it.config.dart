@@ -154,8 +154,6 @@ import 'package:sigapp/grade_simulator/infrastructure/repositories/proxy/grade_r
     as _i442;
 import 'package:sigapp/grade_simulator/infrastructure/repositories/remote/remote_repository.dart'
     as _i680;
-import 'package:sigapp/grade_simulator/infrastructure/repositories/remote/single_write_client.dart'
-    as _i695;
 import 'package:sigapp/grade_simulator/infrastructure/repositories/sync_queue_repository.dart'
     as _i91;
 import 'package:sigapp/grade_simulator/infrastructure/services/conflict_resolver.dart'
@@ -166,8 +164,8 @@ import 'package:sigapp/grade_simulator/infrastructure/services/sync_manager.dart
     as _i1071;
 import 'package:sigapp/grade_simulator/infrastructure/widgets/grade_simulator/cubit.dart'
     as _i319;
-import 'package:sigapp/grade_simulator/infrastructure/widgets/grade_simulator/sync_metrics_cubit.dart'
-    as _i153;
+import 'package:sigapp/grade_simulator/infrastructure/widgets/grade_simulator/sync_metrics/sync_metrics_cubit.dart'
+    as _i1029;
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart'
     as _i607;
 import 'package:sigapp/shared/application/usecases/get_academic_info_usecase.dart'
@@ -231,16 +229,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i460.SharedPreferences>(),
       ),
     );
+    gh.singletonAsync<_i290.LocalDatabase>(() {
+      final i = _i290.LocalDatabase(gh<_i974.Logger>());
+      return i.init().then((_) => i);
+    });
     gh.singleton<_i200.ApiGatewayClient>(
       () => _i200.ApiGatewayClient(gh<_i974.Logger>()),
     );
     gh.singleton<_i897.UpdateService>(
       () => _i897.UpdateService(gh<_i974.Logger>()),
     );
-    gh.singletonAsync<_i290.LocalDatabase>(() {
-      final i = _i290.LocalDatabase(gh<_i974.Logger>());
-      return i.init().then((_) => i);
-    });
     gh.lazySingleton<_i465.AsyncOperationGuard>(
       () => _i465.AsyncOperationGuard(gh<_i974.Logger>()),
     );
@@ -249,13 +247,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i465.GradeSimulatorConflictResolver>(
       () => _i465.GradeSimulatorConflictResolver(gh<_i974.Logger>()),
-    );
-    gh.singleton<_i680.RemoteGradeSimulatorRepository>(
-      () => _i680.RemoteGradeSimulatorRepository(
-        gh<_i200.ApiGatewayClient>(),
-        gh<_i974.Logger>(),
-        gh<_i695.SingleWriteClient>(),
-      ),
     );
     gh.singletonAsync<_i576.AppInitializer>(
       () async => _i576.AppInitializer(
@@ -303,6 +294,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i889.ProgramCurriculumRepository>(
       () => _i654.ProgramCurriculumRepositoryImpl(gh<_i857.SigaClient>()),
+    );
+    gh.singleton<_i680.RemoteGradeSimulatorRepository>(
+      () => _i680.RemoteGradeSimulatorRepository(
+        gh<_i200.ApiGatewayClient>(),
+        gh<_i974.Logger>(),
+      ),
     );
     gh.lazySingletonAsync<_i1071.GradeSimulatorSyncManager>(
       () async => _i1071.GradeSimulatorSyncManager(
@@ -383,9 +380,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
-    gh.factoryAsync<_i153.SyncMetricsCubit>(
-      () async =>
-          _i153.SyncMetricsCubit(await getAsync<_i539.GetSyncMetricsUseCase>()),
+    gh.factoryAsync<_i1029.SyncMetricsCubit>(
+      () async => _i1029.SyncMetricsCubit(
+        await getAsync<_i539.GetSyncMetricsUseCase>(),
+      ),
     );
     gh.factory<_i27.ScheduledCoursesPageCubit>(
       () => _i27.ScheduledCoursesPageCubit(
@@ -406,7 +404,7 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.lazySingletonAsync<_i923.GradeTrackingCourseRepository>(
-      () async => _i888.GradeTrackingCourseRepositoryDecorator(
+      () async => _i888.GradeTrackingCourseRepositoryProxy(
         gh<_i680.RemoteGradeSimulatorRepository>(),
         await getAsync<_i72.LocalGradeSimulatorRepository>(),
         await getAsync<_i1071.GradeSimulatorSyncManager>(),

@@ -13,13 +13,13 @@ import 'package:sigapp/grade_simulator/infrastructure/repositories/proxy/base_re
 /// - Simplified error handling with consistent logging
 /// - Smart cache strategies with fallback mechanisms
 @LazySingleton(as: GradeTrackingCourseRepository)
-class GradeTrackingCourseRepositoryDecorator
+class GradeTrackingCourseRepositoryProxy
     extends BaseGradeSimulatorRepositoryProxy
     implements GradeTrackingCourseRepository {
   @override
   String get decoratorType => 'COURSE';
 
-  GradeTrackingCourseRepositoryDecorator(
+  GradeTrackingCourseRepositoryProxy(
     super.remoteRepository,
     super.localRepository,
     super.syncManager,

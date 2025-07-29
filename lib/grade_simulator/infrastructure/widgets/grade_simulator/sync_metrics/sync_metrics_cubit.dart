@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/grade_simulator/application/usecases/get_sync_metrics_use_case.dart';
+import 'package:sigapp/grade_simulator/domain/value_objects/sync_dashboard.dart';
 
 /// States
 abstract class SyncMetricsState {}

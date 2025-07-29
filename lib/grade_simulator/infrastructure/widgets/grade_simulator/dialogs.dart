@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
 import 'package:sigapp/grade_simulator/infrastructure/widgets/grade_simulator/cubit.dart';
 import 'package:sigapp/core/injection/get_it.dart';
-import 'package:sigapp/grade_simulator/infrastructure/widgets/grade_simulator/sync_metrics_cubit.dart';
-import 'compact_sync_metrics.dart';
+import 'package:sigapp/grade_simulator/infrastructure/widgets/grade_simulator/sync_metrics/sync_metrics_cubit.dart';
+import 'sync_metrics/sync_metrics.dart';
 
 void showHelpDialog(BuildContext context) {
   showDialog(
@@ -31,7 +31,7 @@ void showHelpDialog(BuildContext context) {
             // Métricas discretas para geeks 🤓
             BlocProvider(
               create: (context) => getIt<SyncMetricsCubit>()..initialize(),
-              child: const CompactSyncMetricsWidget(),
+              child: const SyncMetricWidget(),
             ),
           ],
         ),
