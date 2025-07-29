@@ -60,8 +60,8 @@ dart run build_runner build --delete-conflicting-outputs
 
 Cualquier colaboración es bienvenida. Puedes abrir un issue, proponer mejoras o enviar un pull request. Este es un proyecto comunitario orientado a mejorar la experiencia estudiantil con tecnologías modernas.
 
-<a href="https://github.com/josedaniel-cb/sigapp/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=josedaniel-cb/sigapp" />
+<a href="https://github.com/sigapp-unp/sigapp-mobile/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=sigapp-unp/sigapp-mobile" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).

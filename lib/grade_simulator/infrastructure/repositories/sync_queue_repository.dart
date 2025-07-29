@@ -57,7 +57,8 @@ class SyncQueueRepository {
     }, <SyncQueueData>[]);
   }
 
-  /// Persist a sync operation
+  /// Persist a sync operation with deduplication (UPSERT pattern)
+  /// ✅ OPTIMIZED: One operation per course maximum (Opción C - Simple)
   Future<void> persistOperation({
     required String operationType,
     required String fieldType,
@@ -67,27 +68,39 @@ class SyncQueueRepository {
   }) async {
     try {
       await _withLog(
-        'Persisting operation: $operationType for $entityKey',
+        'Persisting operation (UPSERT): $operationType for $entityKey',
         () async {
-          await _database
-              .into(_database.syncQueue)
-              .insert(
-                SyncQueueCompanion(
-                  operationType: Value(operationType),
-                  entityType: Value(entityType),
-                  entityKey: Value(entityKey),
-                  fieldName: Value(fieldType),
-                  operationData: Value(jsonEncode(operationData)),
-                  timestamp: Value(DateTime.now().millisecondsSinceEpoch),
-                  retryCount: const Value(0),
-                  status: Value(SyncStatus.pending.value),
-                ),
-              );
+          await _database.transaction(() async {
+            // 🚀 DEDUPLICATION: Delete existing pending operation for this course
+            await (_database.delete(_database.syncQueue)..where(
+              (tbl) =>
+                  tbl.entityKey.equals(entityKey) &
+                  tbl.status.equals(SyncStatus.pending.value),
+            )).go();
+
+            // Insert new operation (replaces any existing one)
+            await _database
+                .into(_database.syncQueue)
+                .insert(
+                  SyncQueueCompanion(
+                    operationType: Value(operationType),
+                    entityType: Value(entityType),
+                    entityKey: Value(entityKey),
+                    fieldName: Value(fieldType),
+                    operationData: Value(jsonEncode(operationData)),
+                    timestamp: Value(DateTime.now().millisecondsSinceEpoch),
+                    retryCount: const Value(0),
+                    status: Value(SyncStatus.pending.value),
+                  ),
+                );
+          });
         },
       );
     } catch (e) {
       // No crítico - continuar sin persistencia
-      _logger.w('[DRIFT_SYNC] Non-critical error persisting operation: $e');
+      _logger.w(
+        '[DRIFT_SYNC] Non-critical error persisting operation (UPSERT): $e',
+      );
     }
   }
 

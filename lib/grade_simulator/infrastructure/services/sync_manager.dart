@@ -65,28 +65,42 @@ class GradeSimulatorSyncManager {
     return (parts[0], parts[1]);
   }
 
-  /// Enqueue operation with simplified batching
-  /// ✅ FIXED: Restored fieldType parameter for compatibility with original decorator
+  /// Enqueue operation with deduplication by courseKey
+  /// ✅ OPTIMIZED: Deduplicates operations per course (Opción C - Simple)
   Future<void> enqueueSyncOperation({
     required String operationType,
-    required String fieldType, // ✅ ADDED BACK: for compatibility
+    required String fieldType, // ✅ MAINTAINED: for compatibility
     required String courseKey,
     required Map<String, dynamic> operationData,
   }) async {
     try {
-      // Add to simple pending list
-      _pendingOperations.add({
+      final newOperation = {
         'operation_type': operationType,
-        'field_type': fieldType, // ✅ TRACK: fieldType for compatibility
+        'field_type': fieldType,
         'course_key': courseKey,
         'operation_data': operationData,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
-      });
+      };
 
-      _operationsBatched++;
-      _addEvent('Operation batched: $operationType for $courseKey');
+      // 🚀 DEDUPLICATION: Search for existing operation for this course
+      final existingIndex = _pendingOperations.indexWhere(
+        (op) => op['course_key'] == courseKey,
+      );
 
-      _logger.d('[SYNC] Batched: $operationType ($fieldType) for $courseKey');
+      if (existingIndex != -1) {
+        // Replace existing operation (Last-Write-Wins)
+        _pendingOperations[existingIndex] = newOperation;
+        _logger.d('[SYNC] Replaced existing operation for $courseKey');
+        _addEvent('Operation replaced: $operationType for $courseKey');
+      } else {
+        // Add new operation
+        _pendingOperations.add(newOperation);
+        _operationsBatched++;
+        _logger.d(
+          '[SYNC] Batched new: $operationType ($fieldType) for $courseKey',
+        );
+        _addEvent('Operation batched: $operationType for $courseKey');
+      }
 
       // Simple sync queue persistence (crash protection only)
       await _syncQueueRepository.persistOperation(
@@ -252,6 +266,59 @@ class GradeSimulatorSyncManager {
 
         await _courseRepository.create(tracking);
         break;
+
+      // ✅ ADDED: Handle individual grade operations
+      case 'addGrade':
+      case 'updateGrade':
+      case 'deleteGrade':
+      case 'toggleGradeEnabled':
+        // These operations modify grades and should trigger updateGradesField
+        final categoryId = operationData['categoryId'] as String;
+        final grades =
+            (operationData['grades'] as List)
+                .map(
+                  (grade) => Grade(
+                    id: grade['id'],
+                    name: grade['name'],
+                    score: grade['score'].toDouble(),
+                    enabled: grade['enabled'] ?? true,
+                  ),
+                )
+                .toList();
+        await _gradeRepository.updateGradesField(
+          studentCode: studentCode,
+          courseCode: courseCode,
+          categoryId: categoryId,
+          grades: grades,
+        );
+        break;
+
+      // ✅ ADDED: Handle individual category operations
+      case 'addCategory':
+      case 'deleteCategory':
+      case 'updateCategory':
+        // These operations modify categories and should trigger updateCategoriesField
+        final categories =
+            (operationData['categories'] as List)
+                .map(
+                  (cat) => GradeCategory(
+                    id: cat['id'],
+                    name: cat['name'],
+                    weight: cat['weight'].toDouble(),
+                    grades: _deserializeGradesForCategory(
+                      cat['id'],
+                      operationData['grades'] as List? ?? [],
+                    ),
+                  ),
+                )
+                .toList();
+        await _categoryRepository.updateCategoriesField(
+          studentCode: studentCode,
+          courseCode: courseCode,
+          categories: categories,
+        );
+        break;
+
       case 'update_categories':
         final categories =
             (operationData['categories'] as List)
