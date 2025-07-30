@@ -1,6 +1,3 @@
-/// Value objects for sync queue domain
-library;
-
 /// Represents queue statistics as a domain concept
 class QueueStats {
   final int pending;

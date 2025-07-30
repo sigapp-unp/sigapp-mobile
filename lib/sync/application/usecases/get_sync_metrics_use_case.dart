@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
+import 'package:sigapp/grade_simulator/infrastructure/services/grade_simulator_sync_manager.dart';
 import 'package:sigapp/sync/domain/value_objects/sync_dashboard.dart';
-import 'package:sigapp/sync/infrastructure/services/sync_manager.dart';
 
 /// Provides just enough stats for compact_sync_metrics.dart to work
 /// without complex tracking or performance overhead
@@ -12,7 +12,7 @@ class GetSyncMetricsUseCase {
 
   /// Get minimal dashboard for UI widgets
   SyncMetricsDashboard execute() {
-    final stats = _syncManager.basicStats;
+    final stats = _syncManager.syncStats;
 
     return SyncMetricsDashboard(
       isOfflineMode: _syncManager.isOfflineMode,
@@ -31,7 +31,7 @@ class GetSyncMetricsUseCase {
 
   /// Export basic stats as string for debugging
   String exportMetricsAsString() {
-    final stats = _syncManager.basicStats;
+    final stats = _syncManager.syncStats;
     return '''
 === SYNC STATS ===
 Success Rate: ${stats['success_rate']}

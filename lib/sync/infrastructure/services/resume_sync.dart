@@ -1,18 +1,23 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sigapp/sync/infrastructure/services/sync_manager.dart';
 
 /// Integrates with Flutter lifecycle for automatic sync on app resume
 /// Handles connectivity recovery and background sync scenarios
-@Singleton()
-class GradeSimulatorResumeSync with WidgetsBindingObserver {
-  final GradeSimulatorSyncManager _syncManager;
+abstract class ResumeSync with WidgetsBindingObserver {
   final Logger _logger;
   DateTime? _lastSyncAttempt;
   DateTime? _lastBackgroundTime;
+  final Future<void> Function() _checkConnectivityRecovery;
+  final Future<void> Function() _processPendingOperations;
 
-  GradeSimulatorResumeSync(this._syncManager, this._logger);
+  ResumeSync({
+    required Logger logger,
+    required Future<void> Function() checkConnectivityRecovery,
+    required Future<void> Function() processPendingOperations,
+  }) : _logger = logger,
+       _checkConnectivityRecovery = checkConnectivityRecovery,
+       _processPendingOperations = processPendingOperations;
 
   /// Initialize lifecycle observer
   @PostConstruct()
@@ -61,7 +66,7 @@ class GradeSimulatorResumeSync with WidgetsBindingObserver {
       );
 
       // ✅ MEJORADO: Primero intentar recovery de conectividad, luego sync
-      await _syncManager.checkConnectivityRecovery();
+      await _checkConnectivityRecovery();
 
       _logger.i('[LIFECYCLE_SYNC] App resume sync completed');
     } catch (e, s) {
@@ -77,6 +82,6 @@ class GradeSimulatorResumeSync with WidgetsBindingObserver {
   /// Trigger manual sync (para debugging/testing)
   Future<void> triggerManualSync() async {
     _logger.i('[LIFECYCLE_SYNC] Manual sync triggered');
-    await _syncManager.processPendingOperations();
+    await _processPendingOperations();
   }
 }

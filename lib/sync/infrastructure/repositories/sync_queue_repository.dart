@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/core/infrastructure/database/local_database.dart';
@@ -14,6 +13,7 @@ class SyncQueueRepository {
 
   /// Persist operation to SQLite (with deduplication)
   Future<void> persistOperation({
+    required String entityType,
     required String operationType,
     required String fieldType,
     required String entityKey,
@@ -21,18 +21,20 @@ class SyncQueueRepository {
   }) async {
     try {
       await _database.transaction(() async {
-        // Delete existing operation for same entityKey (deduplication)
-        await (_database.delete(_database.syncQueue)
-          ..where((tbl) => tbl.entityKey.equals(entityKey))).go();
+        await (_database.delete(_database.syncQueue)..where(
+          (tbl) =>
+              tbl.entityType.equals(entityType) &
+              tbl.entityKey.equals(entityKey),
+        )).go();
 
         // Insert new operation
         await _database
             .into(_database.syncQueue)
             .insert(
               SyncQueueCompanion(
-                operationType: Value(operationType),
-                entityType: Value('course_tracking'),
+                entityType: Value(entityType),
                 entityKey: Value(entityKey),
+                operationType: Value(operationType),
                 fieldName: Value(fieldType),
                 operationData: Value(jsonEncode(operationData)),
                 timestamp: Value(DateTime.now().millisecondsSinceEpoch),
@@ -41,7 +43,9 @@ class SyncQueueRepository {
               ),
             );
       });
-      _logger.d('[SYNC_QUEUE] Persisted $operationType for $entityKey');
+      _logger.d(
+        '[SYNC_QUEUE] Persisted $operationType for $entityType.$entityKey',
+      );
     } catch (e) {
       _logger.e('[SYNC_QUEUE] Error persisting operation: $e');
       rethrow;
@@ -50,6 +54,7 @@ class SyncQueueRepository {
 
   /// Get pending operations for sync processing
   Future<List<SyncQueueData>> getPendingOperations({
+    required String entityType,
     int maxRetryCount = defaultMaxRetryCount,
   }) async {
     try {
@@ -57,6 +62,7 @@ class SyncQueueRepository {
           _database.select(_database.syncQueue)
             ..where(
               (tbl) =>
+                  tbl.entityType.equals(entityType) &
                   tbl.status.equals(SyncStatus.pending.value) &
                   tbl.retryCount.isSmallerThanValue(maxRetryCount),
             )
@@ -106,11 +112,14 @@ class SyncQueueRepository {
   }
 
   /// Clean up completed operations to prevent SQLite bloat
-  Future<void> cleanupCompletedOperations() async {
+  Future<void> cleanupCompletedOperations({String? entityTypeFilter}) async {
     try {
-      final deletedCount =
-          await (_database.delete(_database.syncQueue)
-            ..where((tbl) => tbl.status.equals(SyncStatus.synced.value))).go();
+      final deleter = _database.delete(_database.syncQueue)
+        ..where((tbl) => tbl.status.equals(SyncStatus.synced.value));
+      if (entityTypeFilter != null) {
+        deleter.where((tbl) => tbl.entityType.equals(entityTypeFilter));
+      }
+      final deletedCount = await deleter.go();
 
       if (deletedCount > 0) {
         _logger.d('[SYNC_QUEUE] Cleaned up $deletedCount completed operations');

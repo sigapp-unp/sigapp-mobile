@@ -1,3 +1,5 @@
+import 'package:sigapp/sync/domain/timestamped_mixin.dart';
+
 class CourseTracking {
   final String? id;
   final String studentCode;
@@ -14,7 +16,8 @@ class CourseTracking {
   bool get isWeightValid {
     if (categories.isEmpty) return false;
     final totalWeight = categories.map((c) => c.weight).reduce((a, b) => a + b);
-    return totalWeight == 100.0;
+    // Tolerancia de ±0.01 para evitar errores de punto flotante
+    return (totalWeight - 100.0).abs() < 0.01;
   }
 
   double get weightDifference {
@@ -155,9 +158,6 @@ class GradeCategory with Timestamped {
 }
 
 /// Mixin for entities with timestamps for conflict resolution
-mixin Timestamped {
-  DateTime get timestamp;
-}
 
 class Grade with Timestamped {
   final String? id;

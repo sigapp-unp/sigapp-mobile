@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:get_it/get_it.dart';
-import 'package:sigapp/sync/infrastructure/services/sync_manager.dart';
+import 'package:sigapp/core/injection/get_it.dart';
+import 'package:sigapp/grade_simulator/infrastructure/services/grade_simulator_sync_manager.dart';
 
 /// Bypasses complex cubit/dashboard and reads directly from SyncManager
 /// Perfect for debugging without over-engineering
@@ -11,8 +11,8 @@ class SyncMetricWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     try {
-      final syncManager = GetIt.instance<GradeSimulatorSyncManager>();
-      final stats = syncManager.basicStats;
+      final syncManager = getIt<GradeSimulatorSyncManager>();
+      final stats = syncManager.syncStats;
 
       return _buildCompactMetrics(stats, syncManager.isOfflineMode);
     } catch (e) {

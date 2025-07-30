@@ -6,6 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sigapp/grade_simulator/infrastructure/database/local_course_grade_simulator.dart';
 import 'package:sigapp/sync/infrastructure/database/sync_queue.dart';
 
+export 'package:drift/drift.dart';
+
 part 'local_database.g.dart';
 
 /// Main Drift database class for SigApp
