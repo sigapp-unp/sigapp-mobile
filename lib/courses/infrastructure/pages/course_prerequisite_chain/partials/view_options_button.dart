@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
+import 'package:sigapp/courses/domain/entities/course_chain_preferences.dart';
 
 class ViewOptionsButton extends StatelessWidget {
   final CourseViewMode viewMode;

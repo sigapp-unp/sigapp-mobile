@@ -8,7 +8,7 @@ import 'package:sigapp/courses/application/usecases/get_course_view_mode_prefere
 import 'package:sigapp/courses/application/usecases/set_course_view_mode_preferences_usecase.dart';
 import 'package:sigapp/courses/application/usecases/get_highlight_critical_path_preferences_usecase.dart';
 import 'package:sigapp/courses/application/usecases/set_highlight_critical_path_preferences_usecase.dart';
-import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
+import 'package:sigapp/courses/domain/entities/course_chain_preferences.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
 import 'package:sigapp/courses/infrastructure/utils/debounce_manager.dart';
 

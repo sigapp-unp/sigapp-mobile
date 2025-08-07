@@ -1,25 +1,44 @@
+import 'package:sigapp/courses/domain/entities/global_preferences.dart';
+import 'package:sigapp/courses/domain/entities/semester_preferences.dart';
+
 abstract class UserPreferencesRepository {
-  /// Obtiene las preferencias completas del usuario
-  Future<Map<String, dynamic>> getUserPreferences({
+  // ===== GLOBAL PREFERENCES =====
+
+  /// Get global preferences (UI/UX settings)
+  Future<GlobalPreferences> getGlobalPreferences({required String studentCode});
+
+  /// Update global preferences
+  Future<GlobalPreferences> updateGlobalPreferences({
     required String studentCode,
+    required GlobalPreferences preferences,
   });
 
-  /// Actualiza las preferencias del usuario (merge con existentes)
-  Future<Map<String, dynamic>> updateUserPreferences({
+  // ===== SEMESTER-SPECIFIC PREFERENCES =====
+
+  /// Get semester-specific preferences
+  Future<SemesterPreferences> getSemesterPreferences({
     required String studentCode,
-    required Map<String, dynamic> preferences,
+    required String semesterId,
   });
 
-  /// Obtiene una preferencia específica por path (e.g., 'course_visibility.CURSO123')
-  Future<dynamic> getPreference({
+  /// Update semester-specific preferences
+  Future<SemesterPreferences> updateSemesterPreferences({
     required String studentCode,
-    required String path,
+    required String semesterId,
+    required SemesterPreferences preferences,
   });
 
-  /// Establece una preferencia específica por path
-  Future<Map<String, dynamic>> setPreference({
+  /// Add an event to hidden schedule events list for a specific semester (atomic operation)
+  Future<void> addSemesterHiddenScheduleEvent({
     required String studentCode,
-    required String path,
-    required dynamic value,
+    required String semesterId,
+    required String eventId,
+  });
+
+  /// Remove an event from hidden schedule events list for a specific semester (atomic operation)
+  Future<void> removeSemesterHiddenScheduleEvent({
+    required String studentCode,
+    required String semesterId,
+    required String eventId,
   });
 }

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:sigapp/auth/application/services/api_gateway_auth_service.dart';
+import 'package:sigapp/auth/application/services/firebase_auth_service.dart';
 import 'package:sigapp/auth/application/usecases/siga_authentication_usecase.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
 import 'package:sigapp/auth/domain/services/navigation_service.dart';
@@ -12,7 +12,7 @@ import 'package:logger/logger.dart';
 @injectable
 class SignInUseCase {
   final SharedPreferencesAuthRepository _sharedPreferencesAuthRepository;
-  final ApiGatewayAuthService _supabaseAuthService;
+  final FirebaseAuthService _firebaseAuthService;
   final NavigationService _navigationService;
   final GetAcademicInfoUseCase _getAcademicInfoUseCase;
   final StudentSessionRepository _studentSessionRepository;
@@ -22,7 +22,7 @@ class SignInUseCase {
 
   SignInUseCase(
     this._sharedPreferencesAuthRepository,
-    this._supabaseAuthService,
+    this._firebaseAuthService,
     this._navigationService,
     this._getAcademicInfoUseCase,
     this._studentSessionRepository,
@@ -74,64 +74,9 @@ class SignInUseCase {
       throw Exception('Ocurrió un error al obtener tu información: $e');
     }
 
-    await _supabaseSignInAndSignUp(username, password);
+    await _firebaseAuthService.signInWithStudentCode(username, password);
     _navigationService.refreshNavigation();
 
     return sigaAuthenticationResult;
-  }
-
-  Future<void> _supabaseSignInAndSignUp(
-    String username,
-    String password,
-  ) async {
-    try {
-      final userExists = await _supabaseAuthService.userExists(
-        studentCode: username,
-      );
-
-      if (userExists) {
-        // Usuario existe - intentar login directo
-        try {
-          await _supabaseAuthService.loginUser(
-            password: password,
-            studentCode: username,
-          );
-          _logger.i('[APPLICATION] Login exitoso en Supabase.');
-        } catch (e) {
-          // Login falló - actualizar contraseña e intentar de nuevo
-          _logger.w(
-            '[APPLICATION] Actualizando contraseña y reintentando login.',
-          );
-          await _supabaseAuthService.updateUserPassword(
-            newPassword: password,
-            studentCode: username,
-          );
-          await _supabaseAuthService.loginUser(
-            password: password,
-            studentCode: username,
-          );
-          _logger.i('[APPLICATION] Contraseña actualizada y login exitoso.');
-        }
-      } else {
-        // Usuario no existe - registrar y hacer login
-        _logger.i('[APPLICATION] Registrando nuevo usuario.');
-        await _supabaseAuthService.registerUser(
-          password: password,
-          studentCode: username,
-        );
-        await _supabaseAuthService.loginUser(
-          password: password,
-          studentCode: username,
-        );
-        _logger.i('[APPLICATION] Usuario registrado y login exitoso.');
-      }
-    } catch (e, s) {
-      _logger.e(
-        '[APPLICATION] Error en autenticación Supabase: $username',
-        error: e,
-        stackTrace: s,
-      );
-      rethrow;
-    }
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:sigapp/core/infrastructure/database/local_database.dart';
 import 'package:sigapp/core/config/environment_config.dart';
 import 'package:sigapp/firebase_options.dart';
 
@@ -13,10 +12,9 @@ import 'package:sigapp/firebase_options.dart';
 /// - Initialize Firebase (only in production)
 @singleton
 class AppInitializer {
-  final LocalDatabase _database;
   final Logger _logger;
 
-  AppInitializer(this._database, this._logger);
+  AppInitializer(this._logger);
 
   Future<AppInitializationResult> initializeApp() async {
     _logger.i('[APP_INIT] 🚀 Starting application initialization...');
@@ -26,11 +24,7 @@ class AppInitializer {
       await EnvironmentConfig.loadEnvironment();
       _logger.d('[APP_INIT] ✅ Environment loaded');
 
-      // 2. Initialize database (LocalDatabase handles migration automatically)
-      await _database.init();
-      _logger.d('[APP_INIT] ✅ Drift database initialization completed');
-
-      // 3. Initialize Firebase (only in production)
+      // 2. Initialize Firebase (only in production)
       await _initializeFirebase();
       _logger.d('[APP_INIT] ✅ Firebase initialization completed');
 

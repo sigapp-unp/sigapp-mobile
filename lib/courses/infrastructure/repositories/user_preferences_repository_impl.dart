@@ -1,163 +1,183 @@
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/core/infrastructure/http/api_gateway_client.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
+import 'package:sigapp/courses/domain/entities/global_preferences.dart';
+import 'package:sigapp/courses/domain/entities/semester_preferences.dart';
+import 'package:sigapp/courses/infrastructure/models/global_preferences_model.dart';
+import 'package:sigapp/courses/infrastructure/models/semester_preferences_model.dart';
+import 'package:sigapp/courses/infrastructure/mappers/global_preferences_mapper.dart';
+import 'package:sigapp/courses/infrastructure/mappers/semester_preferences_mapper.dart';
 
 @LazySingleton(as: UserPreferencesRepository)
 class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
-  final ApiGatewayClient _workerClient;
+  final FirebaseFirestore _firestore;
   final Logger _logger;
 
-  UserPreferencesRepositoryImpl(this._workerClient, this._logger);
+  UserPreferencesRepositoryImpl(this._firestore, this._logger);
+
+  // ===== SEMESTER-SPECIFIC PREFERENCES =====
+
+  /// Gets typed collection reference for semester preferences
+  CollectionReference<SemesterPreferencesModel> _getSemesterPreferencesRef(
+    String studentCode,
+  ) {
+    return _firestore
+        .collection('users')
+        .doc(studentCode)
+        .collection('preferences')
+        .doc('_semesters') // Documento "contenedor" para la subcolección
+        .collection('data')
+        .withConverter<SemesterPreferencesModel>(
+          fromFirestore:
+              (snap, _) => SemesterPreferencesModel.fromJson(snap.data()!),
+          toFirestore: (prefs, _) => prefs.toJson(),
+        );
+  }
+
+  /// Gets typed document reference for global preferences
+  DocumentReference<GlobalPreferencesModel> _getGlobalPreferencesRef(
+    String studentCode,
+  ) {
+    return _firestore
+        .collection('users')
+        .doc(studentCode)
+        .collection('preferences')
+        .doc('global')
+        .withConverter<GlobalPreferencesModel>(
+          fromFirestore:
+              (snap, _) => GlobalPreferencesModel.fromJson(snap.data()!),
+          toFirestore: (prefs, _) => prefs.toJson(),
+        );
+  }
 
   @override
-  Future<Map<String, dynamic>> getUserPreferences({
+  Future<SemesterPreferences> getSemesterPreferences({
     required String studentCode,
+    required String semesterId,
   }) async {
     try {
-      _logger.d(
-        '[INFRASTRUCTURE] Getting preferences for student: $studentCode',
-      );
+      final semesterPrefsRef = _getSemesterPreferencesRef(studentCode);
+      final doc = await semesterPrefsRef.doc(semesterId).get();
 
-      final queryParams = {
-        'student_code': 'eq.$studentCode',
-        'select': 'preferences',
-      };
-
-      final response = await _workerClient.http.get(
-        '/rest/v1/user_preferences',
-        queryParameters: queryParams,
-        options: Options(headers: {'X-Upstream': 'supabase'}),
-      );
-
-      final List<dynamic> data = response.data;
-      if (data.isEmpty) {
-        _logger.d('[INFRASTRUCTURE] No preferences found, returning empty map');
-        return {};
+      if (!doc.exists) {
+        return SemesterPreferencesMapper.toDomain(
+          const SemesterPreferencesModel(),
+        );
       }
 
-      final Map<String, dynamic> preferences =
-          data[0]['preferences'] as Map<String, dynamic>;
-      _logger.d('[INFRASTRUCTURE] Retrieved preferences successfully');
-      return preferences;
+      return SemesterPreferencesMapper.toDomain(doc.data()!);
     } catch (e, s) {
-      _logger.w(
-        '[INFRASTRUCTURE] Error getting user preferences (using defaults)',
+      _logger.e(
+        'Error getting semester preferences for $semesterId',
         error: e,
         stackTrace: s,
       );
-      return {}; // Graceful fallback to empty preferences
+      rethrow;
     }
   }
 
   @override
-  Future<Map<String, dynamic>> updateUserPreferences({
+  Future<SemesterPreferences> updateSemesterPreferences({
     required String studentCode,
-    required Map<String, dynamic> preferences,
+    required String semesterId,
+    required SemesterPreferences preferences,
   }) async {
     try {
-      _logger.d(
-        '[INFRASTRUCTURE] Updating preferences for student: $studentCode',
-      );
+      final semesterPrefsRef = _getSemesterPreferencesRef(studentCode);
+      final model = SemesterPreferencesMapper.toInfrastructure(preferences);
 
-      // Primero intentar UPDATE
-      final updateResponse = await _workerClient.http.patch(
-        '/rest/v1/user_preferences',
-        queryParameters: {'student_code': 'eq.$studentCode'},
-        data: {'preferences': preferences},
-        options: Options(headers: {'X-Upstream': 'supabase'}),
-      );
-
-      // Si no hay filas afectadas, hacer INSERT
-      if (updateResponse.data.isEmpty) {
-        _logger.d(
-          '[INFRASTRUCTURE] No existing preferences, creating new record',
-        );
-
-        await _workerClient.http.post(
-          '/rest/v1/user_preferences',
-          data: {'student_code': studentCode, 'preferences': preferences},
-          options: Options(
-            headers: {
-              'X-Upstream': 'supabase',
-              'Prefer': 'return=representation',
-            },
-          ),
-        );
-      }
-
-      _logger.d('[INFRASTRUCTURE] Preferences updated successfully');
+      await semesterPrefsRef.doc(semesterId).set(model);
       return preferences;
     } catch (e, s) {
       _logger.e(
-        '[INFRASTRUCTURE] Error updating user preferences',
+        'Error updating semester preferences for $semesterId',
         error: e,
         stackTrace: s,
       );
-      throw Exception('Failed to update user preferences: $e');
+      rethrow;
     }
   }
 
   @override
-  Future<dynamic> getPreference({
+  Future<void> addSemesterHiddenScheduleEvent({
     required String studentCode,
-    required String path,
+    required String semesterId,
+    required String eventId,
   }) async {
-    final preferences = await getUserPreferences(studentCode: studentCode);
-    return _getNestedValue(preferences, path);
+    try {
+      final semesterPrefsRef = _getSemesterPreferencesRef(studentCode);
+
+      await semesterPrefsRef.doc(semesterId).update({
+        'scheduleHiddenEvents': FieldValue.arrayUnion([eventId]),
+      });
+    } catch (e, s) {
+      _logger.e(
+        'Error adding hidden schedule event to semester $semesterId',
+        error: e,
+        stackTrace: s,
+      );
+      rethrow;
+    }
   }
 
   @override
-  Future<Map<String, dynamic>> setPreference({
+  Future<void> removeSemesterHiddenScheduleEvent({
     required String studentCode,
-    required String path,
-    required dynamic value,
+    required String semesterId,
+    required String eventId,
   }) async {
-    final currentPreferences = await getUserPreferences(
-      studentCode: studentCode,
-    );
-    final updatedPreferences = Map<String, dynamic>.from(currentPreferences);
+    try {
+      final semesterPrefsRef = _getSemesterPreferencesRef(studentCode);
 
-    _setNestedValue(updatedPreferences, path, value);
-
-    return updateUserPreferences(
-      studentCode: studentCode,
-      preferences: updatedPreferences,
-    );
+      await semesterPrefsRef.doc(semesterId).update({
+        'scheduleHiddenEvents': FieldValue.arrayRemove([eventId]),
+      });
+    } catch (e, s) {
+      _logger.e(
+        'Error removing hidden schedule event from semester $semesterId',
+        error: e,
+        stackTrace: s,
+      );
+      rethrow;
+    }
   }
 
-  /// Helper para obtener valor anidado usando dot notation (e.g., 'course_visibility.CURSO123')
-  dynamic _getNestedValue(Map<String, dynamic> map, String path) {
-    final keys = path.split('.');
-    dynamic current = map;
+  // ===== NEW METHODS FOR GLOBAL PREFERENCES =====
 
-    for (final key in keys) {
-      if (current is Map<String, dynamic> && current.containsKey(key)) {
-        current = current[key];
-      } else {
-        return null;
+  @override
+  Future<GlobalPreferences> getGlobalPreferences({
+    required String studentCode,
+  }) async {
+    try {
+      final globalPrefsRef = _getGlobalPreferencesRef(studentCode);
+      final doc = await globalPrefsRef.get();
+
+      if (!doc.exists) {
+        return GlobalPreferencesMapper.toDomain(const GlobalPreferencesModel());
       }
-    }
 
-    return current;
+      return GlobalPreferencesMapper.toDomain(doc.data()!);
+    } catch (e, s) {
+      _logger.e('Error getting global preferences', error: e, stackTrace: s);
+      rethrow;
+    }
   }
 
-  /// Helper para establecer valor anidado usando dot notation
-  void _setNestedValue(Map<String, dynamic> map, String path, dynamic value) {
-    final keys = path.split('.');
-    Map<String, dynamic> current = map;
+  @override
+  Future<GlobalPreferences> updateGlobalPreferences({
+    required String studentCode,
+    required GlobalPreferences preferences,
+  }) async {
+    try {
+      final globalPrefsRef = _getGlobalPreferencesRef(studentCode);
+      final model = GlobalPreferencesMapper.toInfrastructure(preferences);
 
-    // Navegar hasta el penúltimo nivel, creando objetos si no existen
-    for (int i = 0; i < keys.length - 1; i++) {
-      final key = keys[i];
-      if (!current.containsKey(key) || current[key] is! Map<String, dynamic>) {
-        current[key] = <String, dynamic>{};
-      }
-      current = current[key] as Map<String, dynamic>;
+      await globalPrefsRef.set(model);
+      return preferences;
+    } catch (e, s) {
+      _logger.e('Error updating global preferences', error: e, stackTrace: s);
+      rethrow;
     }
-
-    // Establecer el valor final
-    current[keys.last] = value;
   }
 }

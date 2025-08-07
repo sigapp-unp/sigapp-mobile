@@ -54,6 +54,8 @@ class ScheduleTabWidget extends StatelessWidget {
     return BlocProvider(
       create: (context) {
         final cubit = getIt<CourseVisibilityCubit>();
+        // Set the semester ID before loading events
+        cubit.setSemesterId(selectedSemester.id);
         cubit.loadHiddenEvents(
           WeeklyScheduleWidget(courses: enrolledCourses).events,
         );

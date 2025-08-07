@@ -27,6 +27,8 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState>
   final ToastService _toastService;
   final Logger _logger;
 
+  String? _semesterId; // Track the current semester
+
   CourseVisibilityCubit(
     this._getAllHiddenCoursesUseCase,
     this._setCourseVisibilityUseCase,
@@ -37,16 +39,29 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState>
     initDebounce(toastService: _toastService, logger: _logger);
   }
 
+  /// Set the semester ID for this cubit instance
+  void setSemesterId(String semesterId) {
+    _semesterId = semesterId;
+  }
+
   Future<void> loadHiddenEvents(List<WeeklyScheduleWidgetItem> events) async {
     if (events.isEmpty) {
       emit(state.copyWith(isLoading: false));
       return;
     }
 
+    if (_semesterId == null) {
+      _logger.e('[CUBIT] semesterId not set! Call setSemesterId() first');
+      emit(state.copyWith(isLoading: false));
+      return;
+    }
+
     final hiddenStatusMap = <String, bool>{};
 
-    // Use the use case to get all hidden event IDs
-    final hiddenEventIds = await _getAllHiddenCoursesUseCase.execute();
+    // Use the use case to get all hidden event IDs for this semester
+    final hiddenEventIds = await _getAllHiddenCoursesUseCase.execute(
+      semesterId: _semesterId!,
+    );
 
     for (var event in events) {
       final eventId = event.data.id;
@@ -73,7 +88,11 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState>
     debouncedSave(
       key: 'visibility_${event.data.id}',
       operation:
-          () => _setCourseVisibilityUseCase.execute(event.data.id, !isHidden),
+          () => _setCourseVisibilityUseCase.execute(
+            eventId: event.data.id,
+            isVisible: !isHidden,
+            semesterId: _semesterId!,
+          ),
       errorMessage:
           'Error guardando visibilidad del curso. El cambio se mantiene localmente.',
     );

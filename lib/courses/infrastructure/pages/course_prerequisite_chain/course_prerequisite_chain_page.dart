@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sigapp/courses/domain/entities/course_chain_preferences.dart';
 import 'package:sigapp/courses/domain/entities/course_type.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
-import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/course_chain_preferences_cubit.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/partials/view_options_sheet.dart';
 import 'package:sigapp/courses/infrastructure/pages/course_prerequisite_chain/partials/view_options_button.dart';

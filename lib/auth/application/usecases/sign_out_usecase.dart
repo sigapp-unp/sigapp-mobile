@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
-import 'package:sigapp/auth/application/services/api_gateway_auth_service.dart';
+import 'package:sigapp/auth/application/services/firebase_auth_service.dart';
 import 'package:sigapp/auth/domain/exceptions/session_exception.dart';
 import 'package:sigapp/auth/domain/repositories/auth_repository.dart';
 import 'package:sigapp/auth/domain/repositories/shared_preferences_auth_repository.dart';
@@ -19,7 +19,7 @@ class SignOutUseCase {
   final AuthRepository _authRepository;
   final RegevaRepository _regevaRepository;
   final ProgressIndicatorService _progressIndicatorService;
-  final ApiGatewayAuthService _apiGatewayAuthService;
+  final FirebaseAuthService _firebaseAuthService;
   final StudentSessionRepository _studentSessionRepository;
   final StudentRepository _studentRepository;
   final Logger _logger;
@@ -30,7 +30,7 @@ class SignOutUseCase {
     this._authRepository,
     this._regevaRepository,
     this._progressIndicatorService,
-    this._apiGatewayAuthService,
+    this._firebaseAuthService,
     this._toastService,
     this._studentSessionRepository,
     this._studentRepository,
@@ -71,10 +71,10 @@ class SignOutUseCase {
     }
 
     try {
-      await _apiGatewayAuthService.logoutUser();
+      await _firebaseAuthService.signOut();
     } catch (e, s) {
       _logger.w(
-        '[AUTH] Error logging out from Supabase: $e (continuing anyway)',
+        '[AUTH] Error logging out from Firebase: $e (continuing anyway)',
         error: e,
         stackTrace: s,
       );

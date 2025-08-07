@@ -1,5 +1,3 @@
-import 'package:sigapp/sync/domain/timestamped_mixin.dart';
-
 class CourseTracking {
   final String? id;
   final String studentCode;
@@ -113,21 +111,18 @@ class CourseTracking {
   }
 }
 
-class GradeCategory with Timestamped {
+class GradeCategory {
   final String? id;
   final String name;
   final double weight;
   final List<Grade> grades;
-  @override
-  final DateTime timestamp; // For conflict resolution
 
   GradeCategory({
     this.id,
     required this.name,
     required this.weight,
     required this.grades,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+  });
 
   double get averagePercentage {
     final enabledGrades = grades.where((g) => g.enabled).toList();
@@ -152,29 +147,20 @@ class GradeCategory with Timestamped {
       name: name ?? this.name,
       weight: weight ?? this.weight,
       grades: grades ?? this.grades,
-      timestamp: timestamp ?? this.timestamp,
     );
   }
 }
 
 /// Mixin for entities with timestamps for conflict resolution
 
-class Grade with Timestamped {
+class Grade {
   final String? id;
   final String name;
   final double score;
   final bool enabled;
-  @override
-  final DateTime timestamp; // For conflict resolution
 
-  Grade({
-    this.id,
-    required this.name,
-    required this.score,
-    bool? enabled,
-    DateTime? timestamp,
-  }) : enabled = enabled ?? true,
-       timestamp = timestamp ?? DateTime.now();
+  Grade({this.id, required this.name, required this.score, bool? enabled})
+    : enabled = enabled ?? true;
 
   Grade copyWith({
     String? id,
@@ -188,7 +174,6 @@ class Grade with Timestamped {
       name: name ?? this.name,
       score: score ?? this.score,
       enabled: enabled ?? this.enabled,
-      timestamp: timestamp ?? this.timestamp,
     );
   }
 }

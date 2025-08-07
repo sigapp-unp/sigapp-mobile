@@ -2,7 +2,6 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
-import 'package:sigapp/courses/domain/value_objects/preference_keys.dart';
 
 @injectable
 class SetHighlightCriticalPathPreferencesUseCase {
@@ -20,10 +19,21 @@ class SetHighlightCriticalPathPreferencesUseCase {
   Future<void> execute(bool enabled) async {
     try {
       final studentCode = await _getStudentCode();
-      await _preferencesRepository.setPreference(
+
+      // Get current global preferences
+      final currentGlobalPrefs = await _preferencesRepository
+          .getGlobalPreferences(studentCode: studentCode);
+
+      // Update only the critical path preference
+      final updatedGlobalPrefs = currentGlobalPrefs.copyWith(
+        courseChain: currentGlobalPrefs.courseChain.copyWith(
+          highlightCriticalPath: enabled,
+        ),
+      );
+
+      await _preferencesRepository.updateGlobalPreferences(
         studentCode: studentCode,
-        path: PreferenceKeys.courseChainHighlightCriticalPath,
-        value: enabled, // Store as boolean directly
+        preferences: updatedGlobalPrefs,
       );
 
       _logger.d('[USE_CASE] Highlight critical path updated to: $enabled');

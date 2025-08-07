@@ -1,9 +1,8 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
+import 'package:sigapp/courses/domain/entities/course_chain_preferences.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
-import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
-import 'package:sigapp/courses/domain/value_objects/preference_keys.dart';
 
 @injectable
 class GetCourseViewModeUseCase {
@@ -21,17 +20,9 @@ class GetCourseViewModeUseCase {
   Future<CourseViewMode> execute() async {
     try {
       final studentCode = await _getStudentCode();
-      final value = await _preferencesRepository.getPreference(
-        studentCode: studentCode,
-        path: PreferenceKeys.courseChainViewMode,
-      );
-
-      if (value is String) {
-        return CourseViewMode.fromString(value);
-      }
-
-      // Default fallback
-      return CourseViewMode.tree;
+      final globalPreferences = await _preferencesRepository
+          .getGlobalPreferences(studentCode: studentCode);
+      return globalPreferences.courseChain.viewMode;
     } catch (e, s) {
       _logger.e(
         '[USE_CASE] Error getting course view mode, using default',

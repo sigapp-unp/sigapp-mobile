@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sigapp/courses/domain/entities/course_chain_preferences.dart';
 import 'package:sigapp/courses/domain/entities/program_curriculum_course_term.dart';
-import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
 
 class ViewOptionsSheetWidget extends StatelessWidget {
   final CourseViewMode viewMode;

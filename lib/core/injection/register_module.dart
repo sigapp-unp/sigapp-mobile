@@ -1,3 +1,4 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
@@ -11,6 +12,9 @@ abstract class RegisterModule {
   @preResolve
   @singleton
   Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+
+  @singleton
+  FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
 
   @singleton
   GoRouter router(GetStoredCredentialsUseCase getStoredCredentialsUseCase) =>

@@ -1,9 +1,8 @@
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
+import 'package:sigapp/courses/domain/entities/course_chain_preferences.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
-import 'package:sigapp/courses/domain/enums/course_view_mode.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
-import 'package:sigapp/courses/domain/value_objects/preference_keys.dart';
 
 @injectable
 class SetCourseViewModePreferencesUseCase {
@@ -21,10 +20,19 @@ class SetCourseViewModePreferencesUseCase {
   Future<void> execute(CourseViewMode mode) async {
     try {
       final studentCode = await _getStudentCode();
-      await _preferencesRepository.setPreference(
+
+      // Get current global preferences
+      final currentGlobalPrefs = await _preferencesRepository
+          .getGlobalPreferences(studentCode: studentCode);
+
+      // Update only the view mode preference
+      final updatedGlobalPrefs = currentGlobalPrefs.copyWith(
+        courseChain: currentGlobalPrefs.courseChain.copyWith(viewMode: mode),
+      );
+
+      await _preferencesRepository.updateGlobalPreferences(
         studentCode: studentCode,
-        path: PreferenceKeys.courseChainViewMode,
-        value: mode.value, // Store as string
+        preferences: updatedGlobalPrefs,
       );
 
       _logger.d('[USE_CASE] Course view mode updated to: ${mode.value}');

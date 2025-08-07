@@ -2,7 +2,6 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
-import 'package:sigapp/courses/domain/value_objects/preference_keys.dart';
 
 @injectable
 class GetHighlightCriticalPathUseCase {
@@ -20,13 +19,9 @@ class GetHighlightCriticalPathUseCase {
   Future<bool> execute() async {
     try {
       final studentCode = await _getStudentCode();
-      final value = await _preferencesRepository.getPreference(
-        studentCode: studentCode,
-        path: PreferenceKeys.courseChainHighlightCriticalPath,
-      );
-
-      // Handle boolean directly (no string conversion needed)
-      return value is bool ? value : false;
+      final globalPreferences = await _preferencesRepository
+          .getGlobalPreferences(studentCode: studentCode);
+      return globalPreferences.courseChain.highlightCriticalPath;
     } catch (e, s) {
       _logger.e(
         '[USE_CASE] Error getting highlight critical path preference, using default',
