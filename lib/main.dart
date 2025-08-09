@@ -1,29 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sigapp/core/config/environment_config.dart';
 import 'package:sigapp/core/infrastructure/ui/app.dart';
 import 'package:sigapp/core/injection/get_it.dart';
-import 'package:sigapp/core/infrastructure/app/app_initializer.dart';
+import 'package:sigapp/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 1. Load environment configuration first
+  await EnvironmentConfig.loadEnvironment();
+
+  // 2. Initialize Firebase before dependency injection
+  await _initializeFirebase();
+
+  // 3. Configure dependency injection (now Firebase services are available)
   await configureDependencies();
 
-  final logger = getIt<Logger>();
+  runApp(const MyApp());
+}
+
+Future<void> _initializeFirebase() async {
   try {
-    logger.i('Starting SigApp initialization...');
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-    final appInitializer = getIt<AppInitializer>();
-    final initResult = await appInitializer.initializeApp();
+    if (kDebugMode) {
+      // Configure Crashlytics
+      FlutterError.onError = (errorDetails) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+      };
 
-    if (initResult.success) {
-      logger.i('SigApp initialized successfully!');
-    } else {
-      logger.e('SigApp initialization failed: ${initResult.message}');
+      // Capture unhandled async errors
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
     }
   } catch (e) {
-    logger.e('Critical initialization error: $e');
+    if (kDebugMode) {
+      print('Firebase initialization failed: $e');
+    }
+    rethrow;
   }
-
-  runApp(const MyApp());
 }

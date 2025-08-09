@@ -53,7 +53,6 @@ import 'package:sigapp/auth/infrastructure/services/session_lifecycle_service.da
     as _i649;
 import 'package:sigapp/auth/infrastructure/services/toast_service.dart'
     as _i804;
-import 'package:sigapp/core/infrastructure/app/app_initializer.dart' as _i576;
 import 'package:sigapp/core/infrastructure/http/api_gateway_client.dart'
     as _i200;
 import 'package:sigapp/core/infrastructure/http/regeva_client.dart' as _i986;
@@ -188,6 +187,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
     );
+    gh.singleton<_i59.FirebaseAuth>(() => registerModule.firebaseAuth);
+    gh.singleton<_i974.FirebaseFirestore>(
+      () => registerModule.firebaseFirestore,
+    );
     gh.singleton<_i974.Logger>(() => registerModule.logger());
     gh.singleton<_i906.CourseService>(() => _i906.CourseService());
     gh.singleton<_i675.ProgressIndicatorBloc>(
@@ -220,9 +223,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i247.SharedPreferencesAuthRepositoryImpl(
         gh<_i460.SharedPreferences>(),
       ),
-    );
-    gh.singleton<_i576.AppInitializer>(
-      () => _i576.AppInitializer(gh<_i974.Logger>()),
     );
     gh.singleton<_i897.UpdateService>(
       () => _i897.UpdateService(gh<_i974.Logger>()),

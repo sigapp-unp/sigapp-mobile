@@ -17,7 +17,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
     String courseCode,
   ) {
     return _firestore
-        .collection('users')
+        .collection('students')
         .doc(studentCode)
         .collection('gradeSimulations')
         .doc(courseCode)
@@ -44,7 +44,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
     String courseCode,
   ) {
     return _firestore
-        .collection('users')
+        .collection('students')
         .doc(studentCode)
         .collection('gradeSimulations')
         .doc(courseCode);

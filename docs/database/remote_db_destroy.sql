@@ -29,12 +29,6 @@ DROP POLICY IF EXISTS "Users can insert their own courses" ON gt_course_tracking
 DROP POLICY IF EXISTS "Users can update their own courses" ON gt_course_tracking;
 DROP POLICY IF EXISTS "Users can delete their own courses" ON gt_course_tracking;
 
--- Course Grade Simulator RLS policies (JSONB hybrid approach)
-DROP POLICY IF EXISTS "Users can view their own course simulations" ON course_grade_simulator;
-DROP POLICY IF EXISTS "Users can insert their own course simulations" ON course_grade_simulator;
-DROP POLICY IF EXISTS "Users can update their own course simulations" ON course_grade_simulator;
-DROP POLICY IF EXISTS "Users can delete their own course simulations" ON course_grade_simulator;
-
 -- ----------------------------------------------------------------------------
 -- TRIGGERS
 -- ----------------------------------------------------------------------------
@@ -44,7 +38,6 @@ DROP TRIGGER IF EXISTS update_user_preferences_timestamp ON user_preferences;
 DROP TRIGGER IF EXISTS update_gt_grades_timestamp ON gt_grades;
 DROP TRIGGER IF EXISTS update_gt_grade_categories_timestamp ON gt_grade_categories;
 DROP TRIGGER IF EXISTS update_gt_course_tracking_timestamp ON gt_course_tracking;
-DROP TRIGGER IF EXISTS update_course_simulator_timestamp ON course_grade_simulator;
 
 -- ----------------------------------------------------------------------------
 -- VIEWS
@@ -61,7 +54,6 @@ DROP VIEW IF EXISTS public.users;
 DROP TABLE IF EXISTS gt_grades;
 DROP TABLE IF EXISTS gt_grade_categories;
 DROP TABLE IF EXISTS gt_course_tracking;
-DROP TABLE IF EXISTS course_grade_simulator;
 DROP TABLE IF EXISTS user_preferences;-- ----------------------------------------------------------------------------
 -- NOTES
 -- ----------------------------------------------------------------------------

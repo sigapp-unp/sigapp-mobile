@@ -68,12 +68,6 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
   }
 
   Future<void> _loadData() async {
-    // Prevent multiple simultaneous loads
-    if (_currentLoadOperation != null && _currentLoadOperation != _loadData()) {
-      await _currentLoadOperation;
-      return;
-    }
-
     try {
       emit(const GradeTrackerSectionState.loading());
 
@@ -85,9 +79,8 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
         );
       }
 
-      // Only emit if we're still the current operation and cubit hasn't been closed
-      // This prevents: "Cannot emit new states after calling close"
-      if (_currentLoadOperation == _loadData() && !isClosed) {
+      // Only emit if cubit hasn't been closed
+      if (!isClosed) {
         if (tracking != null) {
           emit(GradeTrackerSectionState.ready(courseTracking: tracking));
         } else {
@@ -100,7 +93,7 @@ class GradeTrackerSectionCubit extends Cubit<GradeTrackerSectionState> {
         error: e,
         stackTrace: s,
       );
-      if (_currentLoadOperation == _loadData() && !isClosed) {
+      if (!isClosed) {
         emit(
           GradeTrackerSectionState.error(
             "Error al cargar el seguimiento de notas: ${e.toString()}",

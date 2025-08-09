@@ -65,40 +65,38 @@ Un enfoque probado para maximizar la experiencia offline sin disparar tu cuota d
 ### Estructura optimizada con studentCode como ID
 
 ```
-/users                    ← colección raíz de usuarios
-  /{studentCode}         ← documento por alumno (usando studentCode como ID)
-    ├─ preferences/       ← subcolección de preferencias
-    │    ├─ global/       ← documento para preferencias globales
-    │    │    ├── course_chain: Map<String, dynamic>
-    │    │    │    ├── highlight_critical_path: bool
-    │    │    │    └── view_mode: String ("tree", etc)
-    │    │    └── [otras preferencias globales...]
+/students                         ← colección raíz de usuarios
+  /{studentCode}                  ← doc por alumno (ID = studentCode)
+    ├─ preferences/               ← subcolección de preferencias
+    │    ├─ global                ← doc de preferencias globales
+    │    │    └── courseChain: Map<String, any>
+    │    │         ├── highlightCriticalPath: bool
+    │    │         └── viewMode: string ("tree", etc)
+    │    │    [otras preferencias globales en camelCase...]
     │    │
-    │    └─ _semesters/   ← documento contenedor para semestres
-    │         └─ data/    ← subcolección de documentos por semestre
-    │              └─ {semesterId}  ← documento por semestre (ej: "20241", "20242")
-    │                   └── schedule_hidden_events: List<String>
+    │    └─ _semesters            ← doc contenedor
+    │         └─ data/            ← subcolección por semestre
+    │              └─ {semesterId}     (p.ej. "20241", "20242")
+    │                   └── scheduleHiddenEvents: string[]
     │
-    └─ gradeSimulations/  ← subcolección de simulaciones de notas
-         └─ {courseCode}  ← doc por curso-simulación (ej: "MATE101")
-             ├── lastModified: Timestamp ← para sync/cache optimization
+    └─ gradeSimulations/          ← subcolección de simulaciones de notas
+         └─ {courseCode}          ← doc por curso (p.ej. "MATE101")
+             ├── lastModified: Timestamp   ← para sync/cache
              │
              ├── categories: Map<String, Object>  ← categorías embebidas
-             │    └─ {categoryId}: {
-             │         "id": String?,           ← de GradeCategory
-             │         "name": String,          ← de GradeCategory
-             │         "weight": double         ← de GradeCategory
-             │    }
+             │    ├─ "0": { name: string, weight: number }
+             │    ├─ "1": { name: string, weight: number }
+             │    └─ ...                         ← claves = índices "0","1",...
              │
-             └── grades: Map<String, Object>      ← notas embebidas
-                  └─ {gradeId}: {
-                       "id": String?,         ← de Grade
-                       "categoryId": String,  ← referencia a categoría padre
-                       "name": String,        ← de Grade
-                       "score": double,       ← de Grade
-                       "enabled": bool        ← de Grade
-                  }
-
+             └── grades: Map<String, Object>     ← notas embebidas
+                  ├─ "0": {
+                  │      categoryIndex: number,  ← índice de categoría padre
+                  │      name: string,
+                  │      score: number,
+                  │      enabled: bool
+                  │   }
+                  ├─ "1": { ... }
+                  └─ ...
 ```
 
 **📍 Cambios aplicados para optimización de costos:**
@@ -210,3 +208,7 @@ Incluye lógica de **retry/backoff** para fallos temporales.
 Con este patrón la UI siempre responde al instante, tu cuota de Firestore se mantiene baja y tu app funciona 100 % offline sin cache casera.
 
 Aquí tienes cómo trasladar tu idea relacional/JSONB de Supabase a Cloud Firestore, sin “tablas” ni migraciones complejas, sino con dos colecciones bien organizadas y modelos tipados:
+
+## 10. ToDo
+
+[ ] Crear reglas para que los estudiantes solo puedan editar sus propios registros

@@ -23,7 +23,7 @@ class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
     String studentCode,
   ) {
     return _firestore
-        .collection('users')
+        .collection('students')
         .doc(studentCode)
         .collection('preferences')
         .doc('_semesters') // Documento "contenedor" para la subcolección
@@ -40,7 +40,7 @@ class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
     String studentCode,
   ) {
     return _firestore
-        .collection('users')
+        .collection('students')
         .doc(studentCode)
         .collection('preferences')
         .doc('global')
