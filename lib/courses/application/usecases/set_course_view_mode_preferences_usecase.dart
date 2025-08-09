@@ -3,23 +3,23 @@ import 'package:logger/logger.dart';
 import 'package:sigapp/courses/domain/entities/course_chain_preferences.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
+import 'package:sigapp/shared/application/usecases/base_get_student_code_usecase.dart';
 
 @injectable
-class SetCourseViewModePreferencesUseCase {
+class SetCourseViewModePreferencesUseCase extends BaseGetStudentCodeUseCase {
   final UserPreferencesRepository _preferencesRepository;
-  final StudentSessionRepository _studentSessionRepository;
   final Logger _logger;
 
-  const SetCourseViewModePreferencesUseCase(
+  SetCourseViewModePreferencesUseCase(
     this._preferencesRepository,
-    this._studentSessionRepository,
     this._logger,
-  );
+    StudentSessionRepository studentSessionRepository,
+  ) : super(studentSessionRepository);
 
   /// Sets the view mode for course prerequisite chains
   Future<void> execute(CourseViewMode mode) async {
     try {
-      final studentCode = await _getStudentCode();
+      final studentCode = await getStudentCode();
 
       // Get current global preferences
       final currentGlobalPrefs = await _preferencesRepository
@@ -44,10 +44,5 @@ class SetCourseViewModePreferencesUseCase {
       );
       rethrow; // Let the UI handle the error
     }
-  }
-
-  Future<String> _getStudentCode() async {
-    final info = await _studentSessionRepository.getStudentSessionInfo();
-    return info.studentCode;
   }
 }

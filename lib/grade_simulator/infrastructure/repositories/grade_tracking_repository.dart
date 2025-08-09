@@ -24,12 +24,15 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         .withConverter<CourseModel>(
           fromFirestore: (snap, _) {
             final data = snap.data()!;
-            // CourseCode comes from the document ID
-            return CourseModel.fromJson({...data, 'courseCode': snap.id});
+            // No need to add redundant fields - they're implicit in the path/document ID
+            return CourseModel.fromJson(data);
           },
           toFirestore: (course, _) {
             final json = course.toJson();
-            json.remove('courseCode'); // Do not store duplicated courseCode
+            // Remove any redundant fields that shouldn't be stored
+            json.remove('courseCode'); // Implicit in document ID
+            json.remove('studentCode'); // Implicit in document path
+            json.remove('id'); // Optional field removed
             return json;
           },
         );
@@ -64,7 +67,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         const GetOptions(source: Source.cache),
       );
       if (cachedDoc.exists && cachedDoc.data() != null) {
-        return CourseMapper.toDomain(cachedDoc.data()!);
+        return CourseMapper.toDomain(cachedDoc.data()!, courseCode: courseCode);
       }
 
       // If not in cache, go to server
@@ -73,20 +76,20 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       );
       if (!serverDoc.exists || serverDoc.data() == null) return null;
 
-      return CourseMapper.toDomain(serverDoc.data()!);
+      return CourseMapper.toDomain(serverDoc.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error getting course tracking: $e');
     }
   }
 
   @override
-  Future<CourseTracking> create(CourseTracking tracking) async {
+  Future<CourseTracking> create({
+    required String studentCode,
+    required CourseTracking tracking,
+  }) async {
     try {
       final model = CourseMapper.toInfrastructure(tracking, () => '');
-      final courseRef = _getTypedCourseRef(
-        tracking.studentCode,
-        tracking.courseCode,
-      );
+      final courseRef = _getTypedCourseRef(studentCode, tracking.courseCode);
       await courseRef.set(model);
       return tracking;
     } catch (e) {
@@ -141,7 +144,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         const GetOptions(source: Source.cache),
       );
 
-      return CourseMapper.toDomain(updated.data()!);
+      return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error adding category: $e');
     }
@@ -195,7 +198,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       final updated = await courseRef.get(
         const GetOptions(source: Source.server),
       );
-      return CourseMapper.toDomain(updated.data()!);
+      return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error deleting category: $e');
     }
@@ -230,7 +233,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         const GetOptions(source: Source.cache),
       );
 
-      return CourseMapper.toDomain(updated.data()!);
+      return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error updating category: $e');
     }
@@ -280,7 +283,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         const GetOptions(source: Source.cache),
       );
 
-      return CourseMapper.toDomain(updated.data()!);
+      return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error adding grade: $e');
     }
@@ -313,7 +316,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         const GetOptions(source: Source.server),
       );
 
-      return CourseMapper.toDomain(updated.data()!);
+      return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error deleting grade: $e');
     }
@@ -349,7 +352,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         const GetOptions(source: Source.cache),
       );
 
-      return CourseMapper.toDomain(updated.data()!);
+      return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error updating grade: $e');
     }
@@ -383,7 +386,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         const GetOptions(source: Source.cache),
       );
 
-      return CourseMapper.toDomain(updated.data()!);
+      return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error toggling grade enabled: $e');
     }

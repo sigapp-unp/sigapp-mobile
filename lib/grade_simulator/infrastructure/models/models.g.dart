@@ -7,8 +7,6 @@ part of 'models.dart';
 // **************************************************************************
 
 _CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => _CourseModel(
-  courseCode: json['courseCode'] as String,
-  studentCode: json['studentCode'] as String,
   categories:
       (json['categories'] as List<dynamic>)
           .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
@@ -22,8 +20,6 @@ _CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => _CourseModel(
 
 Map<String, dynamic> _$CourseModelToJson(_CourseModel instance) =>
     <String, dynamic>{
-      'courseCode': instance.courseCode,
-      'studentCode': instance.studentCode,
       'categories': instance.categories,
       'grades': instance.grades,
       'lastModified': const _TimestampConverter().toJson(instance.lastModified),

@@ -27,7 +27,10 @@ abstract class GradeTrackingRepository {
     required String courseCode,
   });
 
-  Future<CourseTracking> create(CourseTracking tracking);
+  Future<CourseTracking> create({
+    required String studentCode,
+    required CourseTracking tracking,
+  });
 
   Future<void> deleteCourseTracking({
     required String studentCode,

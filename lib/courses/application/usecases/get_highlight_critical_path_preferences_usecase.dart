@@ -2,23 +2,23 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
+import 'package:sigapp/shared/application/usecases/base_get_student_code_usecase.dart';
 
 @injectable
-class GetHighlightCriticalPathUseCase {
+class GetHighlightCriticalPathUseCase extends BaseGetStudentCodeUseCase {
   final UserPreferencesRepository _preferencesRepository;
-  final StudentSessionRepository _studentSessionRepository;
   final Logger _logger;
 
-  const GetHighlightCriticalPathUseCase(
+  GetHighlightCriticalPathUseCase(
     this._preferencesRepository,
-    this._studentSessionRepository,
+    StudentSessionRepository studentSessionRepository,
     this._logger,
-  );
+  ) : super(studentSessionRepository);
 
   /// Gets whether critical path highlighting is enabled
   Future<bool> execute() async {
     try {
-      final studentCode = await _getStudentCode();
+      final studentCode = await getStudentCode();
       final globalPreferences = await _preferencesRepository
           .getGlobalPreferences(studentCode: studentCode);
       return globalPreferences.courseChain.highlightCriticalPath;
@@ -30,10 +30,5 @@ class GetHighlightCriticalPathUseCase {
       );
       return false; // Default fallback
     }
-  }
-
-  Future<String> _getStudentCode() async {
-    final info = await _studentSessionRepository.getStudentSessionInfo();
-    return info.studentCode;
   }
 }

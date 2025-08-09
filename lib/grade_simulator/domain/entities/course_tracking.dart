@@ -1,15 +1,8 @@
 class CourseTracking {
-  final String? id;
-  final String studentCode;
   final String courseCode;
   final List<GradeCategory> categories;
 
-  CourseTracking({
-    this.id,
-    required this.courseCode,
-    required this.studentCode,
-    required this.categories,
-  });
+  CourseTracking({required this.courseCode, required this.categories});
 
   bool get isWeightValid {
     if (categories.isEmpty) return false;
@@ -38,10 +31,7 @@ class CourseTracking {
   /// - Midterm Exam (with 1 grade)
   /// - Final Exam (with 1 grade)
   /// - Final Project (with 1 grade)
-  static CourseTracking createWithDefaults({
-    required String courseCode,
-    required String studentCode,
-  }) {
+  static CourseTracking createWithDefaults({required String courseCode}) {
     const evaluacionesWeight = 40.0;
     const examenParcialWeight = 20.0;
     const examenFinalWeight = 20.0;
@@ -91,7 +81,6 @@ class CourseTracking {
 
     return CourseTracking(
       courseCode: courseCode,
-      studentCode: studentCode,
       categories: defaultCategories,
     );
   }
@@ -103,8 +92,6 @@ class CourseTracking {
     List<GradeCategory>? categories,
   }) {
     return CourseTracking(
-      id: id ?? this.id,
-      studentCode: studentCode ?? this.studentCode,
       courseCode: courseCode ?? this.courseCode,
       categories: categories ?? this.categories,
     );

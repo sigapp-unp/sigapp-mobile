@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CourseModel {
 
- String get courseCode; String get studentCode; List<CategoryModel> get categories; List<GradeModel> get grades;@_TimestampConverter() Timestamp? get lastModified;
+ List<CategoryModel> get categories; List<GradeModel> get grades;@_TimestampConverter() Timestamp? get lastModified;
 /// Create a copy of CourseModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CourseModelCopyWith<CourseModel> get copyWith => _$CourseModelCopyWithImpl<Cour
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CourseModel&&(identical(other.courseCode, courseCode) || other.courseCode == courseCode)&&(identical(other.studentCode, studentCode) || other.studentCode == studentCode)&&const DeepCollectionEquality().equals(other.categories, categories)&&const DeepCollectionEquality().equals(other.grades, grades)&&(identical(other.lastModified, lastModified) || other.lastModified == lastModified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CourseModel&&const DeepCollectionEquality().equals(other.categories, categories)&&const DeepCollectionEquality().equals(other.grades, grades)&&(identical(other.lastModified, lastModified) || other.lastModified == lastModified));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,courseCode,studentCode,const DeepCollectionEquality().hash(categories),const DeepCollectionEquality().hash(grades),lastModified);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(categories),const DeepCollectionEquality().hash(grades),lastModified);
 
 @override
 String toString() {
-  return 'CourseModel(courseCode: $courseCode, studentCode: $studentCode, categories: $categories, grades: $grades, lastModified: $lastModified)';
+  return 'CourseModel(categories: $categories, grades: $grades, lastModified: $lastModified)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CourseModelCopyWith<$Res>  {
   factory $CourseModelCopyWith(CourseModel value, $Res Function(CourseModel) _then) = _$CourseModelCopyWithImpl;
 @useResult
 $Res call({
- String courseCode, String studentCode, List<CategoryModel> categories, List<GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
+ List<CategoryModel> categories, List<GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
 });
 
 
@@ -65,11 +65,9 @@ class _$CourseModelCopyWithImpl<$Res>
 
 /// Create a copy of CourseModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? courseCode = null,Object? studentCode = null,Object? categories = null,Object? grades = null,Object? lastModified = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? categories = null,Object? grades = null,Object? lastModified = freezed,}) {
   return _then(_self.copyWith(
-courseCode: null == courseCode ? _self.courseCode : courseCode // ignore: cast_nullable_to_non_nullable
-as String,studentCode: null == studentCode ? _self.studentCode : studentCode // ignore: cast_nullable_to_non_nullable
-as String,categories: null == categories ? _self.categories : categories // ignore: cast_nullable_to_non_nullable
+categories: null == categories ? _self.categories : categories // ignore: cast_nullable_to_non_nullable
 as List<CategoryModel>,grades: null == grades ? _self.grades : grades // ignore: cast_nullable_to_non_nullable
 as List<GradeModel>,lastModified: freezed == lastModified ? _self.lastModified : lastModified // ignore: cast_nullable_to_non_nullable
 as Timestamp?,
@@ -157,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String courseCode,  String studentCode,  List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CourseModel() when $default != null:
-return $default(_that.courseCode,_that.studentCode,_that.categories,_that.grades,_that.lastModified);case _:
+return $default(_that.categories,_that.grades,_that.lastModified);case _:
   return orElse();
 
 }
@@ -178,10 +176,10 @@ return $default(_that.courseCode,_that.studentCode,_that.categories,_that.grades
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String courseCode,  String studentCode,  List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)  $default,) {final _that = this;
 switch (_that) {
 case _CourseModel():
-return $default(_that.courseCode,_that.studentCode,_that.categories,_that.grades,_that.lastModified);case _:
+return $default(_that.categories,_that.grades,_that.lastModified);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +196,10 @@ return $default(_that.courseCode,_that.studentCode,_that.categories,_that.grades
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String courseCode,  String studentCode,  List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,) {final _that = this;
 switch (_that) {
 case _CourseModel() when $default != null:
-return $default(_that.courseCode,_that.studentCode,_that.categories,_that.grades,_that.lastModified);case _:
+return $default(_that.categories,_that.grades,_that.lastModified);case _:
   return null;
 
 }
@@ -213,11 +211,9 @@ return $default(_that.courseCode,_that.studentCode,_that.categories,_that.grades
 @JsonSerializable()
 
 class _CourseModel implements CourseModel {
-  const _CourseModel({required this.courseCode, required this.studentCode, required final  List<CategoryModel> categories, required final  List<GradeModel> grades, @_TimestampConverter() this.lastModified}): _categories = categories,_grades = grades;
+  const _CourseModel({required final  List<CategoryModel> categories, required final  List<GradeModel> grades, @_TimestampConverter() this.lastModified}): _categories = categories,_grades = grades;
   factory _CourseModel.fromJson(Map<String, dynamic> json) => _$CourseModelFromJson(json);
 
-@override final  String courseCode;
-@override final  String studentCode;
  final  List<CategoryModel> _categories;
 @override List<CategoryModel> get categories {
   if (_categories is EqualUnmodifiableListView) return _categories;
@@ -247,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CourseModel&&(identical(other.courseCode, courseCode) || other.courseCode == courseCode)&&(identical(other.studentCode, studentCode) || other.studentCode == studentCode)&&const DeepCollectionEquality().equals(other._categories, _categories)&&const DeepCollectionEquality().equals(other._grades, _grades)&&(identical(other.lastModified, lastModified) || other.lastModified == lastModified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CourseModel&&const DeepCollectionEquality().equals(other._categories, _categories)&&const DeepCollectionEquality().equals(other._grades, _grades)&&(identical(other.lastModified, lastModified) || other.lastModified == lastModified));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,courseCode,studentCode,const DeepCollectionEquality().hash(_categories),const DeepCollectionEquality().hash(_grades),lastModified);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_categories),const DeepCollectionEquality().hash(_grades),lastModified);
 
 @override
 String toString() {
-  return 'CourseModel(courseCode: $courseCode, studentCode: $studentCode, categories: $categories, grades: $grades, lastModified: $lastModified)';
+  return 'CourseModel(categories: $categories, grades: $grades, lastModified: $lastModified)';
 }
 
 
@@ -267,7 +263,7 @@ abstract mixin class _$CourseModelCopyWith<$Res> implements $CourseModelCopyWith
   factory _$CourseModelCopyWith(_CourseModel value, $Res Function(_CourseModel) _then) = __$CourseModelCopyWithImpl;
 @override @useResult
 $Res call({
- String courseCode, String studentCode, List<CategoryModel> categories, List<GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
+ List<CategoryModel> categories, List<GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
 });
 
 
@@ -284,11 +280,9 @@ class __$CourseModelCopyWithImpl<$Res>
 
 /// Create a copy of CourseModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? courseCode = null,Object? studentCode = null,Object? categories = null,Object? grades = null,Object? lastModified = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? categories = null,Object? grades = null,Object? lastModified = freezed,}) {
   return _then(_CourseModel(
-courseCode: null == courseCode ? _self.courseCode : courseCode // ignore: cast_nullable_to_non_nullable
-as String,studentCode: null == studentCode ? _self.studentCode : studentCode // ignore: cast_nullable_to_non_nullable
-as String,categories: null == categories ? _self._categories : categories // ignore: cast_nullable_to_non_nullable
+categories: null == categories ? _self._categories : categories // ignore: cast_nullable_to_non_nullable
 as List<CategoryModel>,grades: null == grades ? _self._grades : grades // ignore: cast_nullable_to_non_nullable
 as List<GradeModel>,lastModified: freezed == lastModified ? _self.lastModified : lastModified // ignore: cast_nullable_to_non_nullable
 as Timestamp?,

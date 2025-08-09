@@ -2,23 +2,23 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
+import 'package:sigapp/shared/application/usecases/base_get_student_code_usecase.dart';
 
 @injectable
-class GetAllHiddenCoursesPreferencesUseCase {
+class GetAllHiddenCoursesPreferencesUseCase extends BaseGetStudentCodeUseCase {
   final UserPreferencesRepository _preferencesRepository;
-  final StudentSessionRepository _studentSessionRepository;
   final Logger _logger;
 
-  const GetAllHiddenCoursesPreferencesUseCase(
+  GetAllHiddenCoursesPreferencesUseCase(
     this._preferencesRepository,
-    this._studentSessionRepository,
     this._logger,
-  );
+    StudentSessionRepository studentSessionRepository,
+  ) : super(studentSessionRepository);
 
   /// Gets a list of all hidden schedule event IDs for a specific semester
   Future<List<String>> execute({required String semesterId}) async {
     try {
-      final studentCode = await _getStudentCode();
+      final studentCode = await getStudentCode();
       final preferences = await _preferencesRepository.getSemesterPreferences(
         studentCode: studentCode,
         semesterId: semesterId,
@@ -32,10 +32,5 @@ class GetAllHiddenCoursesPreferencesUseCase {
       );
       return []; // Graceful fallback
     }
-  }
-
-  Future<String> _getStudentCode() async {
-    final info = await _studentSessionRepository.getStudentSessionInfo();
-    return info.studentCode;
   }
 }

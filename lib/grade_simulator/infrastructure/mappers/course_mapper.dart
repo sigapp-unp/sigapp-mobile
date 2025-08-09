@@ -2,7 +2,10 @@ import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
 import 'package:sigapp/grade_simulator/infrastructure/models/models.dart';
 
 class CourseMapper {
-  static CourseTracking toDomain(CourseModel model) {
+  static CourseTracking toDomain(
+    CourseModel model, {
+    required String courseCode,
+  }) {
     // Convertir las categorías del modelo a entidades de dominio
     final categories =
         model.categories.asMap().entries.map((categoryEntry) {
@@ -31,12 +34,7 @@ class CourseMapper {
           );
         }).toList();
 
-    return CourseTracking(
-      id: null, // El tracking ya no necesita ID
-      courseCode: model.courseCode,
-      studentCode: model.studentCode,
-      categories: categories,
-    );
+    return CourseTracking(courseCode: courseCode, categories: categories);
   }
 
   static CourseModel toInfrastructure(
@@ -72,16 +70,24 @@ class CourseMapper {
     }
 
     return CourseModel(
-      courseCode: domain.courseCode,
-      studentCode: domain.studentCode,
       categories: categories,
       grades: grades,
       lastModified: null,
     );
   }
 
-  static List<CourseTracking> listToDomain(List<CourseModel> models) {
-    return models.map(toDomain).toList();
+  static List<CourseTracking> listToDomain(
+    List<CourseModel> models, {
+    required String Function(int index) courseCodeProvider,
+  }) {
+    return models
+        .asMap()
+        .entries
+        .map(
+          (entry) =>
+              toDomain(entry.value, courseCode: courseCodeProvider(entry.key)),
+        )
+        .toList();
   }
 
   static List<CourseModel> listToInfrastructure(

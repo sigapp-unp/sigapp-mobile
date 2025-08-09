@@ -49,8 +49,6 @@ class _TimestampConverter implements JsonConverter<Timestamp?, Object?> {
 @freezed
 abstract class CourseModel with _$CourseModel {
   const factory CourseModel({
-    required String courseCode,
-    required String studentCode,
     required List<CategoryModel> categories,
     required List<GradeModel> grades,
     @_TimestampConverter() Timestamp? lastModified,

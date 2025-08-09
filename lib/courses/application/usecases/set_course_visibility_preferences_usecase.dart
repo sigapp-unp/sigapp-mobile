@@ -2,18 +2,18 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 import 'package:sigapp/shared/application/repositories/student_session_repository.dart';
 import 'package:sigapp/courses/domain/repositories/user_preferences_repository.dart';
+import 'package:sigapp/shared/application/usecases/base_get_student_code_usecase.dart';
 
 @injectable
-class SetCourseVisibilityPreferencesUseCase {
+class SetCourseVisibilityPreferencesUseCase extends BaseGetStudentCodeUseCase {
   final UserPreferencesRepository _preferencesRepository;
-  final StudentSessionRepository _studentSessionRepository;
   final Logger _logger;
 
-  const SetCourseVisibilityPreferencesUseCase(
+  SetCourseVisibilityPreferencesUseCase(
     this._preferencesRepository,
-    this._studentSessionRepository,
     this._logger,
-  );
+    StudentSessionRepository studentSessionRepository,
+  ) : super(studentSessionRepository);
 
   /// Sets the visibility state for a specific schedule event in a semester
   /// [isVisible] - true to show the event, false to hide it
@@ -24,7 +24,7 @@ class SetCourseVisibilityPreferencesUseCase {
     required String semesterId,
   }) async {
     try {
-      final studentCode = await _getStudentCode();
+      final studentCode = await getStudentCode();
 
       if (isVisible) {
         // Remove from hidden list to make it visible
@@ -53,10 +53,5 @@ class SetCourseVisibilityPreferencesUseCase {
       );
       rethrow; // Let the UI handle the error
     }
-  }
-
-  Future<String> _getStudentCode() async {
-    final info = await _studentSessionRepository.getStudentSessionInfo();
-    return info.studentCode;
   }
 }

@@ -320,6 +320,20 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i607.StudentSessionRepository>(),
       ),
     );
+    gh.factory<_i186.GetCourseViewModeUseCase>(
+      () => _i186.GetCourseViewModeUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
+    gh.factory<_i127.GetHighlightCriticalPathUseCase>(
+      () => _i127.GetHighlightCriticalPathUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i607.StudentSessionRepository>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.factory<_i908.KeepSessionAliveUsecase>(
       () => _i908.KeepSessionAliveUsecase(gh<_i10.AuthRepository>()),
     );
@@ -339,6 +353,34 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i974.Logger>(),
       ),
     );
+    gh.factory<_i323.GetAllHiddenCoursesPreferencesUseCase>(
+      () => _i323.GetAllHiddenCoursesPreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i857.SetCourseViewModePreferencesUseCase>(
+      () => _i857.SetCourseViewModePreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i733.SetCourseVisibilityPreferencesUseCase>(
+      () => _i733.SetCourseVisibilityPreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
+    gh.factory<_i131.SetHighlightCriticalPathPreferencesUseCase>(
+      () => _i131.SetHighlightCriticalPathPreferencesUseCase(
+        gh<_i939.UserPreferencesRepository>(),
+        gh<_i974.Logger>(),
+        gh<_i607.StudentSessionRepository>(),
+      ),
+    );
     gh.lazySingleton<_i650.GetEnrolledCoursesUsecase>(
       () => _i650.GetEnrolledCoursesUsecase(
         gh<_i986.CoursesRepository>(),
@@ -349,48 +391,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i568.SigaAuthenticationUsecase(
         gh<_i10.AuthRepository>(),
         gh<_i679.SessionLifecycleService>(),
-      ),
-    );
-    gh.factory<_i323.GetAllHiddenCoursesPreferencesUseCase>(
-      () => _i323.GetAllHiddenCoursesPreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i186.GetCourseViewModeUseCase>(
-      () => _i186.GetCourseViewModeUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i127.GetHighlightCriticalPathUseCase>(
-      () => _i127.GetHighlightCriticalPathUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i857.SetCourseViewModePreferencesUseCase>(
-      () => _i857.SetCourseViewModePreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i733.SetCourseVisibilityPreferencesUseCase>(
-      () => _i733.SetCourseVisibilityPreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
-      ),
-    );
-    gh.factory<_i131.SetHighlightCriticalPathPreferencesUseCase>(
-      () => _i131.SetHighlightCriticalPathPreferencesUseCase(
-        gh<_i939.UserPreferencesRepository>(),
-        gh<_i607.StudentSessionRepository>(),
-        gh<_i974.Logger>(),
       ),
     );
     gh.lazySingleton<_i445.GetSyllabusFileUsecase>(
