@@ -4,7 +4,45 @@ import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
 import 'package:sigapp/grade_simulator/domain/repositories/grade_tracking_repository.dart';
 import 'package:sigapp/grade_simulator/infrastructure/mappers/course_mapper.dart';
 import 'package:sigapp/grade_simulator/infrastructure/models/models.dart';
+import 'package:sigapp/shared/infrastructure/firestore/resilient_read.dart';
 
+/// Repository for managing grade simulation data in Firestore
+/// (courses, categories, and grades) with an **offline-first** and
+/// **resilient read** approach.
+///
+/// ## Key Design Goals
+/// 1. **Maintainability** – Clear separation between typed references
+///    (`_getTypedCourseRef`) and raw references (`_getRawCourseRef`).
+/// 2. **Reliability** – Cache-first reads, retry on transient errors,
+///    and final fallback to cache.
+/// 3. **Efficiency** – Granular updates to minimize write costs and
+///    reduce conflict potential.
+///
+/// ## Resilient Read Strategy (`_getWithResilience`)
+/// 1. **Cache First** – Immediate UX, avoids network latency.
+/// 2. **Server Fetch w/ Backoff & Jitter** – Retries for transient
+///    errors (`unavailable`, `deadline-exceeded`, `aborted`) with
+///    increasing delays (150ms, 350ms, 800ms) and ±20% jitter.
+/// 3. **Cache Fallback** – Guarantees availability even offline.
+///
+/// ## Why This Matters
+/// - Improves perceived app reliability under unstable networks.
+/// - Prevents “thundering herd” on server during outages.
+/// - Transparent recovery for the user: always returns the best
+///   available data.
+///
+/// ## Reliability Notes
+/// - Works with Firestore’s persistent cache.
+/// - Post-write reads use cache for consistency, remote refresh
+///   happens in background.
+/// - Extensible: add telemetry for retries, source used (cache/server),
+///   and error codes for observability.
+///
+/// ## Maintenance Tips
+/// - Update the transient error list if Firestore introduces new ones.
+/// - Tune backoff values based on latency/timeout changes.
+/// - Keep `CourseModel` and converters in sync.
+/// =============================================================
 @LazySingleton(as: GradeTrackingRepository)
 class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
   final FirebaseFirestore _firestore;
@@ -61,22 +99,9 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
   }) async {
     try {
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
-
-      // Try to read from cache first
-      final cachedDoc = await courseRef.get(
-        const GetOptions(source: Source.cache),
-      );
-      if (cachedDoc.exists && cachedDoc.data() != null) {
-        return CourseMapper.toDomain(cachedDoc.data()!, courseCode: courseCode);
-      }
-
-      // If not in cache, go to server
-      final serverDoc = await courseRef.get(
-        const GetOptions(source: Source.server),
-      );
-      if (!serverDoc.exists || serverDoc.data() == null) return null;
-
-      return CourseMapper.toDomain(serverDoc.data()!, courseCode: courseCode);
+      final data = await getWithResilience(courseRef);
+      if (data == null) return null;
+      return CourseMapper.toDomain(data, courseCode: courseCode);
     } catch (e) {
       throw Exception('Error getting course tracking: $e');
     }
@@ -194,9 +219,9 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       batch.update(rawRef, updates);
       await batch.commit();
 
-      // Read the updated result
+      // Read the updated result (cache-first after write)
       final updated = await courseRef.get(
-        const GetOptions(source: Source.server),
+        const GetOptions(source: Source.cache),
       );
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
     } catch (e) {
@@ -313,7 +338,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       // Read the updated result
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final updated = await courseRef.get(
-        const GetOptions(source: Source.server),
+        const GetOptions(source: Source.cache),
       );
 
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);

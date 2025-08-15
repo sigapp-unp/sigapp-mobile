@@ -42,10 +42,10 @@ class FirebaseAuthServiceImpl implements FirebaseAuthService {
       );
 
       // Autenticar con Firebase usando el custom token
-      await _firebaseAuth.signInWithCustomToken(customToken);
+      final result = await _firebaseAuth.signInWithCustomToken(customToken);
 
       _logger.i(
-        '[INFRASTRUCTURE] Sesión con custom token iniciada exitosamente',
+        '[INFRASTRUCTURE] Sesión con custom token iniciada exitosamente (${result.user?.uid})',
       );
     } on FirebaseAuthException catch (e) {
       // Si el token es inválido, intentar forzar renovación una vez

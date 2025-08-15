@@ -50,5 +50,7 @@ environments/prod.env
 !environments/*.env.example
 
 # Firebase configuration (contains sensitive API keys)
-lib/firebase_options.dart
-android/app/google-services.json
+lib/firebase_options_dev.dart
+lib/firebase_options_prod.dart
+android/app/src/dev/google-services.json
+android/app/src/prod/google-services.json

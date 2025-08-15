@@ -8,6 +8,7 @@ import 'package:sigapp/courses/infrastructure/models/global_preferences_model.da
 import 'package:sigapp/courses/infrastructure/models/semester_preferences_model.dart';
 import 'package:sigapp/courses/infrastructure/mappers/global_preferences_mapper.dart';
 import 'package:sigapp/courses/infrastructure/mappers/semester_preferences_mapper.dart';
+import 'package:sigapp/shared/infrastructure/firestore/resilient_read.dart';
 
 @LazySingleton(as: UserPreferencesRepository)
 class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
@@ -58,15 +59,15 @@ class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
   }) async {
     try {
       final semesterPrefsRef = _getSemesterPreferencesRef(studentCode);
-      final doc = await semesterPrefsRef.doc(semesterId).get();
+      final data = await getWithResilience(semesterPrefsRef.doc(semesterId));
 
-      if (!doc.exists) {
+      if (data == null) {
         return SemesterPreferencesMapper.toDomain(
           const SemesterPreferencesModel(),
         );
       }
 
-      return SemesterPreferencesMapper.toDomain(doc.data()!);
+      return SemesterPreferencesMapper.toDomain(data);
     } catch (e, s) {
       _logger.e(
         'Error getting semester preferences for $semesterId',
@@ -151,13 +152,13 @@ class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
   }) async {
     try {
       final globalPrefsRef = _getGlobalPreferencesRef(studentCode);
-      final doc = await globalPrefsRef.get();
+      final data = await getWithResilience(globalPrefsRef);
 
-      if (!doc.exists) {
+      if (data == null) {
         return GlobalPreferencesMapper.toDomain(const GlobalPreferencesModel());
       }
 
-      return GlobalPreferencesMapper.toDomain(doc.data()!);
+      return GlobalPreferencesMapper.toDomain(data);
     } catch (e, s) {
       _logger.e('Error getting global preferences', error: e, stackTrace: s);
       rethrow;

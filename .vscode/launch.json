@@ -5,21 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "sigapp",
-      "request": "launch",
-      "type": "dart"
-    },
-    {
-      "name": "sigapp (profile mode)",
+      "name": "SIGApp Dev",
       "request": "launch",
       "type": "dart",
-      "flutterMode": "profile"
+      "program": "lib/main.dart",
+      "args": ["--flavor", "dev", "--dart-define", "FLAVOR=dev"]
     },
     {
-      "name": "sigapp (release mode)",
+      "name": "SIGApp Prod",
       "request": "launch",
       "type": "dart",
-      "flutterMode": "release"
+      "program": "lib/main.dart",
+      "args": ["--flavor", "prod", "--dart-define", "FLAVOR=prod"]
     }
   ]
 }

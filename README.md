@@ -56,6 +56,42 @@ Get-ChildItem -Path lib -Recurse -Include "*.freezed.dart", "*.g.dart", "*.mocks
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+## Configuración de Firebase (Android)
+
+- Si ya tienes un `firebase.json` previo, elimínalo antes de configurar.
+- Configura los proyectos de producción y desarrollo con FlutterFire:
+
+Prod:
+
+```bash
+flutterfire configure \
+  --project=sigapp-432a6 \
+  --out=lib/firebase_options_prod.dart \
+  --android-package-name=com.josedanielcb.sigapp \
+  --platforms=android \
+  --android-out=android/app/src/prod/google-services.json
+```
+
+Dev:
+
+```bash
+flutterfire configure \
+  --project=sigapp-dev \
+  --out=lib/firebase_options_dev.dart \
+  --android-package-name=com.josedanielcb.sigapp.dev \
+  --platforms=android \
+  --android-out=android/app/src/dev/google-services.json
+```
+
+- En Firebase Console, habilita Authentication (botón "Comenzar").
+- En Firestore, crea una base de datos (puedes iniciar en modo de prueba para desarrollo).
+
+### build
+
+```bash
+flutter build appbundle --flavor prod --dart-define=FLAVOR=prod
+```
+
 ## Contribuciones
 
 Cualquier colaboración es bienvenida. Puedes abrir un issue, proponer mejoras o enviar un pull request. Este es un proyecto comunitario orientado a mejorar la experiencia estudiantil con tecnologías modernas.

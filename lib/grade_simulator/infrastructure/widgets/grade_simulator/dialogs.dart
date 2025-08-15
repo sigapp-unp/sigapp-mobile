@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
 import 'package:sigapp/grade_simulator/infrastructure/widgets/grade_simulator/cubit.dart';
-import 'package:sigapp/core/injection/get_it.dart';
 
 void showHelpDialog(BuildContext context) {
   showDialog(
