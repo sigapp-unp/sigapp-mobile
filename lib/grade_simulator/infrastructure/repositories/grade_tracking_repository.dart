@@ -59,6 +59,26 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
     if (value is Timestamp) return value.toDate().toIso8601String();
     if (value is DateTime) return value.toIso8601String();
     if (value is DocumentReference) return value.path;
+    // Firestore FieldValue instances (serverTimestamp, delete, etc.) are
+    // not JSON encodable. Convert them to a readable string so logging
+    // won't throw during jsonEncode.
+    if (value is FieldValue) return value.toString();
+    // Handle Freezed/json-serializable model instances produced by our
+    // infrastructure models (CategoryModel/GradeModel/CourseModel).
+    // Those are not plain Maps and jsonEncode will fail if we don't
+    // convert their inner content first.
+    try {
+      // Common pattern: generated Freezed/json_serializable classes have
+      // a `toJson()` method. If present, call it and recurse on result.
+      final maybeToJson = value?.toJson;
+      if (maybeToJson is Function) {
+        final converted = maybeToJson();
+        return _toJsonSafe(converted);
+      }
+    } catch (_) {
+      // ignore and continue with other checks
+    }
+
     if (value is Map) {
       return value.map((k, v) => MapEntry(k.toString(), _toJsonSafe(v)));
     }
@@ -106,7 +126,43 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
             return CourseModel.fromJson(data);
           },
           toFirestore: (course, _) {
-            final json = course.toJson();
+            // The generated CourseModel.toJson() may return nested model
+            // instances (e.g. Map<String, CategoryModel>) which are not
+            // directly encodable by the platform channel used by
+            // cloud_firestore. Normalize nested maps to plain Maps here.
+            final raw = course.toJson();
+            final Map<String, dynamic> json = Map<String, dynamic>.from(raw);
+
+            // Normalize categories map (CategoryModel -> Map)
+            if (json['categories'] is Map) {
+              json['categories'] = (json['categories'] as Map).map((k, v) {
+                // If already a Map (generated), keep it; otherwise try to
+                // call toJson on the inner model instance.
+                if (v is Map<String, dynamic>) return MapEntry(k.toString(), v);
+                try {
+                  final maybeToJson = v?.toJson;
+                  if (maybeToJson is Function) {
+                    return MapEntry(k.toString(), maybeToJson());
+                  }
+                } catch (_) {}
+                return MapEntry(k.toString(), v);
+              });
+            }
+
+            // Normalize grades map (GradeModel -> Map)
+            if (json['grades'] is Map) {
+              json['grades'] = (json['grades'] as Map).map((k, v) {
+                if (v is Map<String, dynamic>) return MapEntry(k.toString(), v);
+                try {
+                  final maybeToJson = v?.toJson;
+                  if (maybeToJson is Function) {
+                    return MapEntry(k.toString(), maybeToJson());
+                  }
+                } catch (_) {}
+                return MapEntry(k.toString(), v);
+              });
+            }
+
             // Remove any redundant fields that shouldn't be stored
             json.remove('courseCode'); // Implicit in document ID
             json.remove('studentCode'); // Implicit in document path
@@ -182,6 +238,24 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       final courseRef = _getTypedCourseRef(studentCode, tracking.courseCode);
       _safeLog('[GRADE_REPO] create set ->', model.toJson());
       await courseRef.set(model);
+
+      // Read the saved document (cache-first) and return the mapped domain
+      // object so ids (category/grade keys) are available to the UI.
+      try {
+        final saved = await courseRef.get(
+          const GetOptions(source: Source.cache),
+        );
+        if (saved.exists && saved.data() != null) {
+          final domain = CourseMapper.toDomain(
+            saved.data()!,
+            courseCode: tracking.courseCode,
+          );
+          return domain;
+        }
+      } catch (_) {
+        // Ignore and fallthrough to return original tracking if read fails
+      }
+
       return tracking;
     } catch (e, s) {
       _logger.e(
