@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'package:flutter/widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sigapp/auth/application/managers/authentication_manager/app_lifecycle_manager.dart';
 import 'package:sigapp/auth/application/managers/authentication_manager/async_operation_guard.dart';
 import 'package:sigapp/auth/application/managers/authentication_manager/auth_token_refresh_manager.dart';
+import 'package:sigapp/auth/application/services/firebase_auth_service.dart';
 import 'package:sigapp/auth/application/usecases/get_stored_credentials_usecase.dart';
 import 'package:sigapp/auth/application/usecases/keep_session_alive_usecase.dart';
 import 'package:sigapp/auth/application/usecases/siga_authentication_usecase.dart';
@@ -27,7 +30,8 @@ class AuthenticationManager {
   final GetStoredCredentialsUseCase _getStoredCredentialsUseCase;
   final SignOutUseCase _signOutUseCase;
   final KeepSessionAliveUsecase _keepSessionAliveUsecase;
-  final SigaAuthenticationUsecase _signInUseCase;
+  final SigaAuthenticationUsecase _sigaAuthUseCase;
+  final FirebaseAuthService _firebaseAuthService;
   final ToastService _toastService;
   final Logger _logger;
 
@@ -46,13 +50,14 @@ class AuthenticationManager {
     this._getStoredCredentialsUseCase,
     this._signOutUseCase,
     this._keepSessionAliveUsecase,
-    this._signInUseCase,
+    this._sigaAuthUseCase,
+    this._firebaseAuthService,
     this._toastService,
     this._logger,
   ) {
     _authTokenRefreshManager = AuthTokenRefreshManager(
       _keepSessionAliveUsecase,
-      _signInUseCase,
+      _sigaAuthUseCase,
       _getStoredCredentialsUseCase,
       _logger,
     );
@@ -81,11 +86,10 @@ class AuthenticationManager {
     // Configurar interceptores de sesión
     _configureSessionInterceptors();
 
-    // // Programar SOLO refresco inicial, eliminamos el timer periódico
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   // Realizamos el refresco inicial
-    //   await _forceSessionRefresh();
-    // });
+    // Realizar auto-login silencioso de Firebase si hay credenciales pero no sesión activa
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _performSilentFirebaseLoginIfNeeded();
+    });
   }
 
   void _configureSessionInterceptors() {
@@ -161,6 +165,54 @@ class AuthenticationManager {
   /// Maneja el evento cuando la app va a segundo plano
   void _handleAppPaused() {
     // No se requiere acción específica cuando la app va a segundo plano
+  }
+
+  /// Realiza auto-login silencioso completo si hay credenciales pero no sesión activa
+  Future<void> _performSilentFirebaseLoginIfNeeded() async {
+    final storedCredentials = _getStoredCredentialsUseCase.execute();
+
+    // Verificar si hay credenciales almacenadas
+    if (!storedCredentials.hasCredentials) {
+      _logger.d('[AUTH] No hay credenciales almacenadas para auto-login');
+      return;
+    }
+
+    // Verificar si Firebase ya está autenticado
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null) {
+      _logger.d('[AUTH] Firebase ya está autenticado (${firebaseUser.uid})');
+      return;
+    }
+
+    // Realizar login silencioso completo (SIGA + Firebase)
+    try {
+      _logger.i('[AUTH] Realizando auto-login silencioso completo');
+
+      // 1. Autenticar solo en SIGA (establece la sesión SIGA sin validaciones costosas)
+      final sigaResult = await _sigaAuthUseCase.execute(
+        storedCredentials.username!,
+        storedCredentials.password!,
+      );
+
+      if (!sigaResult.success) {
+        _logger.w(
+          '[AUTH] Error en autenticación SIGA durante auto-login: ${sigaResult.messageLevel1}',
+        );
+        return;
+      }
+
+      // 2. Autenticar en Firebase
+      await _firebaseAuthService.signInWithStudentCode(
+        storedCredentials.username!,
+        storedCredentials.password!,
+      );
+
+      _logger.i('[AUTH] Auto-login silencioso completado exitosamente');
+    } catch (e) {
+      _logger.e('[AUTH] Error en auto-login silencioso: $e');
+      // No relanzamos la excepción para no interrumpir el flujo de la app
+      // El usuario podrá hacer login manual si es necesario
+    }
   }
 
   /// Refresca la sesión después de que la app vuelve a primer plano

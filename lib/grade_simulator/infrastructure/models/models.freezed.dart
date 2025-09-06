@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CourseModel {
 
- List<CategoryModel> get categories; List<GradeModel> get grades;@_TimestampConverter() Timestamp? get lastModified;
+ Map<String, CategoryModel> get categories; Map<String, GradeModel> get grades;@_TimestampConverter() Timestamp? get lastModified;
 /// Create a copy of CourseModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $CourseModelCopyWith<$Res>  {
   factory $CourseModelCopyWith(CourseModel value, $Res Function(CourseModel) _then) = _$CourseModelCopyWithImpl;
 @useResult
 $Res call({
- List<CategoryModel> categories, List<GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
+ Map<String, CategoryModel> categories, Map<String, GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
 });
 
 
@@ -68,8 +68,8 @@ class _$CourseModelCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? categories = null,Object? grades = null,Object? lastModified = freezed,}) {
   return _then(_self.copyWith(
 categories: null == categories ? _self.categories : categories // ignore: cast_nullable_to_non_nullable
-as List<CategoryModel>,grades: null == grades ? _self.grades : grades // ignore: cast_nullable_to_non_nullable
-as List<GradeModel>,lastModified: freezed == lastModified ? _self.lastModified : lastModified // ignore: cast_nullable_to_non_nullable
+as Map<String, CategoryModel>,grades: null == grades ? _self.grades : grades // ignore: cast_nullable_to_non_nullable
+as Map<String, GradeModel>,lastModified: freezed == lastModified ? _self.lastModified : lastModified // ignore: cast_nullable_to_non_nullable
 as Timestamp?,
   ));
 }
@@ -155,7 +155,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, CategoryModel> categories,  Map<String, GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CourseModel() when $default != null:
 return $default(_that.categories,_that.grades,_that.lastModified);case _:
@@ -176,7 +176,7 @@ return $default(_that.categories,_that.grades,_that.lastModified);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, CategoryModel> categories,  Map<String, GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)  $default,) {final _that = this;
 switch (_that) {
 case _CourseModel():
 return $default(_that.categories,_that.grades,_that.lastModified);case _:
@@ -196,7 +196,7 @@ return $default(_that.categories,_that.grades,_that.lastModified);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CategoryModel> categories,  List<GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, CategoryModel> categories,  Map<String, GradeModel> grades, @_TimestampConverter()  Timestamp? lastModified)?  $default,) {final _that = this;
 switch (_that) {
 case _CourseModel() when $default != null:
 return $default(_that.categories,_that.grades,_that.lastModified);case _:
@@ -211,21 +211,21 @@ return $default(_that.categories,_that.grades,_that.lastModified);case _:
 @JsonSerializable()
 
 class _CourseModel implements CourseModel {
-  const _CourseModel({required final  List<CategoryModel> categories, required final  List<GradeModel> grades, @_TimestampConverter() this.lastModified}): _categories = categories,_grades = grades;
+  const _CourseModel({required final  Map<String, CategoryModel> categories, required final  Map<String, GradeModel> grades, @_TimestampConverter() this.lastModified}): _categories = categories,_grades = grades;
   factory _CourseModel.fromJson(Map<String, dynamic> json) => _$CourseModelFromJson(json);
 
- final  List<CategoryModel> _categories;
-@override List<CategoryModel> get categories {
-  if (_categories is EqualUnmodifiableListView) return _categories;
+ final  Map<String, CategoryModel> _categories;
+@override Map<String, CategoryModel> get categories {
+  if (_categories is EqualUnmodifiableMapView) return _categories;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_categories);
+  return EqualUnmodifiableMapView(_categories);
 }
 
- final  List<GradeModel> _grades;
-@override List<GradeModel> get grades {
-  if (_grades is EqualUnmodifiableListView) return _grades;
+ final  Map<String, GradeModel> _grades;
+@override Map<String, GradeModel> get grades {
+  if (_grades is EqualUnmodifiableMapView) return _grades;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_grades);
+  return EqualUnmodifiableMapView(_grades);
 }
 
 @override@_TimestampConverter() final  Timestamp? lastModified;
@@ -263,7 +263,7 @@ abstract mixin class _$CourseModelCopyWith<$Res> implements $CourseModelCopyWith
   factory _$CourseModelCopyWith(_CourseModel value, $Res Function(_CourseModel) _then) = __$CourseModelCopyWithImpl;
 @override @useResult
 $Res call({
- List<CategoryModel> categories, List<GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
+ Map<String, CategoryModel> categories, Map<String, GradeModel> grades,@_TimestampConverter() Timestamp? lastModified
 });
 
 
@@ -283,8 +283,8 @@ class __$CourseModelCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? categories = null,Object? grades = null,Object? lastModified = freezed,}) {
   return _then(_CourseModel(
 categories: null == categories ? _self._categories : categories // ignore: cast_nullable_to_non_nullable
-as List<CategoryModel>,grades: null == grades ? _self._grades : grades // ignore: cast_nullable_to_non_nullable
-as List<GradeModel>,lastModified: freezed == lastModified ? _self.lastModified : lastModified // ignore: cast_nullable_to_non_nullable
+as Map<String, CategoryModel>,grades: null == grades ? _self._grades : grades // ignore: cast_nullable_to_non_nullable
+as Map<String, GradeModel>,lastModified: freezed == lastModified ? _self.lastModified : lastModified // ignore: cast_nullable_to_non_nullable
 as Timestamp?,
   ));
 }

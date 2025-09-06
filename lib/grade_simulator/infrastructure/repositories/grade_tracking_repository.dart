@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
+import 'package:logger/logger.dart';
+import 'dart:convert';
 import 'package:sigapp/grade_simulator/domain/entities/course_tracking.dart';
 import 'package:sigapp/grade_simulator/domain/repositories/grade_tracking_repository.dart';
 import 'package:sigapp/grade_simulator/infrastructure/mappers/course_mapper.dart';
@@ -46,8 +48,34 @@ import 'package:sigapp/shared/infrastructure/firestore/resilient_read.dart';
 @LazySingleton(as: GradeTrackingRepository)
 class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
   final FirebaseFirestore _firestore;
+  final Logger _logger;
 
-  GradeTrackingRepositoryImpl(this._firestore);
+  GradeTrackingRepositoryImpl(this._firestore, this._logger);
+
+  // Normalize Firestore-returned values so they can be JSON-encoded safely
+  // (handles Timestamp, DateTime, DocumentReference, Lists and Maps).
+  dynamic _toJsonSafe(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate().toIso8601String();
+    if (value is DateTime) return value.toIso8601String();
+    if (value is DocumentReference) return value.path;
+    if (value is Map) {
+      return value.map((k, v) => MapEntry(k.toString(), _toJsonSafe(v)));
+    }
+    if (value is List) return value.map(_toJsonSafe).toList();
+    return value;
+  }
+
+  // Safe JSON logging helper to avoid repeating try/catch every time.
+  void _safeLog(String message, dynamic value, {String? extra}) {
+    try {
+      final normalized = _toJsonSafe(value);
+      final extraStr = extra != null ? ' $extra' : '';
+      _logger.i('$message ${jsonEncode(normalized)}$extraStr');
+    } catch (e, s) {
+      _logger.w('$message failed to jsonEncode: $e', error: e, stackTrace: s);
+    }
+  }
 
   /// Typed reference to the course document with converter
   DocumentReference<CourseModel> _getTypedCourseRef(
@@ -62,6 +90,18 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
         .withConverter<CourseModel>(
           fromFirestore: (snap, _) {
             final data = snap.data()!;
+            // Log raw snapshot data (normalized) for debugging/inspection
+            try {
+              final normalized = _toJsonSafe(data);
+              _logger.i(
+                '[GRADE_REPO] fromFirestore ${snap.reference.path} -> ${jsonEncode(normalized)} (cache:${snap.metadata.isFromCache})',
+              );
+            } catch (e) {
+              _logger.w(
+                '[GRADE_REPO] Failed to jsonEncode snapshot for ${snap.reference.path}: $e',
+              );
+            }
+
             // No need to add redundant fields - they're implicit in the path/document ID
             return CourseModel.fromJson(data);
           },
@@ -71,6 +111,15 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
             json.remove('courseCode'); // Implicit in document ID
             json.remove('studentCode'); // Implicit in document path
             json.remove('id'); // Optional field removed
+            try {
+              _logger.i(
+                '[GRADE_REPO] toFirestore (course doc) -> ${jsonEncode(_toJsonSafe(json))}',
+              );
+            } catch (e) {
+              _logger.w(
+                '[GRADE_REPO] Failed to jsonEncode model toFirestore: $e',
+              );
+            }
             return json;
           },
         );
@@ -100,9 +149,25 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
     try {
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final data = await getWithResilience(courseRef);
+      if (data != null) {
+        _safeLog(
+          '[GRADE_REPO] getCourseTracking raw ->',
+          data.toJson(),
+          extra: '(cache:${false})',
+        );
+      } else {
+        _logger.i(
+          '[GRADE_REPO] getCourseTracking returned null for ${courseRef.path}',
+        );
+      }
       if (data == null) return null;
       return CourseMapper.toDomain(data, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e(
+        '[GRADE_REPO] Error getting course tracking',
+        error: e,
+        stackTrace: s,
+      );
       throw Exception('Error getting course tracking: $e');
     }
   }
@@ -115,9 +180,15 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
     try {
       final model = CourseMapper.toInfrastructure(tracking, () => '');
       final courseRef = _getTypedCourseRef(studentCode, tracking.courseCode);
+      _safeLog('[GRADE_REPO] create set ->', model.toJson());
       await courseRef.set(model);
       return tracking;
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e(
+        '[GRADE_REPO] Error creating course tracking',
+        error: e,
+        stackTrace: s,
+      );
       throw Exception('Error creating course tracking: $e');
     }
   }
@@ -130,7 +201,12 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
     try {
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       await courseRef.delete();
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e(
+        '[GRADE_REPO] Error deleting course tracking',
+        error: e,
+        stackTrace: s,
+      );
       throw Exception('Error deleting course tracking: $e');
     }
   }
@@ -151,6 +227,7 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
 
       // Get current document to calculate next index
       final doc = await rawRef.get();
+      _safeLog('[GRADE_REPO] addCategory currentDoc ->', doc.data());
       final nextIndex =
           doc.exists && doc.data() != null
               ? ((doc.data()!['categories'] as Map<String, dynamic>?)?.length ??
@@ -158,19 +235,22 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
               : 0;
 
       // Add granular - only add the new category
-      await rawRef.update({
+      final updates = {
         'categories.$nextIndex': {'name': categoryName, 'weight': weight},
         'lastModified': FieldValue.serverTimestamp(),
-      });
+      };
+      _safeLog('[GRADE_REPO] addCategory update ->', updates);
+      await rawRef.update(updates);
 
       // Read the updated result
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final updated = await courseRef.get(
         const GetOptions(source: Source.cache),
       );
-
+      _safeLog('[GRADE_REPO] addCategory updated ->', updated.data()!.toJson());
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e('[GRADE_REPO] Error adding category', error: e, stackTrace: s);
       throw Exception('Error adding category: $e');
     }
   }
@@ -187,6 +267,10 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
 
       // Get the current course to identify grades to delete
       final doc = await courseRef.get();
+      _safeLog(
+        '[GRADE_REPO] deleteCategory currentCourse ->',
+        doc.data()?.toJson(),
+      );
       if (!doc.exists || doc.data() == null) {
         throw Exception('Course not found');
       }
@@ -208,14 +292,15 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       // Delete category
       updates['categories.$categoryIndex'] = FieldValue.delete();
 
-      // Find and delete grades of this category
-      for (int i = 0; i < currentCourse.grades.length; i++) {
-        if (currentCourse.grades[i].categoryIndex == categoryIndex) {
-          updates['grades.$i'] = FieldValue.delete();
+      // Find and delete grades of this category (grades is a Map in infra)
+      currentCourse.grades.forEach((key, gradeModel) {
+        if (gradeModel.categoryIndex == categoryIndex) {
+          updates['grades.$key'] = FieldValue.delete();
         }
-      }
+      });
 
       // Execute all deletions in a single operation
+      _safeLog('[GRADE_REPO] deleteCategory batch updates ->', updates);
       batch.update(rawRef, updates);
       await batch.commit();
 
@@ -223,8 +308,17 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       final updated = await courseRef.get(
         const GetOptions(source: Source.cache),
       );
+      _safeLog(
+        '[GRADE_REPO] deleteCategory updated ->',
+        updated.data()!.toJson(),
+      );
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e(
+        '[GRADE_REPO] Error deleting category',
+        error: e,
+        stackTrace: s,
+      );
       throw Exception('Error deleting category: $e');
     }
   }
@@ -246,20 +340,30 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       }
 
       // Granular update - only the fields that change
-      await rawRef.update({
+      final updates = {
         'categories.$categoryIndex.name': newName,
         'categories.$categoryIndex.weight': newWeight,
         'lastModified': FieldValue.serverTimestamp(),
-      });
+      };
+      _safeLog('[GRADE_REPO] updateCategory update ->', updates);
+      await rawRef.update(updates);
 
       // Read the updated result from cache if possible
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final updated = await courseRef.get(
         const GetOptions(source: Source.cache),
       );
-
+      _safeLog(
+        '[GRADE_REPO] updateCategory updated ->',
+        updated.data()!.toJson(),
+      );
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e(
+        '[GRADE_REPO] Error updating category',
+        error: e,
+        stackTrace: s,
+      );
       throw Exception('Error updating category: $e');
     }
   }
@@ -286,13 +390,14 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
 
       // Get current document to calculate next grade index
       final doc = await rawRef.get();
+      _safeLog('[GRADE_REPO] addGrade currentDoc ->', doc.data());
       final nextGradeIndex =
           doc.exists && doc.data() != null
               ? ((doc.data()!['grades'] as Map<String, dynamic>?)?.length ?? 0)
               : 0;
 
       // Add granular - only add the new grade
-      await rawRef.update({
+      final updates = {
         'grades.$nextGradeIndex': {
           'categoryIndex': categoryIndex,
           'name': gradeName,
@@ -300,16 +405,19 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
           'enabled': true,
         },
         'lastModified': FieldValue.serverTimestamp(),
-      });
+      };
+      _safeLog('[GRADE_REPO] addGrade update ->', updates);
+      await rawRef.update(updates);
 
       // Read the updated result
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final updated = await courseRef.get(
         const GetOptions(source: Source.cache),
       );
-
+      _safeLog('[GRADE_REPO] addGrade updated ->', updated.data()!.toJson());
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e('[GRADE_REPO] Error adding grade', error: e, stackTrace: s);
       throw Exception('Error adding grade: $e');
     }
   }
@@ -330,19 +438,22 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       }
 
       // Granular delete - only delete the specific grade
-      await rawRef.update({
+      final updates = {
         'grades.$gradeIndex': FieldValue.delete(),
         'lastModified': FieldValue.serverTimestamp(),
-      });
+      };
+      _safeLog('[GRADE_REPO] deleteGrade update ->', updates);
+      await rawRef.update(updates);
 
       // Read the updated result
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final updated = await courseRef.get(
         const GetOptions(source: Source.cache),
       );
-
+      _safeLog('[GRADE_REPO] deleteGrade updated ->', updated.data()!.toJson());
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e('[GRADE_REPO] Error deleting grade', error: e, stackTrace: s);
       throw Exception('Error deleting grade: $e');
     }
   }
@@ -365,20 +476,23 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       }
 
       // Granular update - only the fields that change
-      await rawRef.update({
+      final updates = {
         'grades.$gradeIndex.name': newName,
         'grades.$gradeIndex.score': newScore,
         'lastModified': FieldValue.serverTimestamp(),
-      });
+      };
+      _safeLog('[GRADE_REPO] updateGrade update ->', updates);
+      await rawRef.update(updates);
 
       // Read the updated result from cache if possible
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final updated = await courseRef.get(
         const GetOptions(source: Source.cache),
       );
-
+      _safeLog('[GRADE_REPO] updateGrade updated ->', updated.data()!.toJson());
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e('[GRADE_REPO] Error updating grade', error: e, stackTrace: s);
       throw Exception('Error updating grade: $e');
     }
   }
@@ -400,19 +514,29 @@ class GradeTrackingRepositoryImpl implements GradeTrackingRepository {
       }
 
       // Granular update - only the enabled field
-      await rawRef.update({
+      final updates = {
         'grades.$gradeIndex.enabled': enabled,
         'lastModified': FieldValue.serverTimestamp(),
-      });
+      };
+      _safeLog('[GRADE_REPO] toggleGradeEnabled update ->', updates);
+      await rawRef.update(updates);
 
       // Read the updated result from cache if possible
       final courseRef = _getTypedCourseRef(studentCode, courseCode);
       final updated = await courseRef.get(
         const GetOptions(source: Source.cache),
       );
-
+      _safeLog(
+        '[GRADE_REPO] toggleGradeEnabled updated ->',
+        updated.data()!.toJson(),
+      );
       return CourseMapper.toDomain(updated.data()!, courseCode: courseCode);
-    } catch (e) {
+    } catch (e, s) {
+      _logger.e(
+        '[GRADE_REPO] Error toggling grade enabled',
+        error: e,
+        stackTrace: s,
+      );
       throw Exception('Error toggling grade enabled: $e');
     }
   }

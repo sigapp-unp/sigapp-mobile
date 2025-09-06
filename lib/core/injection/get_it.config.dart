@@ -206,6 +206,12 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i856.ProgressIndicatorServiceImpl(gh<_i675.ProgressIndicatorBloc>()),
     );
+    gh.lazySingleton<_i779.GradeTrackingRepository>(
+      () => _i867.GradeTrackingRepositoryImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i974.Logger>(),
+      ),
+    );
     gh.singleton<_i200.ApiGatewayClient>(
       () => _i200.ApiGatewayClient(gh<_i974.Logger>()),
     );
@@ -232,9 +238,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i382.MailUtils>(
       () => _i382.MailUtils(gh<_i974.Logger>()),
-    );
-    gh.lazySingleton<_i779.GradeTrackingRepository>(
-      () => _i867.GradeTrackingRepositoryImpl(gh<_i974.FirebaseFirestore>()),
     );
     gh.singleton<_i986.RegevaClient>(
       () =>
@@ -484,6 +487,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i48.SignOutUseCase>(),
         gh<_i908.KeepSessionAliveUsecase>(),
         gh<_i568.SigaAuthenticationUsecase>(),
+        gh<_i508.FirebaseAuthService>(),
         gh<_i873.ToastService>(),
         gh<_i974.Logger>(),
       ),

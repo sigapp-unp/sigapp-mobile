@@ -7,14 +7,12 @@ part of 'models.dart';
 // **************************************************************************
 
 _CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => _CourseModel(
-  categories:
-      (json['categories'] as List<dynamic>)
-          .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-  grades:
-      (json['grades'] as List<dynamic>)
-          .map((e) => GradeModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  categories: (json['categories'] as Map<String, dynamic>).map(
+    (k, e) => MapEntry(k, CategoryModel.fromJson(e as Map<String, dynamic>)),
+  ),
+  grades: (json['grades'] as Map<String, dynamic>).map(
+    (k, e) => MapEntry(k, GradeModel.fromJson(e as Map<String, dynamic>)),
+  ),
   lastModified: const _TimestampConverter().fromJson(json['lastModified']),
 );
 

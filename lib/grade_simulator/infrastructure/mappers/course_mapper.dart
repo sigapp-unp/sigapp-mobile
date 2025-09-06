@@ -6,28 +6,49 @@ class CourseMapper {
     CourseModel model, {
     required String courseCode,
   }) {
-    // Convertir las categorías del modelo a entidades de dominio
+    // Convertir las categorías (Map infra) a entidades de dominio (List)
+    // Ordenar categories por clave numérica cuando corresponda
+    final categoryEntries = model.categories.entries.toList();
+    categoryEntries.sort((a, b) {
+      final ai = int.tryParse(a.key) ?? 0;
+      final bi = int.tryParse(b.key) ?? 0;
+      return ai.compareTo(bi);
+    });
+    // categoryEntries already holds the ordered categories
+
+    // Para grades, también ordenar por key y mapear
+    final gradeEntries = model.grades.entries.toList();
+    gradeEntries.sort((a, b) {
+      final ai = int.tryParse(a.key) ?? 0;
+      final bi = int.tryParse(b.key) ?? 0;
+      return ai.compareTo(bi);
+    });
+    // gradeEntries already holds the ordered grades
+
+    // Construir categorías de dominio conservando los ids (keys) de infra
     final categories =
-        model.categories.asMap().entries.map((categoryEntry) {
-          final categoryIndex = categoryEntry.key;
+        categoryEntries.map((categoryEntry) {
+          final categoryKey = categoryEntry.key;
           final categoryModel = categoryEntry.value;
 
-          // Obtener grades de esta categoría por índice
+          // Encontrar grades correspondentes y mantener sus keys como ids
           final categoryGrades =
-              model.grades
-                  .where((grade) => grade.categoryIndex == categoryIndex)
+              gradeEntries
+                  .where(
+                    (ge) => ge.value.categoryIndex == int.tryParse(categoryKey),
+                  )
                   .map(
-                    (gradeModel) => Grade(
-                      id: null, // Los grades ya no necesitan ID
-                      name: gradeModel.name,
-                      score: gradeModel.score,
-                      enabled: gradeModel.enabled,
+                    (ge) => Grade(
+                      id: ge.key,
+                      name: ge.value.name,
+                      score: ge.value.score,
+                      enabled: ge.value.enabled,
                     ),
                   )
                   .toList();
 
           return GradeCategory(
-            id: null, // Las categorías ya no necesitan ID
+            id: categoryKey,
             name: categoryModel.name,
             weight: categoryModel.weight,
             grades: categoryGrades,
@@ -41,31 +62,30 @@ class CourseMapper {
     CourseTracking domain,
     String Function() idGenerator,
   ) {
-    final categories = <CategoryModel>[];
-    final grades = <GradeModel>[];
+    // Convert domain lists into infra maps keyed by index string
+    final categories = <String, CategoryModel>{};
+    final grades = <String, GradeModel>{};
 
+    int gradeIndex = 0;
     for (
       int categoryIndex = 0;
       categoryIndex < domain.categories.length;
       categoryIndex++
     ) {
       final category = domain.categories[categoryIndex];
-
-      // Agregar la categoría
-      categories.add(
-        CategoryModel(name: category.name, weight: category.weight),
+      categories['$categoryIndex'] = CategoryModel(
+        name: category.name,
+        weight: category.weight,
       );
 
-      // Agregar los grades de esta categoría
       for (final grade in category.grades) {
-        grades.add(
-          GradeModel(
-            categoryIndex: categoryIndex,
-            name: grade.name,
-            score: grade.score,
-            enabled: grade.enabled,
-          ),
+        grades['$gradeIndex'] = GradeModel(
+          categoryIndex: categoryIndex,
+          name: grade.name,
+          score: grade.score,
+          enabled: grade.enabled,
         );
+        gradeIndex++;
       }
     }
 
