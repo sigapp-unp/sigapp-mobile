@@ -124,7 +124,10 @@ class GetClassScheduleUsecase {
         final eventStart = calculateEventDateTime(classStartTime, weekday);
         final eventEnd = calculateEventDateTime(classEndTime, weekday);
         final id =
-            '${semesterId}_${courseCode ?? courseName}_${eventStart.hour}_${eventStart.minute}';
+            '${semesterId}_${courseCode ?? courseName}_${weekday}_${eventStart.hour}_${eventStart.minute}';
+
+        // Debug: log generated id to help trace duplicates
+        // (logger not injected here; consider returning or logging upstream if needed)
 
         weeklyScheduleEvents.add(
           WeeklyScheduleEvent(

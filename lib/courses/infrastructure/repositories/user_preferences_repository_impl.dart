@@ -107,11 +107,17 @@ class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
     required String eventId,
   }) async {
     try {
-      final semesterPrefsRef = _getSemesterPreferencesRef(studentCode);
+      final rawDoc = _firestore
+          .collection('students')
+          .doc(studentCode)
+          .collection('preferences')
+          .doc('_semesters')
+          .collection('data')
+          .doc(semesterId);
 
-      await semesterPrefsRef.doc(semesterId).update({
+      await rawDoc.set({
         'scheduleHiddenEvents': FieldValue.arrayUnion([eventId]),
-      });
+      }, SetOptions(merge: true));
     } catch (e, s) {
       _logger.e(
         'Error adding hidden schedule event to semester $semesterId',
@@ -129,11 +135,17 @@ class UserPreferencesRepositoryImpl implements UserPreferencesRepository {
     required String eventId,
   }) async {
     try {
-      final semesterPrefsRef = _getSemesterPreferencesRef(studentCode);
+      final rawDoc = _firestore
+          .collection('students')
+          .doc(studentCode)
+          .collection('preferences')
+          .doc('_semesters')
+          .collection('data')
+          .doc(semesterId);
 
-      await semesterPrefsRef.doc(semesterId).update({
+      await rawDoc.set({
         'scheduleHiddenEvents': FieldValue.arrayRemove([eventId]),
-      });
+      }, SetOptions(merge: true));
     } catch (e, s) {
       _logger.e(
         'Error removing hidden schedule event from semester $semesterId',

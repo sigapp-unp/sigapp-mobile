@@ -84,6 +84,10 @@ class CourseVisibilityCubit extends Cubit<CourseVisibilityState>
 
     emit(state.copyWith(hiddenEvents: updatedHiddenEvents));
 
+    _logger.d(
+      '[CUBIT] toggleEventVisibility -> semester:${_semesterId} event:${event.data.id} isHidden:$isHidden',
+    );
+
     // 2. Schedule debounced persistence
     debouncedSave(
       key: 'visibility_${event.data.id}',

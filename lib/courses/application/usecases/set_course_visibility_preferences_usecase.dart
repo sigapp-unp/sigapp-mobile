@@ -24,6 +24,9 @@ class SetCourseVisibilityPreferencesUseCase extends BaseGetStudentCodeUseCase {
     required String semesterId,
   }) async {
     try {
+      _logger.d(
+        '[USE_CASE] set visibility request -> semester:$semesterId event:$eventId isVisible:$isVisible',
+      );
       final studentCode = await getStudentCode();
 
       if (isVisible) {
