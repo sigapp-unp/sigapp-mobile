@@ -9,8 +9,8 @@ Un enfoque probado para maximizar la experiencia offline sin disparar tu cuota d
 
    ```yaml
    dependencies:
-     firebase_core: ^2.20.0
-     cloud_firestore: ^5.4.0
+     firebase_core: ^4.0.0
+     cloud_firestore: ^6.0.0
    ```
 
    Luego ejecuta:
@@ -36,7 +36,7 @@ Un enfoque probado para maximizar la experiencia offline sin disparar tu cuota d
    ```dart
    import 'package:flutter/material.dart';
    import 'package:firebase_core/firebase_core.dart';
-   import 'firebase_options.dart';
+   import 'firebase_options.dart'; // Generado por flutterfire configure
 
    Future<void> main() async {
      WidgetsFlutterBinding.ensureInitialized();
@@ -55,12 +55,37 @@ Un enfoque probado para maximizar la experiencia offline sin disparar tu cuota d
 - **Cache ilimitado** (opcional para datasets grandes):
 
   ```dart
-  FirebaseFirestore.instance.settings = Settings(
+  FirebaseFirestore.instance.settings = const Settings(
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
   ```
 
   Esto impide que el SDK limpie datos antiguos y maximiza tu cobertura offline.
+
+### Resilient Read Pattern (Implementado)
+
+La app implementa un patrón de lecturas resilientes con `getWithResilience()` que:
+
+1. **Cache First**: Intenta leer del cache local inmediatamente
+2. **Server con Retry**: Intenta servidor con backoff exponencial para errores transitorios
+3. **Cache Fallback**: Vuelve al cache si el servidor falla
+
+```dart
+// Implementación en shared/infrastructure/firestore/resilient_read.dart
+Future<T?> getWithResilience<T>(
+  DocumentReference<T> ref, {
+  List<int> backoff = const [150, 350, 800], // ms
+  Set<String> retriableCodes = const {
+    'unavailable',
+    'deadline-exceeded',
+    'aborted',
+  },
+}) async {
+  // 1) Cache first para UX inmediata
+  // 2) Server con jitter y backoff
+  // 3) Cache fallback final
+}
+```
 
 ### Estructura optimizada con studentCode como ID
 
@@ -141,18 +166,36 @@ class Grade with _$Grade {
 ### 🔗 Referencias tipadas con `withConverter`
 
 ```dart
-// Ejemplo ficticio ilustrativo
-final userSimRef = FirebaseFirestore.instance
-  .collection('users')
-  .doc(userId)
-  .collection('courseSimulators')
-  .withConverter<CourseSimulator>(
-    fromFirestore: (snap, _) => CourseSimulator.fromJson({
-      ...snap.data()!..['id'] = snap.id,
-      'courseCode': snap.id,
-    }),
-    toFirestore:   (cs, _)   => cs.copyWith(id: null).toJson()..remove('id'),
-  );
+// Ejemplo real de la implementación actual
+DocumentReference<CourseModel> _getTypedCourseRef(
+  String studentCode,
+  String courseCode,
+) {
+  return _firestore
+    .collection('students')
+    .doc(studentCode)
+    .collection('gradeSimulations')
+    .doc(courseCode)
+    .withConverter<CourseModel>(
+      fromFirestore: (snap, _) => CourseModel.fromJson(snap.data()!),
+      toFirestore: (course, _) => course.toJson(),
+    );
+}
+
+// Para preferencias globales
+DocumentReference<GlobalPreferencesModel> _getGlobalPreferencesRef(
+  String studentCode,
+) {
+  return _firestore
+    .collection('students')
+    .doc(studentCode)
+    .collection('preferences')
+    .doc('global')
+    .withConverter<GlobalPreferencesModel>(
+      fromFirestore: (snap, _) => GlobalPreferencesModel.fromJson(snap.data()!),
+      toFirestore: (prefs, _) => prefs.toJson(),
+    );
+}
 ```
 
 #### 📝 Resumen
@@ -178,11 +221,30 @@ Connectivity().onConnectivityChanged.listen((status) {
 
 Incluye lógica de **retry/backoff** para fallos temporales.
 
-## 7. Optimización de cuota
+## 7. Optimización de cuota y rendimiento
+
+### Actualizaciones granulares (Implementado)
+
+- **Updates específicos** en lugar de reemplazar documentos completos:
+
+  ```dart
+  // ✅ Granular - solo actualiza campos específicos
+  await rawRef.update({
+    'categories.$categoryIndex.name': newName,
+    'categories.$categoryIndex.weight': newWeight,
+    'lastModified': FieldValue.serverTimestamp(),
+  });
+
+  // ❌ Ineficiente - reemplaza documento completo
+  await courseRef.set(updatedCourse);
+  ```
+
+### Otras optimizaciones
 
 - **`FieldValue.arrayUnion`/`arrayRemove`** para cambiar solo un elemento en arrays.
 - **WriteBatch** o **Transaction** para agrupar múltiples documentos en un solo RPC.
 - **Índices compuestos** para acelerar consultas con filtros y ordenamientos.
+- **Source.cache** después de escrituras para evitar lecturas de servidor innecesarias.
 
 ## 8. Buenas prácticas NoSQL y de seguridad
 
@@ -191,24 +253,43 @@ Incluye lógica de **retry/backoff** para fallos temporales.
 - Define **Security Rules** basadas en `request.auth` y validaciones de esquema.
 - Añade versión de esquema (`schemaVersion`) en tus documentos para migraciones controladas.
 
+### Logging seguro (Implementado)
+
+- **Normalización de datos** para logging: la implementación actual incluye `_toJsonSafe()` que maneja tipos especiales de Firestore (Timestamp, FieldValue, etc.) para evitar errores de serialización JSON en logs.
+
 ## 9. Herramientas opcionales
 
 - Paquetes como [brick_offline_first](https://pub.dev/packages/brick_offline_first) combinan SQLite local y Firestore en un repositorio único, con cache, sync y deduplicación declarativa.
 
 **Resumen de beneficios**:
 
-| Técnica                     | Impacto                                        |
-| --------------------------- | ---------------------------------------------- |
-| Persistencia offline nativa | Lecturas y escrituras en cola sin código extra |
-| `get()` puntuales           | Minimizas lecturas activas                     |
-| Debiance + WriteBatch       | Agrupas cambios y ahorras peticiones           |
-| Repository Pattern          | Código limpio y desacoplado                    |
-| Conectividad + retry        | Sincronización robusta post-offline            |
+| Técnica                      | Impacto                                        |
+| ---------------------------- | ---------------------------------------------- |
+| Persistencia offline nativa  | Lecturas y escrituras en cola sin código extra |
+| `get()` puntuales            | Minimizas lecturas activas                     |
+| Resilient reads + WriteBatch | Agrupas cambios y ahorras peticiones           |
+| Repository Pattern           | Código limpio y desacoplado                    |
+| Conectividad + retry         | Sincronización robusta post-offline            |
 
 Con este patrón la UI siempre responde al instante, tu cuota de Firestore se mantiene baja y tu app funciona 100 % offline sin cache casera.
 
 Aquí tienes cómo trasladar tu idea relacional/JSONB de Supabase a Cloud Firestore, sin “tablas” ni migraciones complejas, sino con dos colecciones bien organizadas y modelos tipados:
 
-## 10. ToDo
+## 10. Estado de Implementación
 
-[ ] Crear reglas para que los estudiantes solo puedan editar sus propios registros
+### ✅ Completado
+
+- [x] Estructura optimizada con `studentCode` como ID
+- [x] Implementación de `resilient_read.dart` con cache-first strategy
+- [x] Referencias tipadas con `withConverter`
+- [x] Actualizaciones granulares para optimización de costos
+- [x] Repository Pattern con inyección de dependencias
+- [x] Modelos Freezed + JsonSerializable
+
+### 🚧 Pendiente
+
+- [ ] Configuración explícita de `Settings.CACHE_SIZE_UNLIMITED`
+- [ ] Implementación de monitoreo de conectividad
+- [ ] Security Rules para restricción por `studentCode`
+- [ ] Telemetría para `resilient_read` (métricas de cache vs server hits)
+- [ ] Migración automática de esquemas con `schemaVersion`
