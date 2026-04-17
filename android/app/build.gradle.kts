@@ -41,7 +41,7 @@ android {
         // update minSdk version and flutter_secure_storage dependency to latest
         minSdk = maxOf(flutter.minSdkVersion ?: 23, 23)
         targetSdk = flutter.targetSdkVersion
-        versionCode = 17
+        versionCode = 18
         versionName = "2.0.9"
     }
 
